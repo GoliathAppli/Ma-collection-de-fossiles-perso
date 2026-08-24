@@ -164,7 +164,7 @@ export function tryRecoverJSON(text: string): any {
     const foundSheetsMap = new Map<string, { sheet: any; length: number }>();
 
     // Extract scalar top-level attributes if possible
-    let videoUrl1 = "https://www.youtube.com/watch?v=y61D0TbHZks";
+    let videoUrl1 = "";
     const videoMatch = text.match(/"videoUrl1"\s*:\s*"([^"]+)"/);
     if (videoMatch) videoUrl1 = videoMatch[1];
 
@@ -172,7 +172,7 @@ export function tryRecoverJSON(text: string): any {
     const titleMatch = text.match(/"secondHomeTitle"\s*:\s*"([^"]+)"/);
     if (titleMatch) secondHomeTitle = titleMatch[1];
 
-    let scaleVideoUrl = "https://www.youtube.com/watch?v=c_fA-Q9XJ_s";
+    let scaleVideoUrl = "";
     const scaleVidMatch = text.match(/"scaleVideoUrl"\s*:\s*"([^"]+)"/);
     if (scaleVidMatch) scaleVideoUrl = scaleVidMatch[1];
 

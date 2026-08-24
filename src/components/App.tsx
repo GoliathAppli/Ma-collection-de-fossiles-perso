@@ -33,14 +33,8 @@ import {
 
 // Initialize global standalone mode detector to separate local file preview from active server context
 if (typeof window !== "undefined") {
-  const hn = window.location.hostname;
   const proto = window.location.protocol;
-  (window as any).__IS_STANDALONE__ =
-    proto === "file:" ||
-    !hn ||
-    (!hn.includes("localhost") &&
-      !hn.includes("127.0.0.1") &&
-      !hn.includes(".run.app"));
+  (window as any).__IS_STANDALONE__ = proto === "file:";
 }
 
 export default function App() {
@@ -497,8 +491,8 @@ export default function App() {
                       <form
                         onSubmit={(e) => {
                           e.preventDefault();
-                          updateConfig({ ...config, videoUrl1: homeVideoInput });
-                          alert("✅ Source vidéo enregistrée !");
+                          updateConfigInstant({ ...config, videoUrl1: homeVideoInput.trim() });
+                          alert("✅ Source vidéo enregistrée et synchronisée !");
                         }}
                         className="flex-1 space-y-1"
                       >
@@ -626,8 +620,8 @@ export default function App() {
                 ) : null}
 
                 <UniversalVideoPlayer
-                  url={config.videoUrl1 || "https://www.youtube.com/watch?v=yrS0nbR_rrU"}
-                  emptyLabel="Aucun reportage vidéo configuré"
+                  url={config.videoUrl1 || ""}
+                  emptyLabel="Aucun reportage vidéo configuré (Modifiable par l'administrateur)"
                 />
               </div>
 

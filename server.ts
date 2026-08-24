@@ -86,6 +86,10 @@ async function startServer() {
   }
 
   app.get("/api/config", (req, res) => {
+    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    res.setHeader("Pragma", "no-cache");
+    res.setHeader("Expires", "0");
+
     if (fs.existsSync(dataFile)) {
       const rawData = fs.readFileSync(dataFile, "utf-8");
       try {
@@ -164,8 +168,32 @@ async function startServer() {
       // Parse base64 images from JSON payload, write them to disk, replace URLs.
       const parsedConfig = parseAndSaveImages(req.body);
       
-      // Write the updated configuration object back.
-      fs.writeFileSync(dataFile, JSON.stringify(parsedConfig, null, 2));
+      // Ensure lastUpdated timestamp is set
+      parsedConfig.lastUpdated = parsedConfig.lastUpdated || Date.now();
+      
+      const configJson = JSON.stringify(parsedConfig, null, 2);
+
+      // Write to public/data/fossiles.json
+      fs.writeFileSync(dataFile, configJson);
+
+      // Also sync to root data/fossiles.json if directory exists (or create it)
+      try {
+        const rootDataDir = path.join(process.cwd(), "data");
+        if (!fs.existsSync(rootDataDir)) fs.mkdirSync(rootDataDir, { recursive: true });
+        fs.writeFileSync(path.join(rootDataDir, "fossiles.json"), configJson);
+      } catch (rootDataErr) {
+        console.warn("Could not sync to root data directory:", rootDataErr);
+      }
+
+      // Also sync to dist/data/fossiles.json if dist exists
+      try {
+        const distDataDir = path.join(process.cwd(), "dist", "data");
+        if (fs.existsSync(distDataDir)) {
+          fs.writeFileSync(path.join(distDataDir, "fossiles.json"), configJson);
+        }
+      } catch (distDataErr) {
+        console.warn("Could not sync to dist data directory:", distDataErr);
+      }
 
       // Respond instantly to eliminate client-side wait time and timeout crashes
       res.json({ success: true, updatedConfig: parsedConfig });
@@ -180,7 +208,7 @@ async function startServer() {
           console.log("Committing and pushing changes to GitHub in background...");
           await execPromise("git config user.email || git config --global user.email 'admin@example.com'").catch(() => {});
           await execPromise("git config user.name || git config --global user.name 'Admin Auto-Sync'").catch(() => {});
-          await execPromise("git add public/data/fossiles.json public/images/fossiles/*").catch(() => {});
+          await execPromise("git add public/data/fossiles.json data/fossiles.json public/images/fossiles/*").catch(() => {});
           await execPromise("git commit -m 'Auto-update from Admin Panel'").catch(() => {});
           await execPromise("git push").catch(() => {});
           console.log("Successfully ran git auto-push in background.");

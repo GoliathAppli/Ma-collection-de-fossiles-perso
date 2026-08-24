@@ -78,9 +78,10 @@ export async function getGitHubConfig(): Promise<GitHubSyncConfig> {
   if (
     !merged.repo?.trim() ||
     merged.repo.trim() === 'conservatoire-de-fossiles' ||
-    merged.repo.trim() === 'Ma-collection-de-fossiles'
+    merged.repo.trim() === 'Ma-collection-de-fossiles' ||
+    merged.repo.trim() === 'Ma-collection-de-fossiles-'
   ) {
-    merged.repo = 'Ma-collection-de-fossiles-';
+    merged.repo = 'Ma-collection-de-fossiles-perso';
   }
   if (!merged.branch?.trim()) {
     merged.branch = 'main';

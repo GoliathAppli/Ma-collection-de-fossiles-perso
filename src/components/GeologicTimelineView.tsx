@@ -381,7 +381,7 @@ export default function GeologicTimelineView({
 
           {/* Video display player */}
           <UniversalVideoPlayer
-            url={videoUrl || "https://www.youtube.com/watch?v=2SRU_56Y-WQ"}
+            url={videoUrl || ""}
             emptyLabel="Aucun lecteur vidéo configuré par l'administrateur"
           />
         </div>

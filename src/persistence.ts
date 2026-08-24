@@ -15,10 +15,10 @@ import {
 export const LOCAL_STORAGE_KEY = "fossils_collection_config_v2";
 
 export const DEFAULT_CONFIG: AppConfig = {
-  videoUrl1: "https://www.youtube.com/watch?v=yrS0nbR_rrU", // C'est pas sorcier - Des Dinosaures sous nos pieds
+  videoUrl1: "",
   secondHomeTitle: "Fossiles de Collection",
   secondHomeImage: { url: "", scale: 1, posX: 0, posY: 0 },
-  scaleVideoUrl: "https://www.youtube.com/watch?v=2SRU_56Y-WQ", // L'histoire entière de la Terre ! - C'est pas sorcier
+  scaleVideoUrl: "",
   fossils: [],
   technicalSheets: [],
 };
@@ -26,23 +26,12 @@ export const DEFAULT_CONFIG: AppConfig = {
 export function sanitizeConfig(config: any): AppConfig {
   if (!config) return { ...DEFAULT_CONFIG };
   
-  // Fix obsolete 404 video URLs if previously stored in cache/session
-  let videoUrl1 = typeof config.videoUrl1 === "string" ? config.videoUrl1 : DEFAULT_CONFIG.videoUrl1;
-  if (!videoUrl1 || videoUrl1.includes("y61D0TbHZks")) {
-    videoUrl1 = DEFAULT_CONFIG.videoUrl1;
-  }
-
-  let scaleVideoUrl = typeof config.scaleVideoUrl === "string" ? config.scaleVideoUrl : DEFAULT_CONFIG.scaleVideoUrl;
-  if (!scaleVideoUrl || scaleVideoUrl.includes("c_fA-Q9XJ_s")) {
-    scaleVideoUrl = DEFAULT_CONFIG.scaleVideoUrl;
-  }
-
   return {
     lastUpdated: typeof config.lastUpdated === "number" ? config.lastUpdated : undefined,
-    videoUrl1,
-    secondHomeTitle: typeof config.secondHomeTitle === "string" ? config.secondHomeTitle : DEFAULT_CONFIG.secondHomeTitle,
+    videoUrl1: typeof config.videoUrl1 === "string" ? config.videoUrl1 : "",
+    secondHomeTitle: typeof config.secondHomeTitle === "string" ? config.secondHomeTitle : (DEFAULT_CONFIG.secondHomeTitle || "Fossiles de Collection"),
     secondHomeImage: config.secondHomeImage || DEFAULT_CONFIG.secondHomeImage,
-    scaleVideoUrl,
+    scaleVideoUrl: typeof config.scaleVideoUrl === "string" ? config.scaleVideoUrl : "",
     eraPrecambrianImage: config.eraPrecambrianImage,
     eraPaleozoicImage: config.eraPaleozoicImage,
     eraMesozoicImage: config.eraMesozoicImage,
@@ -92,18 +81,26 @@ export async function loadAppConfig(): Promise<AppConfig> {
     console.warn("GitHub fetch on load failed or skipped:", err);
   }
 
-  // 1. Fetch from Server Backend API (Live Express API)
-  try {
-    const res = await fetch(`/api/config?t=${Date.now()}`);
-    if (res.ok) {
-      const parsed = await res.json();
-      if (parsed && ((parsed.fossils?.length || 0) > 0 || (parsed.technicalSheets?.length || 0) > 0)) {
-        console.log("Fetched fresh config directly from live server database!");
-        serverConfig = sanitizeConfig(parsed);
+  // 1. Fetch from Server Backend API (Live Express API) - High priority for multi-device sync
+  if (typeof window !== "undefined" && window.location.protocol.startsWith("http")) {
+    try {
+      const res = await fetch(`/api/config?t=${Date.now()}`, {
+        cache: "no-store",
+        headers: {
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+          "Pragma": "no-cache",
+        },
+      });
+      if (res.ok) {
+        const parsed = await res.json();
+        if (parsed && ((parsed.fossils?.length || 0) > 0 || (parsed.technicalSheets?.length || 0) > 0 || parsed.videoUrl1 || parsed.scaleVideoUrl)) {
+          console.log("Fetched fresh config directly from live server database:", parsed);
+          serverConfig = sanitizeConfig(parsed);
+        }
       }
+    } catch (err) {
+      console.log("Live Express Backend API not available or failed on load:", err);
     }
-  } catch (err) {
-    console.log("Live Express Backend API not available or failed on load:", err);
   }
 
   // 2. Fetch from static JSON file fallback (check both data/ and public/data/)
@@ -116,7 +113,10 @@ export async function loadAppConfig(): Promise<AppConfig> {
   for (const sp of staticPathsToTry) {
     if (staticConfig && (staticConfig.fossils?.length || 0) > 0) break;
     try {
-      const staticRes = await fetch(`${sp}?t=${Date.now()}`);
+      const staticRes = await fetch(`${sp}?t=${Date.now()}`, {
+        cache: "no-store",
+        headers: { "Cache-Control": "no-cache" }
+      });
       if (staticRes.ok) {
         const parsed = await staticRes.json();
         if (parsed && (Array.isArray(parsed.fossils) || Array.isArray(parsed.technicalSheets))) {
@@ -174,10 +174,10 @@ export async function loadAppConfig(): Promise<AppConfig> {
   // Determine final winner and config
   let finalConfig: AppConfig;
 
-  // Gather all available sources
+  // Gather all available sources in order of preference
   const allConfigs = [
-    { name: "GitHub", config: githubConfig },
     { name: "ServerAPI", config: serverConfig },
+    { name: "GitHub", config: githubConfig },
     { name: "StaticJSON", config: staticConfig },
     { name: "IndexedDB", config: idbConfig },
     { name: "FileHandle", config: fileConfig },
@@ -196,29 +196,43 @@ export async function loadAppConfig(): Promise<AppConfig> {
       const curCount = (curConfig.fossils?.length || 0) + (curConfig.technicalSheets?.length || 0);
       const winCount = (winConfig.fossils?.length || 0) + (winConfig.technicalSheets?.length || 0);
 
-      // Rule 1: A source with fossils always beats an empty source
+      // Priority Rule 1: A source with fossils always beats an empty source
       if (curCount > 0 && winCount === 0) {
         winner = current;
+        continue;
       } else if (curCount === 0 && winCount > 0) {
-        // Keep winner with data
+        continue;
       }
-      // Rule 2: If both have data, check timestamps
-      else if (typeof curConfig.lastUpdated === "number" && typeof winConfig.lastUpdated === "number") {
+
+      // Priority Rule 2: If winner is ServerAPI or GitHub with valid data, prefer it over local device caches
+      // unless local cache is strictly newer with a valid timestamp
+      const isWinnerCentralized = winner.name === "ServerAPI" || winner.name === "GitHub";
+      const isCurLocalCache = current.name === "IndexedDB" || current.name === "Preloaded";
+
+      if (isWinnerCentralized && isCurLocalCache) {
+        // If centralized remote source has timestamp and cur local cache timestamp is older or equal, keep winner
+        if (typeof winConfig.lastUpdated === "number" && typeof curConfig.lastUpdated === "number") {
+          if (curConfig.lastUpdated > winConfig.lastUpdated + 2000) {
+            // Local cache is significantly newer than server
+            winner = current;
+          }
+        }
+        continue;
+      }
+
+      // Priority Rule 3: Timestamps comparison
+      if (typeof curConfig.lastUpdated === "number" && typeof winConfig.lastUpdated === "number") {
         if (curConfig.lastUpdated > winConfig.lastUpdated) {
           winner = current;
         }
       }
-      // Rule 3: If only one has timestamp, prefer it if it has at least as many fossils
+      // Priority Rule 4: If current has timestamp but winner does not, prefer current if it has data
       else if (typeof curConfig.lastUpdated === "number" && typeof winConfig.lastUpdated !== "number") {
         if (curCount >= winCount) {
           winner = current;
         }
-      } else if (typeof curConfig.lastUpdated !== "number" && typeof winConfig.lastUpdated === "number") {
-        if (curCount > winCount && winCount === 0) {
-          winner = current;
-        }
       }
-      // Rule 4: Compare item count
+      // Priority Rule 5: Compare fossil/sheet item count
       else {
         if (curCount > winCount) {
           winner = current;
@@ -241,7 +255,7 @@ export async function loadAppConfig(): Promise<AppConfig> {
 }
 
 export async function saveAppConfig(config: AppConfig): Promise<AppConfig> {
-  // Update timestamp to ensure this is treated as the latest source of truth!
+  // Update timestamp to ensure this is treated as the latest source of truth across all devices!
   const configWithTimestamp: AppConfig = {
     ...config,
     lastUpdated: Date.now(),
@@ -275,17 +289,17 @@ export async function saveAppConfig(config: AppConfig): Promise<AppConfig> {
 
   let finalConfig = configWithTimestamp;
 
-  // Save to backend (useful for keeping the AI Studio workspace in sync when editing)
-  if (!(window as any).__IS_STANDALONE__ && !(window as any).__SERVER_CONFIG_OFFLINE__) {
+  // Save to backend server API (ensures multi-device synchronization in real-time)
+  if (typeof window !== "undefined" && window.location.protocol.startsWith("http")) {
     try {
       const controller = new AbortController();
-      // Generous 30 seconds to save entire config file over slower networks
       const timeoutId = setTimeout(() => controller.abort(), 30000);
 
       const res = await fetch("/api/config", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Cache-Control": "no-cache",
         },
         body: JSON.stringify(configWithTimestamp),
         signal: controller.signal,
@@ -299,25 +313,15 @@ export async function saveAppConfig(config: AppConfig): Promise<AppConfig> {
             ...result.updatedConfig,
             lastUpdated: configWithTimestamp.lastUpdated, // preserve latest timestamp
           };
-          // Overwrite local memory with the slim version
           try {
             await set(LOCAL_STORAGE_KEY, finalConfig);
           } catch (e) {
             console.error("Failed to save slim config to idb:", e);
           }
         }
-      } else {
-        if (res.status === 404 || res.status === 502 || res.status === 503) {
-          (window as any).__SERVER_CONFIG_OFFLINE__ = true;
-        }
       }
     } catch (backendErr) {
-      // Fail silently and mark as offline in standalone mode
-      if ((backendErr as Error).name !== "AbortError") {
-        (window as any).__SERVER_CONFIG_OFFLINE__ = true;
-      } else {
-        console.warn("Config save request timed out after 30s");
-      }
+      console.warn("Server backend save notification:", backendErr);
     }
   }
 

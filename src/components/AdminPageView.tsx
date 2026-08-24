@@ -99,7 +99,15 @@ export default function AdminPageView({
   const [videoUrl1Input, setVideoUrl1Input] = useState(config.videoUrl1 || '');
   const [secondHomeTitleInput, setSecondHomeTitleInput] = useState(config.secondHomeTitle || '');
   const [scaleVideoUrlInput, setScaleVideoUrlInput] = useState(config.scaleVideoUrl || '');
+  const [mediaSaveNotice, setMediaSaveNotice] = useState<string | null>(null);
   const [isUploadingVideo, setIsUploadingVideo] = useState(false);
+
+  // Sync inputs with config changes
+  useEffect(() => {
+    setVideoUrl1Input(config.videoUrl1 || '');
+    setSecondHomeTitleInput(config.secondHomeTitle || '');
+    setScaleVideoUrlInput(config.scaleVideoUrl || '');
+  }, [config.videoUrl1, config.secondHomeTitle, config.scaleVideoUrl]);
 
   // Tools & Maintenance State
   const [isOptimizingImages, setIsOptimizingImages] = useState(false);
@@ -1204,6 +1212,21 @@ export default function AdminPageView({
         {activeTab === 'media' && (
           <div className="space-y-8 max-w-4xl mx-auto">
             
+            {mediaSaveNotice && (
+              <div className="p-4 rounded-xl bg-slate-900 border border-emerald-500/50 text-emerald-300 text-xs font-semibold flex items-center justify-between shadow-lg">
+                <div className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-emerald-400" />
+                  <span>{mediaSaveNotice}</span>
+                </div>
+                <button
+                  onClick={() => setMediaSaveNotice(null)}
+                  className="text-slate-400 hover:text-white text-xs px-2 py-0.5 rounded cursor-pointer"
+                >
+                  Fermer
+                </button>
+              </div>
+            )}
+
             {/* WELCOME VIDEO ZONE */}
             <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-5">
               <div className="flex items-center gap-3 pb-3 border-b border-slate-800">
@@ -1229,10 +1252,11 @@ export default function AdminPageView({
                   <button
                     onClick={async () => {
                       playDinoSound();
-                      await onUpdateConfig({ ...config, videoUrl1: videoUrl1Input });
-                      alert("✅ Vidéo d'accueil mise à jour !");
+                      await onUpdateConfig({ ...config, videoUrl1: videoUrl1Input.trim() });
+                      setMediaSaveNotice("✅ Vidéo d'accueil enregistrée et synchronisée avec le serveur et tous vos appareils !");
+                      setTimeout(() => setMediaSaveNotice(null), 5000);
                     }}
-                    className="bg-yellow-600 hover:bg-yellow-500 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs uppercase tracking-wider cursor-pointer"
+                    className="bg-yellow-600 hover:bg-yellow-500 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs uppercase tracking-wider cursor-pointer transition-all active:scale-95"
                   >
                     Enregistrer
                   </button>
@@ -1265,10 +1289,11 @@ export default function AdminPageView({
                   <button
                     onClick={async () => {
                       playDinoSound();
-                      await onUpdateConfig({ ...config, secondHomeTitle: secondHomeTitleInput });
-                      alert("✅ Titre mis à jour !");
+                      await onUpdateConfig({ ...config, secondHomeTitle: secondHomeTitleInput.trim() });
+                      setMediaSaveNotice("✅ Titre personnalisé mis à jour et synchronisé !");
+                      setTimeout(() => setMediaSaveNotice(null), 5000);
                     }}
-                    className="bg-yellow-600 hover:bg-yellow-500 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs uppercase tracking-wider cursor-pointer"
+                    className="bg-yellow-600 hover:bg-yellow-500 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs uppercase tracking-wider cursor-pointer transition-all active:scale-95"
                   >
                     Enregistrer
                   </button>
@@ -1301,10 +1326,11 @@ export default function AdminPageView({
                   <button
                     onClick={async () => {
                       playDinoSound();
-                      await onUpdateConfig({ ...config, scaleVideoUrl: scaleVideoUrlInput });
-                      alert("✅ Vidéo de la frise mise à jour !");
+                      await onUpdateConfig({ ...config, scaleVideoUrl: scaleVideoUrlInput.trim() });
+                      setMediaSaveNotice("✅ Vidéo de la frise mise à jour et synchronisée avec le serveur et tous vos appareils !");
+                      setTimeout(() => setMediaSaveNotice(null), 5000);
                     }}
-                    className="bg-yellow-600 hover:bg-yellow-500 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs uppercase tracking-wider cursor-pointer"
+                    className="bg-yellow-600 hover:bg-yellow-500 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs uppercase tracking-wider cursor-pointer transition-all active:scale-95"
                   >
                     Enregistrer
                   </button>
