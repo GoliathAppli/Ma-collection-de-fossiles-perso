@@ -42,6 +42,7 @@ function PrintImage({
           transform: `scale(${scale}) translate(${posX}%, ${posY}%)`,
           top: 0,
           left: 0,
+          backgroundColor: '#ffffff',
           WebkitPrintColorAdjust: 'exact',
           printColorAdjust: 'exact',
         }}
