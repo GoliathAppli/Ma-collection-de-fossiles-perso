@@ -72,14 +72,20 @@ export default function FossilPrintTemplate({ fossil }: FossilPrintTemplateProps
   const isMedium = totalLength > 1200 && !isDense;
 
   const textSize = isDense
-    ? 'text-[9px] leading-[1.3]'
+    ? 'text-[8.5px] leading-[1.28]'
     : isMedium
-    ? 'text-[9.5px] leading-[1.38]'
-    : 'text-[10.5px] leading-[1.45]';
+    ? 'text-[9.2px] leading-[1.34]'
+    : 'text-[10px] leading-[1.4]';
 
-  const cardPadding = isDense ? 'p-1.5' : isMedium ? 'p-2' : 'p-2.5';
-  const mainImageHeight = isDense ? 'h-[4.4cm]' : isMedium ? 'h-[5.2cm]' : 'h-[6.2cm]';
-  const subImageHeight = isDense ? 'h-[1.5cm]' : isMedium ? 'h-[1.8cm]' : 'h-[2.1cm]';
+  const cardPadding = isDense ? 'p-1.5' : isMedium ? 'p-2' : 'p-2';
+  const mainImageHeight = isDense ? 'h-[3.8cm]' : isMedium ? 'h-[4.4cm]' : 'h-[5.0cm]';
+  
+  // Dedicated larger heights for Scientific Anatomy & Collection Specimen observation
+  const morphoImageHeight = isDense ? 'h-[2.7cm]' : isMedium ? 'h-[3.2cm]' : 'h-[3.8cm]';
+  const obsSpecimenImageHeight = isDense ? 'h-[2.7cm]' : isMedium ? 'h-[3.2cm]' : 'h-[3.8cm]';
+  
+  // Secondary heights for other contextual sections (paleoecology & curiosities)
+  const contextImageHeight = isDense ? 'h-[1.3cm]' : isMedium ? 'h-[1.5cm]' : 'h-[1.8cm]';
 
   const datingText =
     fossil.periodeDatation ||
@@ -240,20 +246,25 @@ export default function FossilPrintTemplate({ fossil }: FossilPrintTemplateProps
 
             {/* Card B: Description Morphologique & Scientifique */}
             <div className="border border-slate-800 flex flex-col justify-between bg-white flex-1 min-h-0 relative shadow-sm">
-              <div className="bg-slate-900 text-white px-2.5 py-1 font-sans text-[8.5px] font-black uppercase tracking-wider border-b border-slate-800 shrink-0">
-                🔍 Caractéristiques Scientifiques & Anatomie
+              <div className="bg-slate-900 text-white px-2.5 py-1 font-sans text-[8.5px] font-black uppercase tracking-wider border-b border-slate-800 shrink-0 flex justify-between items-center">
+                <span>🔍 Caractéristiques Scientifiques & Anatomie</span>
+                <span className="text-[7px] text-slate-300 uppercase tracking-widest">Morphologie</span>
               </div>
               <div className={`${cardPadding} flex-1 flex flex-col justify-between gap-2 min-h-0`}>
                 <p className={`${textSize} text-slate-900 text-justify whitespace-pre-wrap flex-1 overflow-hidden`}>
                   {fossil.description || 'Description anatomique et morphologique certifiée par les archives paléontologiques.'}
                 </p>
                 {fossil.descImages && fossil.descImages.length > 0 && (
-                  <div className="flex gap-1.5 justify-center pt-1 border-t border-slate-100 shrink-0">
-                    {fossil.descImages.slice(0, 3).map((img, i) => (
-                      <div key={i} className={`border border-slate-300 p-0.5 bg-slate-50 rounded flex-1 max-w-[32%] ${subImageHeight}`}>
-                        <PrintImage settings={img} alt={`Morpho ${i + 1}`} className="w-full h-full" />
-                      </div>
-                    ))}
+                  <div className="flex gap-2 justify-center pt-1 border-t border-slate-200 shrink-0">
+                    {fossil.descImages.slice(0, 3).map((img, i) => {
+                      const count = Math.min(fossil.descImages!.length, 3);
+                      const widthClass = count === 1 ? 'w-full max-w-[85%]' : count === 2 ? 'w-1/2 max-w-[49%]' : 'flex-1 max-w-[32%]';
+                      return (
+                        <div key={i} className={`border border-slate-300 p-1 bg-slate-50 rounded ${widthClass} ${morphoImageHeight}`}>
+                          <PrintImage settings={img} alt={`Morpho ${i + 1}`} className="w-full h-full" />
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -276,7 +287,7 @@ export default function FossilPrintTemplate({ fossil }: FossilPrintTemplateProps
                 {fossil.dietImages && fossil.dietImages.length > 0 && (
                   <div className="flex gap-1.5 justify-center pt-1 border-t border-slate-100 shrink-0">
                     {fossil.dietImages.slice(0, 3).map((img, i) => (
-                      <div key={i} className={`border border-slate-300 p-0.5 bg-slate-50 rounded flex-1 max-w-[32%] ${subImageHeight}`}>
+                      <div key={i} className={`border border-slate-300 p-0.5 bg-slate-50 rounded flex-1 max-w-[32%] ${contextImageHeight}`}>
                         <PrintImage settings={img} alt={`Régime ${i + 1}`} className="w-full h-full" />
                       </div>
                     ))}
@@ -287,15 +298,16 @@ export default function FossilPrintTemplate({ fossil }: FossilPrintTemplateProps
 
             {/* Card D: Observations Particulières du Spécimen */}
             <div className="border border-slate-800 flex flex-col justify-between bg-white flex-1 min-h-0 relative shadow-sm">
-              <div className="bg-slate-900 text-white px-2.5 py-1 font-sans text-[8.5px] font-black uppercase tracking-wider border-b border-slate-800 shrink-0">
-                🔬 Observations du Spécimen de Collection
+              <div className="bg-slate-900 text-white px-2.5 py-1 font-sans text-[8.5px] font-black uppercase tracking-wider border-b border-slate-800 shrink-0 flex justify-between items-center">
+                <span>🔬 Observations du Spécimen de Collection</span>
+                <span className="text-[7px] text-amber-300 uppercase tracking-widest">Spécimen Réel</span>
               </div>
               <div className={`${cardPadding} flex-1 flex flex-col justify-between gap-2 min-h-0`}>
                 <p className={`${textSize} text-slate-900 text-justify whitespace-pre-wrap flex-1 overflow-hidden`}>
                   {fossil.leFossileText || 'Spécimen authentique présentant une fossilisation minérale intacte et une préservation remarquable.'}
                 </p>
                 {fossil.leFossileImage?.url && (
-                  <div className={`border border-slate-300 p-1 bg-slate-50 rounded mx-auto max-w-[85%] shrink-0 ${subImageHeight}`}>
+                  <div className={`border border-slate-300 p-1 bg-slate-50 rounded mx-auto w-full max-w-[95%] shrink-0 ${obsSpecimenImageHeight}`}>
                     <PrintImage settings={fossil.leFossileImage} alt="Observation Spécimen" className="w-full h-full" />
                   </div>
                 )}
@@ -312,7 +324,7 @@ export default function FossilPrintTemplate({ fossil }: FossilPrintTemplateProps
                   {fossil.saviezVousText || 'Spécimen remarquable témoignant de l’histoire biologique et géologique de notre planète.'}
                 </p>
                 {fossil.saviezVousImage?.url && (
-                  <div className={`border border-slate-300 p-1 bg-slate-50 rounded mx-auto max-w-[85%] shrink-0 ${subImageHeight}`}>
+                  <div className={`border border-slate-300 p-0.5 bg-slate-50 rounded mx-auto max-w-[70%] shrink-0 ${contextImageHeight}`}>
                     <PrintImage settings={fossil.saviezVousImage} alt="Curiosité" className="w-full h-full" />
                   </div>
                 )}
