@@ -125,11 +125,12 @@ export default function PwaInstallModal({ isOpen, onClose }: PwaInstallModalProp
             </div>
 
             <button
+              id="btn-modal-install-pwa"
               onClick={handleTriggerInstall}
               className="w-full sm:w-auto flex items-center justify-center gap-2 bg-yellow-500 hover:bg-yellow-400 text-slate-950 font-bold px-6 py-3 rounded-xl text-xs uppercase tracking-wider transition shadow-lg shadow-yellow-500/20 active:scale-95 cursor-pointer whitespace-nowrap"
             >
               <Download className="w-4 h-4" />
-              <span>{isInstalled ? "Réinstaller / Mettre à jour" : "Installer l'Application"}</span>
+              <span>{isInstalled ? "RÉINSTALLER L'APPLICATION" : "INSTALLER L'APPLICATION"}</span>
             </button>
           </div>
         </div>

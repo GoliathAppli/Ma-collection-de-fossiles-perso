@@ -48,17 +48,24 @@ export function registerServiceWorker() {
 
 // Global capture for beforeinstallprompt
 if (typeof window !== 'undefined') {
+  // Capture any existing prompt from index.html
+  if ((window as any).deferredPrompt) {
+    deferredPrompt = (window as any).deferredPrompt;
+  }
+
   window.addEventListener('beforeinstallprompt', (e: Event) => {
     e.preventDefault();
     deferredPrompt = e as BeforeInstallPromptEvent;
+    (window as any).deferredPrompt = deferredPrompt;
     listeners.forEach((fn) => fn());
     console.log('[PWA] beforeinstallprompt captured, app is installable');
   });
 
   window.addEventListener('appinstalled', () => {
     deferredPrompt = null;
+    (window as any).deferredPrompt = null;
     listeners.forEach((fn) => fn());
-    console.log('[PWA] App successfully installed!');
+    console.log('[PWA] App successfully installed in standalone mode!');
   });
 }
 
@@ -79,12 +86,21 @@ export function isIOSDevice(): boolean {
 }
 
 export async function triggerPWAInstall(): Promise<'accepted' | 'dismissed' | 'manual_ios' | 'unsupported'> {
-  if (deferredPrompt) {
+  const promptEvent: BeforeInstallPromptEvent | null =
+    deferredPrompt ||
+    (typeof window !== 'undefined' && (window as any).deferredPrompt ? (window as any).deferredPrompt : null);
+
+  if (promptEvent) {
     try {
-      await deferredPrompt.prompt();
-      const choice = await deferredPrompt.userChoice;
+      console.log('[PWA] Executing deferredPrompt.prompt()...');
+      await promptEvent.prompt();
+      const choice = await promptEvent.userChoice;
+      console.log('[PWA] User choice outcome:', choice.outcome);
       if (choice.outcome === 'accepted') {
         deferredPrompt = null;
+        if (typeof window !== 'undefined') {
+          (window as any).deferredPrompt = null;
+        }
         listeners.forEach((fn) => fn());
         return 'accepted';
       } else {

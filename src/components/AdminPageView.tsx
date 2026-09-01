@@ -1338,14 +1338,12 @@ export default function AdminPageView({
               {/* ACTION BUTTONS */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                 <button
-                  onClick={() => {
-                    playDinoSound();
-                    setShowPwaModal(true);
-                  }}
+                  id="btn-install-pwa"
+                  onClick={handlePwaInstallAction}
                   className="flex items-center justify-center gap-3 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-bold p-4 rounded-xl text-xs uppercase tracking-wider transition shadow-lg shadow-yellow-500/20 active:scale-95 cursor-pointer"
                 >
-                  <Smartphone className="w-5 h-5" />
-                  <span>Installer l'Application Mobile</span>
+                  <Download className="w-5 h-5" />
+                  <span>INSTALLER L'APPLICATION</span>
                 </button>
 
                 <button
