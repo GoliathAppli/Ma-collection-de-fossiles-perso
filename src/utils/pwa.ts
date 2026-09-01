@@ -15,18 +15,18 @@ const listeners = new Set<() => void>();
 
 export function registerServiceWorker() {
   if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
+    const doRegister = () => {
       navigator.serviceWorker
-        .register('/sw.js')
+        .register('/sw.js', { scope: '/' })
         .then((reg) => {
           console.log('[PWA] Service Worker registered with scope:', reg.scope);
-          // Check for update
+          // Check for updates
           reg.onupdatefound = () => {
             const installingWorker = reg.installing;
             if (installingWorker) {
               installingWorker.onstatechange = () => {
                 if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  console.log('[PWA] New version available, reloading or notifying.');
+                  console.log('[PWA] New version ready in cache.');
                 }
               };
             }
@@ -35,7 +35,14 @@ export function registerServiceWorker() {
         .catch((err) => {
           console.warn('[PWA] Service Worker registration failed:', err);
         });
-    });
+    };
+
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+      doRegister();
+    } else {
+      window.addEventListener('DOMContentLoaded', doRegister);
+      window.addEventListener('load', doRegister);
+    }
   }
 }
 

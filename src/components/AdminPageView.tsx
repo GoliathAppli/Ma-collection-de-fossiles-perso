@@ -1338,22 +1338,25 @@ export default function AdminPageView({
               {/* ACTION BUTTONS */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                 <button
-                  onClick={handlePwaInstallAction}
+                  onClick={() => {
+                    playDinoSound();
+                    setShowPwaModal(true);
+                  }}
                   className="flex items-center justify-center gap-3 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-bold p-4 rounded-xl text-xs uppercase tracking-wider transition shadow-lg shadow-yellow-500/20 active:scale-95 cursor-pointer"
                 >
-                  <Download className="w-5 h-5" />
-                  <span>{isInstalled ? "Réinstaller / Mettre à jour l'App" : "Télécharger & Installer l'App Mobile"}</span>
+                  <Smartphone className="w-5 h-5" />
+                  <span>Installer l'App & QR Code Mobile</span>
                 </button>
 
                 <button
                   onClick={() => {
                     playDinoSound();
-                    setShowPwaModal(true);
+                    window.open(window.location.origin, '_blank', 'noopener,noreferrer');
                   }}
                   className="flex items-center justify-center gap-3 bg-slate-950 hover:bg-slate-850 border border-slate-700 hover:border-amber-500/60 text-slate-200 font-bold p-4 rounded-xl text-xs uppercase tracking-wider transition active:scale-95 cursor-pointer"
                 >
-                  <Share2 className="w-5 h-5 text-amber-400" />
-                  <span>Guide Pas-à-Pas (Android, iPhone iOS, PC)</span>
+                  <ExternalLink className="w-5 h-5 text-amber-400" />
+                  <span>Ouvrir dans Chrome / Safari (Plein Écran)</span>
                 </button>
               </div>
             </div>
