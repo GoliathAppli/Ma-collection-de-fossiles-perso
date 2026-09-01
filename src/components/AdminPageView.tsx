@@ -1345,7 +1345,7 @@ export default function AdminPageView({
                   className="flex items-center justify-center gap-3 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-bold p-4 rounded-xl text-xs uppercase tracking-wider transition shadow-lg shadow-yellow-500/20 active:scale-95 cursor-pointer"
                 >
                   <Smartphone className="w-5 h-5" />
-                  <span>Installer l'App & QR Code Mobile</span>
+                  <span>Installer l'Application Mobile</span>
                 </button>
 
                 <button

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   Smartphone, 
   Download, 
@@ -8,15 +8,12 @@ import {
   X, 
   Sparkles, 
   Check, 
-  QrCode,
-  ExternalLink,
   FolderPlus,
-  Copy,
-  AlertCircle,
+  ExternalLink,
   ShieldCheck,
-  Zap
+  Zap,
+  HelpCircle
 } from 'lucide-react';
-import QRCode from 'qrcode';
 import { usePWAInstall } from '../utils/pwa';
 import { playDinoSound } from '../utils/data/audio';
 
@@ -32,26 +29,7 @@ export default function PwaInstallModal({ isOpen, onClose }: PwaInstallModalProp
     if (typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent)) return 'android';
     return 'android';
   });
-  const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>('');
-  const [copied, setCopied] = useState(false);
   const [installStatus, setInstallStatus] = useState<string | null>(null);
-
-  // Generate QR Code with the direct app URL
-  useEffect(() => {
-    if (isOpen && typeof window !== 'undefined') {
-      const url = window.location.origin;
-      QRCode.toDataURL(url, {
-        width: 256,
-        margin: 1.5,
-        color: {
-          dark: '#020617',
-          light: '#fde047'
-        }
-      })
-        .then(setQrCodeDataUrl)
-        .catch((err) => console.warn('QR Code generation failed:', err));
-    }
-  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -59,35 +37,24 @@ export default function PwaInstallModal({ isOpen, onClose }: PwaInstallModalProp
     playDinoSound();
     const result = await install();
     if (result === 'accepted') {
-      setInstallStatus('✅ L\'application a été installée avec succès dans votre tiroir d\'applications !');
+      setInstallStatus('✅ L\'application s\'installe sur votre téléphone et apparaîtra dans votre tiroir d\'applications !');
     } else if (result === 'manual_ios') {
       setSelectedOs('ios');
-      setInstallStatus('ℹ️ Sur iOS Safari, utilisez le bouton Partager ⎋ puis "Sur l\'écran d\'accueil".');
+      setInstallStatus('ℹ️ Sur iOS Safari, utilisez Partager ⎋ puis "Sur l\'écran d\'accueil".');
     } else if (result === 'dismissed') {
       setInstallStatus('Installation annulée. Vous pouvez relancer quand vous le souhaitez.');
     } else {
       if (inIframe) {
-        setInstallStatus('⚠️ Le navigateur bloque l\'installation directe depuis l\'aperçu intégré. Flashez le QR code ou ouvrez le lien dans un nouvel onglet.');
+        setInstallStatus('⚠️ Pour installer l\'application sur votre téléphone, ouvrez le lien dans votre navigateur mobile.');
       } else {
-        setInstallStatus('ℹ️ Suivez les instructions ci-dessous selon votre modèle de téléphone.');
+        setInstallStatus('ℹ️ Ouvrez le menu de votre navigateur (3 points ⋮) et choisissez "Installer l\'application".');
       }
-    }
-  };
-
-  const handleCopyUrl = async () => {
-    playDinoSound();
-    try {
-      await navigator.clipboard.writeText(window.location.origin);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
-    } catch (e) {
-      console.warn('Clipboard copy error:', e);
     }
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-fadeIn">
-      <div className="bg-slate-900 border border-slate-700/80 rounded-3xl max-w-2xl w-full p-6 sm:p-8 space-y-6 shadow-2xl relative text-slate-100 max-h-[90vh] overflow-y-auto">
+      <div className="bg-slate-900 border border-slate-700/80 rounded-3xl max-w-xl w-full p-6 sm:p-8 space-y-6 shadow-2xl relative text-slate-100 max-h-[90vh] overflow-y-auto">
         
         {/* CLOSE BUTTON */}
         <button
@@ -113,14 +80,14 @@ export default function PwaInstallModal({ isOpen, onClose }: PwaInstallModalProp
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <h2 className="text-xl font-bold text-white tracking-wide">
-                Installation Mobile (WebAPK & PWA)
+                Installation de l'Application
               </h2>
               <span className="text-[10px] uppercase font-mono px-2.5 py-0.5 rounded-full bg-yellow-500/20 text-yellow-400 border border-yellow-500/40 font-bold">
-                Véritable App
+                Application Complète
               </span>
             </div>
             <p className="text-xs text-slate-300 mt-1">
-              S'installe comme Facebook ou WhatsApp : intégrée au tiroir d'applications, reconnue par Android/iOS, et rangeable dans vos dossiers d'écran d'accueil.
+              Installation autonome dans la liste de vos applications smartphone, gérable dans les paramètres et rangeable dans vos dossiers d'applications.
             </p>
           </div>
         </div>
@@ -138,7 +105,7 @@ export default function PwaInstallModal({ isOpen, onClose }: PwaInstallModalProp
           </div>
         )}
 
-        {/* NATIVE 1-CLICK OR IFRAME HANDLING */}
+        {/* 1-CLICK ACTION */}
         <div className="bg-gradient-to-r from-yellow-950/40 via-slate-900 to-slate-900 border border-yellow-500/40 rounded-2xl p-5 space-y-4">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="space-y-1 text-center sm:text-left">
@@ -146,109 +113,58 @@ export default function PwaInstallModal({ isOpen, onClose }: PwaInstallModalProp
                 <Zap className="w-4 h-4 text-yellow-400" />
                 <h4 className="text-sm font-bold text-white">
                   {isInstalled 
-                    ? "Application Actuellement Installée" 
-                    : isInstallable 
-                      ? "Installation Immédiate en 1 Clic" 
-                      : "Installation Native sur Téléphone"}
+                    ? "Application Installée" 
+                    : "Installer sur votre appareil"}
                 </h4>
               </div>
               <p className="text-xs text-slate-300">
                 {isInstalled 
-                  ? "L'application fonctionne en mode autonome hors-ligne." 
-                  : isInstallable 
-                    ? "Votre navigateur est prêt : cliquez ci-contre pour générer le paquet d'application." 
-                    : "Pour une installation complète dans le tiroir d'applications, ouvrez l'application directement dans votre navigateur mobile."}
+                  ? "L'application est installée et accessible depuis votre liste d'applications." 
+                  : "Déclenchez l'installation pour l'ajouter à vos applications Android / iOS / PC."}
               </p>
             </div>
 
-            {isInstallable ? (
-              <button
-                onClick={handleTriggerInstall}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 bg-yellow-500 hover:bg-yellow-400 text-slate-950 font-bold px-6 py-3 rounded-xl text-xs uppercase tracking-wider transition shadow-lg shadow-yellow-500/20 active:scale-95 cursor-pointer whitespace-nowrap"
-              >
-                <Download className="w-4 h-4" />
-                <span>Installer Directement</span>
-              </button>
-            ) : (
-              <button
-                onClick={() => {
-                  playDinoSound();
-                  openInExternalBrowser();
-                }}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-5 py-3 rounded-xl text-xs uppercase tracking-wider transition active:scale-95 cursor-pointer whitespace-nowrap"
-                title="Ouvrir dans un nouvel onglet"
-              >
-                <ExternalLink className="w-4 h-4" />
-                <span>Ouvrir dans le Navigateur</span>
-              </button>
-            )}
+            <button
+              onClick={handleTriggerInstall}
+              className="w-full sm:w-auto flex items-center justify-center gap-2 bg-yellow-500 hover:bg-yellow-400 text-slate-950 font-bold px-6 py-3 rounded-xl text-xs uppercase tracking-wider transition shadow-lg shadow-yellow-500/20 active:scale-95 cursor-pointer whitespace-nowrap"
+            >
+              <Download className="w-4 h-4" />
+              <span>{isInstalled ? "Réinstaller / Mettre à jour" : "Installer l'Application"}</span>
+            </button>
           </div>
         </div>
 
-        {/* QR CODE & DIRECT LINK FOR SMARTPHONES */}
-        <div className="p-5 bg-slate-950 border border-slate-800 rounded-2xl space-y-4">
+        {/* EXPLANATION: VRAIE APPLICATION VS RACCOURCI */}
+        <div className="p-4 bg-slate-950 border border-slate-800 rounded-2xl space-y-3">
           <div className="flex items-center gap-2 text-yellow-400 text-xs font-bold uppercase tracking-wider">
-            <QrCode className="w-4 h-4" />
-            <span>Flasher avec l'appareil photo de votre smartphone</span>
+            <FolderPlus className="w-4 h-4" />
+            <span>Présence dans la liste des applications & Dossiers</span>
           </div>
-
-          <div className="flex flex-col sm:flex-row items-center gap-5">
-            {qrCodeDataUrl && (
-              <div className="p-2 bg-yellow-400 rounded-2xl shadow-xl flex-shrink-0">
-                <img 
-                  src={qrCodeDataUrl} 
-                  alt="QR Code Installation" 
-                  className="w-32 h-32 rounded-xl object-contain"
-                />
-              </div>
-            )}
-
-            <div className="space-y-3 text-xs text-slate-300 w-full">
-              <p>
-                Pointez l'appareil photo de votre téléphone sur ce QR code pour ouvrir l'application directement dans <strong>Chrome (Android)</strong> ou <strong>Safari (iPhone)</strong>.
-              </p>
-              
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={handleCopyUrl}
-                  className="flex items-center gap-2 bg-slate-900 hover:bg-slate-850 border border-slate-700 px-3 py-2 rounded-xl text-xs text-slate-200 transition cursor-pointer"
-                >
-                  {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-yellow-400" />}
-                  <span>{copied ? "Lien copié !" : "Copier le lien direct"}</span>
-                </button>
-
-                <button
-                  onClick={() => {
-                    playDinoSound();
-                    openInExternalBrowser();
-                  }}
-                  className="flex items-center gap-2 bg-slate-900 hover:bg-slate-850 border border-slate-700 px-3 py-2 rounded-xl text-xs text-slate-200 transition cursor-pointer"
-                >
-                  <ExternalLink className="w-3.5 h-3.5 text-sky-400" />
-                  <span>Nouvel onglet</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* WHY IT IS A TRUE APP & FOLDER STORAGE */}
-        <div className="p-4 bg-slate-950/70 border border-slate-800/80 rounded-2xl space-y-2 text-xs">
-          <div className="flex items-center gap-2 text-emerald-400 font-bold uppercase tracking-wider text-[11px]">
-            <FolderPlus className="w-4 h-4 text-yellow-400" />
-            <span>Rangement dans les dossiers d'applications :</span>
-          </div>
-          <p className="text-slate-300 text-[11px] leading-relaxed">
-            Sur Android, lors de l'installation depuis Chrome, le service <strong>WebAPK</strong> de Google compile l'application et l'ajoute directement dans la <strong>liste complète de vos applications</strong> (tiroir d'apps). Vous pouvez alors :
+          
+          <p className="text-xs text-slate-300 leading-relaxed">
+            Pour qu'Android crée une <strong>vraie application</strong> (dans le tiroir d'applications et les paramètres système) plutôt qu'un simple raccourci d'URL :
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] text-slate-300 pt-1">
-            <div className="flex items-center gap-2 p-2 bg-slate-900 rounded-lg border border-slate-800">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
-              <span>Maintenir l'icône et la glisser dans un dossier</span>
+
+          <div className="space-y-2 text-xs text-slate-300">
+            <div className="flex items-start gap-2 p-2.5 bg-slate-900 rounded-xl border border-slate-800">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+              <div>
+                <strong className="text-white">Dans Google Chrome :</strong> Appuyez sur le menu <span className="text-yellow-400 font-bold">⋮ (3 points)</span> et sélectionnez impérativement <strong className="text-yellow-400">"Installer l'application"</strong> (avec l'icône de téléchargement) et non pas "Ajouter un raccourci".
+              </div>
             </div>
-            <div className="flex items-center gap-2 p-2 bg-slate-900 rounded-lg border border-slate-800">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
-              <span>Retrouver l'application dans Paramètres &gt; Apps</span>
+
+            <div className="flex items-start gap-2 p-2.5 bg-slate-900 rounded-xl border border-slate-800">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+              <div>
+                <strong className="text-white">Validation système (WebAPK) :</strong> Android génère automatiquement le paquet de l'application. Elle apparaît instantanément dans la <strong>liste complète de vos applications</strong> (tiroir d'apps) et dans <em>Paramètres &gt; Applications</em>.
+              </div>
+            </div>
+
+            <div className="flex items-start gap-2 p-2.5 bg-slate-900 rounded-xl border border-slate-800">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+              <div>
+                <strong className="text-white">Rangement dans les dossiers :</strong> Vous pouvez glisser son icône dans n'importe quel dossier d'écran d'accueil exactement comme Facebook, WhatsApp ou vos jeux.
+              </div>
             </div>
           </div>
         </div>
@@ -256,7 +172,7 @@ export default function PwaInstallModal({ isOpen, onClose }: PwaInstallModalProp
         {/* OS SELECTOR TABS */}
         <div className="space-y-3">
           <label className="text-xs font-bold uppercase tracking-wider text-slate-400 block">
-            Instructions manuelles selon le modèle :
+            Instructions par plateforme :
           </label>
           <div className="grid grid-cols-3 gap-2 bg-slate-950 p-1.5 rounded-2xl border border-slate-800">
             <button
@@ -298,70 +214,70 @@ export default function PwaInstallModal({ isOpen, onClose }: PwaInstallModalProp
         </div>
 
         {/* TAB CONTENTS */}
-        <div className="bg-slate-950 border border-slate-800 rounded-2xl p-5 space-y-4 text-xs">
+        <div className="bg-slate-950 border border-slate-800 rounded-2xl p-4 space-y-3 text-xs">
           {selectedOs === 'android' && (
-            <div className="space-y-3">
-              <h3 className="font-bold text-white text-sm flex items-center gap-2 text-yellow-400">
+            <div className="space-y-2.5">
+              <h3 className="font-bold text-white text-xs flex items-center gap-2 text-yellow-400">
                 <Smartphone className="w-4 h-4" />
-                Installation sur Android (Google Chrome & Samsung Internet)
+                Procédure Android (Chrome ou Samsung Internet)
               </h3>
               
-              <ol className="space-y-2.5 text-slate-300">
+              <ol className="space-y-2 text-slate-300">
                 <li className="flex items-start gap-2.5">
                   <span className="flex-shrink-0 w-5 h-5 rounded-full bg-yellow-500/20 text-yellow-400 font-bold flex items-center justify-center text-xs">1</span>
-                  <div>Ouvrez l'application dans <strong className="text-white">Google Chrome</strong> (directement ou via le QR Code ci-dessus).</div>
+                  <div>Cliquez sur le bouton jaune <strong className="text-white">"Installer l'Application"</strong> ci-dessus.</div>
                 </li>
                 <li className="flex items-start gap-2.5">
                   <span className="flex-shrink-0 w-5 h-5 rounded-full bg-yellow-500/20 text-yellow-400 font-bold flex items-center justify-center text-xs">2</span>
-                  <div>Une invite <strong className="text-yellow-400">"Ajouter à l'écran d'accueil / Installer l'application"</strong> apparaît automatiquement en bas de l'écran, ou appuyez sur les <strong className="text-white">3 points ⋮</strong> en haut à droite.</div>
+                  <div>Si le bouton n'apparaît pas, ouvrez le menu Chrome <strong className="text-white">(3 points ⋮)</strong> et choisissez <strong className="text-yellow-400">"Installer l'application"</strong>.</div>
                 </li>
                 <li className="flex items-start gap-2.5">
                   <span className="flex-shrink-0 w-5 h-5 rounded-full bg-yellow-500/20 text-yellow-400 font-bold flex items-center justify-center text-xs">3</span>
-                  <div>Touchez <span className="font-bold text-white bg-slate-800 px-2 py-0.5 rounded border border-slate-700">"Installer l'application"</span>. Android génère le paquet natif et l'insère dans votre tiroir d'applications.</div>
+                  <div>Une fois l'installation terminée, l'application est présente dans le <strong>tiroir de toutes vos applications</strong>.</div>
                 </li>
               </ol>
             </div>
           )}
 
           {selectedOs === 'ios' && (
-            <div className="space-y-3">
-              <h3 className="font-bold text-white text-sm flex items-center gap-2 text-yellow-400">
+            <div className="space-y-2.5">
+              <h3 className="font-bold text-white text-xs flex items-center gap-2 text-yellow-400">
                 <Share2 className="w-4 h-4" />
-                Apple iPhone & iPad (Safari)
+                Procédure iPhone & iPad (Safari)
               </h3>
               
-              <ol className="space-y-2.5 text-slate-300">
+              <ol className="space-y-2 text-slate-300">
                 <li className="flex items-start gap-2.5">
                   <span className="flex-shrink-0 w-5 h-5 rounded-full bg-yellow-500/20 text-yellow-400 font-bold flex items-center justify-center text-xs">1</span>
-                  <div>Ouvrez le lien dans le navigateur <strong className="text-white">Safari</strong> d'Apple (via le QR Code).</div>
+                  <div>Ouvrez l'application dans <strong className="text-white">Safari</strong>.</div>
                 </li>
                 <li className="flex items-start gap-2.5">
                   <span className="flex-shrink-0 w-5 h-5 rounded-full bg-yellow-500/20 text-yellow-400 font-bold flex items-center justify-center text-xs">2</span>
-                  <div>Touchez le bouton de <strong className="text-white">Partage</strong> (icône <span className="text-yellow-400 font-mono">⎋</span> en bas).</div>
+                  <div>Touchez l'icône <strong className="text-white">Partager ⎋</strong> en bas de l'écran.</div>
                 </li>
                 <li className="flex items-start gap-2.5">
                   <span className="flex-shrink-0 w-5 h-5 rounded-full bg-yellow-500/20 text-yellow-400 font-bold flex items-center justify-center text-xs">3</span>
-                  <div>Faites défiler et choisissez <span className="font-bold text-white bg-slate-800 px-2 py-0.5 rounded border border-slate-700">"Sur l'écran d'accueil" ⊞</span> puis <strong className="text-white">"Ajouter"</strong>.</div>
+                  <div>Sélectionnez <strong className="text-white">"Sur l'écran d'accueil" ⊞</strong> puis validez avec <strong className="text-yellow-400">"Ajouter"</strong>.</div>
                 </li>
               </ol>
             </div>
           )}
 
           {selectedOs === 'desktop' && (
-            <div className="space-y-3">
-              <h3 className="font-bold text-white text-sm flex items-center gap-2 text-yellow-400">
+            <div className="space-y-2.5">
+              <h3 className="font-bold text-white text-xs flex items-center gap-2 text-yellow-400">
                 <Laptop className="w-4 h-4" />
-                Ordinateur (Chrome, Edge, Brave)
+                Procédure PC / Mac
               </h3>
               
-              <ol className="space-y-2.5 text-slate-300">
+              <ol className="space-y-2 text-slate-300">
                 <li className="flex items-start gap-2.5">
                   <span className="flex-shrink-0 w-5 h-5 rounded-full bg-yellow-500/20 text-yellow-400 font-bold flex items-center justify-center text-xs">1</span>
-                  <div>Cliquez sur l'icône d'installation dans la barre d'adresse du navigateur en haut à droite.</div>
+                  <div>Cliquez sur <strong className="text-white">"Installer l'Application"</strong> ou sur l'icône d'installation dans la barre d'adresse de votre navigateur.</div>
                 </li>
                 <li className="flex items-start gap-2.5">
                   <span className="flex-shrink-0 w-5 h-5 rounded-full bg-yellow-500/20 text-yellow-400 font-bold flex items-center justify-center text-xs">2</span>
-                  <div>Confirmez pour lancer l'application en fenêtre indépendante sur votre bureau.</div>
+                  <div>L'application s'ouvrira dans sa propre fenêtre indépendante sur votre bureau.</div>
                 </li>
               </ol>
             </div>
@@ -372,7 +288,7 @@ export default function PwaInstallModal({ isOpen, onClose }: PwaInstallModalProp
         <div className="flex justify-between items-center pt-2 border-t border-slate-800">
           <span className="text-[11px] text-slate-400 flex items-center gap-1.5">
             <ShieldCheck className="w-4 h-4 text-emerald-400" />
-            Compatible hors-ligne & WebAPK
+            PWA & WebAPK
           </span>
           <button
             onClick={onClose}
