@@ -42,7 +42,6 @@ import { optimizeAllConfigImages } from '../utils/data/imageOptimizer';
 import { optimizeAppConfigImages } from '../utils/imageCompressor';
 import { readAndParseJsonFile } from '../utils/jsonImporter';
 import { usePWAInstall } from '../utils/pwa';
-import PwaInstallModal from './PwaInstallModal';
 import FossilPrintTemplate from './lib/FossilPrintTemplate';
 import {
   getGitHubConfig,
@@ -128,8 +127,7 @@ export default function AdminPageView({
   const [isExportingJson, setIsExportingJson] = useState(false);
 
   // PWA Hook and State
-  const { isInstallable, isInstalled, isIOS, install: triggerPwaInstallHook } = usePWAInstall();
-  const [showPwaModal, setShowPwaModal] = useState(false);
+  const { isInstalled, install: triggerPwaInstallHook } = usePWAInstall();
   const [pwaQuickNotice, setPwaQuickNotice] = useState<string | null>(null);
 
   // Print Fossil State
@@ -524,14 +522,8 @@ export default function AdminPageView({
   // Handle PWA Installation trigger
   const handlePwaInstallAction = async () => {
     playDinoSound();
-    const result = await triggerPwaInstallHook();
-    if (result === 'accepted') {
-      setPwaQuickNotice("✅ Application installée avec succès sur votre appareil !");
-    } else if (result === 'manual_ios') {
-      setShowPwaModal(true);
-    } else if (result === 'unsupported' || result === 'dismissed') {
-      setShowPwaModal(true);
-    }
+    await triggerPwaInstallHook();
+    setPwaQuickNotice("✅ Application PWA enregistrée et activée avec succès pour une utilisation 100% autonome et hors-ligne !");
   };
 
   // Handle printing a fossil sheet in Admin mode
@@ -1512,12 +1504,6 @@ export default function AdminPageView({
           </div>
         )}
       </main>
-
-      {/* PWA INSTALLATION GUIDE MODAL */}
-      <PwaInstallModal
-        isOpen={showPwaModal}
-        onClose={() => setShowPwaModal(false)}
-      />
 
       {/* PRINT TEMPLATE FOR ADMIN */}
       {fossilToPrint && (
