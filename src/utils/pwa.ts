@@ -79,15 +79,24 @@ export async function triggerPWAInstall(): Promise<'accepted' | 'dismissed' | 's
     return 'standalone';
   }
 
-  // 2. Ensure Service Worker is registered
-  if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
-    try {
-      await navigator.serviceWorker.register('/sw.js', { scope: '/' });
-      if (navigator.storage && navigator.storage.persist) {
-        await navigator.storage.persist();
+  // 2. Ensure Service Worker is registered & request Persistent Storage permission
+  if (typeof window !== 'undefined') {
+    if ('serviceWorker' in navigator) {
+      try {
+        await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+      } catch {
+        // Ignored
       }
-    } catch {
-      // Ignored
+    }
+    
+    // Explicitly request persistent storage permissions (Autorisation d'écriture/stockage permanent Chrome)
+    if (navigator.storage && navigator.storage.persist) {
+      try {
+        const isPersisted = await navigator.storage.persist();
+        console.log('[PWA] Storage permission persistent:', isPersisted);
+      } catch (err) {
+        console.warn('[PWA] Storage persist error:', err);
+      }
     }
   }
 
