@@ -596,8 +596,9 @@ async function startServer() {
     }
   });
 
-  // Serve custom public/icons, public/images and public/data statically
+  // Serve custom public/icons, public/screenshots, public/images and public/data statically
   app.use("/icons", express.static(path.join(process.cwd(), "public", "icons")));
+  app.use("/screenshots", express.static(path.join(process.cwd(), "public", "screenshots")));
   app.use("/images", express.static(path.join(process.cwd(), "public", "images")));
   app.use("/data", express.static(path.join(process.cwd(), "public", "data")));
 

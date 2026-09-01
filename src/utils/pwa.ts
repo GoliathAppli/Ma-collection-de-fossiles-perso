@@ -96,16 +96,33 @@ export async function triggerPWAInstall(): Promise<'accepted' | 'dismissed' | 'm
   return 'unsupported';
 }
 
+export function isInsideIframe(): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    return window.self !== window.top;
+  } catch (e) {
+    return true;
+  }
+}
+
+export function openInExternalBrowser() {
+  if (typeof window !== 'undefined') {
+    window.open(window.location.href, '_blank', 'noopener,noreferrer');
+  }
+}
+
 export function usePWAInstall() {
   const [isInstallable, setIsInstallable] = useState<boolean>(!!deferredPrompt);
   const [isInstalled, setIsInstalled] = useState<boolean>(isAppStandalone());
   const [isIOS, setIsIOS] = useState<boolean>(isIOSDevice());
+  const [inIframe, setInIframe] = useState<boolean>(isInsideIframe());
 
   useEffect(() => {
     const update = () => {
       setIsInstallable(!!deferredPrompt);
       setIsInstalled(isAppStandalone());
       setIsIOS(isIOSDevice());
+      setInIframe(isInsideIframe());
     };
 
     update();
@@ -129,6 +146,8 @@ export function usePWAInstall() {
     isInstallable,
     isInstalled,
     isIOS,
-    install
+    inIframe,
+    install,
+    openInExternalBrowser
   };
 }

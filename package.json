@@ -37,6 +37,7 @@
     "@vitejs/plugin-legacy": "^8.0.2",
     "autoprefixer": "^10.4.21",
     "esbuild": "^0.25.12",
+    "sharp": "^0.35.4",
     "shx": "^0.4.0",
     "tailwindcss": "^4.1.14",
     "tsx": "^4.22.4",

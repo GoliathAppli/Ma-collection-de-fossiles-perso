@@ -1,5 +1,5 @@
 // Conservatoire de Fossiles - Service Worker for PWA & Offline Support
-const CACHE_NAME = 'fossiles-pwa-v1';
+const CACHE_NAME = 'fossiles-pwa-v2';
 
 const PRECACHE_ASSETS = [
   '/',
@@ -7,13 +7,21 @@ const PRECACHE_ASSETS = [
   '/manifest.webmanifest',
   '/manifest.json',
   '/icons/icon.svg',
+  '/icons/icon-48x48.png',
+  '/icons/icon-72x72.png',
+  '/icons/icon-96x96.png',
+  '/icons/icon-128x128.png',
+  '/icons/icon-144x144.png',
   '/icons/icon-192x192.png',
+  '/icons/icon-384x384.png',
   '/icons/icon-512x512.png',
   '/icons/icon-maskable-192x192.png',
   '/icons/icon-maskable-512x512.png',
   '/icons/apple-touch-icon.png',
   '/icons/favicon.png',
   '/favicon.ico',
+  '/screenshots/screenshot-mobile.png',
+  '/screenshots/screenshot-desktop.png',
   '/data/fossiles.json'
 ];
 
