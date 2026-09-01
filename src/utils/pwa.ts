@@ -73,10 +73,41 @@ export function isIOSDevice(): boolean {
   );
 }
 
-export async function triggerPWAInstall(): Promise<'accepted' | 'dismissed' | 'standalone' | 'opened_top'> {
-  // 1. If already installed and running standalone
-  if (isAppStandalone()) {
-    return 'standalone';
+export async function triggerPWAInstall(): Promise<'accepted' | 'downloaded' | 'standalone'> {
+  // 1. Trigger direct file download in Chrome
+  try {
+    const link = document.createElement('a');
+    link.href = '/api/download-app';
+    link.download = 'Conservatoire_de_Fossiles.html';
+    link.target = '_blank';
+    document.body.appendChild(link);
+    link.click();
+    setTimeout(() => {
+      if (document.body.contains(link)) {
+        document.body.removeChild(link);
+      }
+    }, 1000);
+  } catch (downloadErr) {
+    console.warn('[PWA] Direct link download failed, trying fetch fallback:', downloadErr);
+    try {
+      const resp = await fetch('/api/download-app');
+      const blob = await resp.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = 'Conservatoire_de_Fossiles.html';
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      setTimeout(() => {
+        if (document.body.contains(a)) {
+          document.body.removeChild(a);
+        }
+      }, 1000);
+    } catch (fetchErr) {
+      console.warn('[PWA] Fetch download fallback warning:', fetchErr);
+    }
   }
 
   // 2. Ensure Service Worker is registered & request Persistent Storage permission
@@ -100,14 +131,7 @@ export async function triggerPWAInstall(): Promise<'accepted' | 'dismissed' | 's
     }
   }
 
-  // 3. If inside an iframe (like AI Studio preview), browser security restricts native install prompt
-  // Opening the direct top-level URL allows Chrome on Android / Desktop to immediately trigger the WebAPK dialog
-  if (isInsideIframe()) {
-    window.open(window.location.origin || window.location.href, '_blank', 'noopener,noreferrer');
-    return 'opened_top';
-  }
-
-  // 4. Trigger native Chrome WebAPK install prompt if captured
+  // 3. Trigger native Chrome WebAPK install prompt if captured
   const promptEvent: BeforeInstallPromptEvent | null =
     deferredPrompt || (typeof window !== 'undefined' ? (window as any).deferredPrompt : null);
 
@@ -119,13 +143,13 @@ export async function triggerPWAInstall(): Promise<'accepted' | 'dismissed' | 's
       if (typeof window !== 'undefined') {
         (window as any).deferredPrompt = null;
       }
-      return choice.outcome === 'accepted' ? 'accepted' : 'dismissed';
+      return choice.outcome === 'accepted' ? 'accepted' : 'downloaded';
     } catch (e) {
       console.warn('[PWA] Error launching prompt:', e);
     }
   }
 
-  return 'accepted';
+  return 'downloaded';
 }
 
 export function isInsideIframe(): boolean {
