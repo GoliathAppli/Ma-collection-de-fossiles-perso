@@ -32,8 +32,9 @@
   <body class="bg-slate-950 text-slate-100">
     <div id="root"></div>
     
-    <!-- PWA Service Worker Registration -->
+    <!-- PWA Service Worker & Native Install Prompt Integration -->
     <script>
+      // 1. Enregistrement direct du Service Worker
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', function() {
           navigator.serviceWorker.register('/sw.js', { scope: '/' })
@@ -45,6 +46,20 @@
             });
         });
       }
+
+      // 2. Capture de l'événement natif Chrome pour installation WebAPK
+      window.deferredPrompt = null;
+      window.addEventListener('beforeinstallprompt', function(e) {
+        e.preventDefault();
+        window.deferredPrompt = e;
+        console.log('[PWA] Prompt d\'installation natif prêt');
+        window.dispatchEvent(new CustomEvent('pwa-ready-to-install'));
+      });
+
+      window.addEventListener('appinstalled', function() {
+        window.deferredPrompt = null;
+        console.log('[PWA] Application installée en tant qu\'application autonome');
+      });
     </script>
 
     <script type="module" src="/src/main.tsx"></script>

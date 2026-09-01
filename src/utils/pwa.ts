@@ -1,5 +1,36 @@
 import { useState, useEffect } from 'react';
 
+// Capture interface for native Chrome beforeinstallprompt
+export interface BeforeInstallPromptEvent extends Event {
+  readonly platforms: string[];
+  readonly userChoice: Promise<{
+    outcome: 'accepted' | 'dismissed';
+    platform: string;
+  }>;
+  prompt(): Promise<void>;
+}
+
+let deferredPrompt: BeforeInstallPromptEvent | null = null;
+
+if (typeof window !== 'undefined') {
+  if ((window as any).deferredPrompt) {
+    deferredPrompt = (window as any).deferredPrompt;
+  }
+
+  window.addEventListener('beforeinstallprompt', (e: Event) => {
+    e.preventDefault();
+    deferredPrompt = e as BeforeInstallPromptEvent;
+    (window as any).deferredPrompt = deferredPrompt;
+  });
+
+  window.addEventListener('appinstalled', () => {
+    deferredPrompt = null;
+    if (typeof window !== 'undefined') {
+      (window as any).deferredPrompt = null;
+    }
+  });
+}
+
 export function registerServiceWorker() {
   if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
     const doRegister = async () => {
@@ -42,27 +73,50 @@ export function isIOSDevice(): boolean {
   );
 }
 
-export async function triggerPWAInstall(): Promise<'activated' | 'standalone'> {
-  if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
-    try {
-      const reg = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
-      if (reg.update) {
-        await reg.update();
-      }
-      if (navigator.storage && navigator.storage.persist) {
-        await navigator.storage.persist();
-      }
-    } catch (e) {
-      console.warn('[PWA] Registration:', e);
-    }
-  }
-
-  // If already standalone
+export async function triggerPWAInstall(): Promise<'accepted' | 'dismissed' | 'standalone' | 'opened_top'> {
+  // 1. If already installed and running standalone
   if (isAppStandalone()) {
     return 'standalone';
   }
 
-  return 'activated';
+  // 2. Ensure Service Worker is registered
+  if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+    try {
+      await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+      if (navigator.storage && navigator.storage.persist) {
+        await navigator.storage.persist();
+      }
+    } catch {
+      // Ignored
+    }
+  }
+
+  // 3. If inside an iframe (like AI Studio preview), browser security restricts native install prompt
+  // Opening the direct top-level URL allows Chrome on Android / Desktop to immediately trigger the WebAPK dialog
+  if (isInsideIframe()) {
+    window.open(window.location.origin || window.location.href, '_blank', 'noopener,noreferrer');
+    return 'opened_top';
+  }
+
+  // 4. Trigger native Chrome WebAPK install prompt if captured
+  const promptEvent: BeforeInstallPromptEvent | null =
+    deferredPrompt || (typeof window !== 'undefined' ? (window as any).deferredPrompt : null);
+
+  if (promptEvent) {
+    try {
+      await promptEvent.prompt();
+      const choice = await promptEvent.userChoice;
+      deferredPrompt = null;
+      if (typeof window !== 'undefined') {
+        (window as any).deferredPrompt = null;
+      }
+      return choice.outcome === 'accepted' ? 'accepted' : 'dismissed';
+    } catch (e) {
+      console.warn('[PWA] Error launching prompt:', e);
+    }
+  }
+
+  return 'accepted';
 }
 
 export function isInsideIframe(): boolean {
