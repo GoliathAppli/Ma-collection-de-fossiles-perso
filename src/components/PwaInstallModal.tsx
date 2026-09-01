@@ -15,18 +15,9 @@ export default function PwaInstallModal({ isOpen, onClose }: PwaInstallModalProp
 
   const handleDirectDownload = async () => {
     playDinoSound();
-
-    // 1. Trigger direct file download
-    const link = document.createElement('a');
-    link.href = '/api/download-app';
-    link.download = 'Conservatoire_de_Fossiles.html';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    // 2. Trigger native prompt if available
     try {
       await install();
+      onClose();
     } catch {
       // Ignored
     }
@@ -63,7 +54,7 @@ export default function PwaInstallModal({ isOpen, onClose }: PwaInstallModalProp
           </h2>
         </div>
 
-        {/* DIRECT DOWNLOAD BUTTON */}
+        {/* DIRECT INSTALL BUTTON */}
         <div className="pt-2 pb-2">
           <button
             id="btn-modal-direct-download"
@@ -71,7 +62,7 @@ export default function PwaInstallModal({ isOpen, onClose }: PwaInstallModalProp
             className="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black p-4.5 rounded-2xl text-sm uppercase tracking-wider transition shadow-xl shadow-yellow-500/25 active:scale-95 cursor-pointer border border-yellow-300/50"
           >
             <Download className="w-6 h-6 stroke-[2.5]" />
-            <span>TÉLÉCHARGER L'APPLICATION</span>
+            <span>INSTALLER L'APPLICATION</span>
           </button>
         </div>
 
@@ -79,7 +70,7 @@ export default function PwaInstallModal({ isOpen, onClose }: PwaInstallModalProp
         <div className="flex justify-between items-center pt-3 border-t border-slate-800 text-xs text-slate-400">
           <span className="flex items-center gap-1.5 text-emerald-400 font-semibold">
             <CheckCircle2 className="w-4 h-4" />
-            Téléchargement direct
+            Application Autonome (PWA)
           </span>
           <button
             onClick={onClose}

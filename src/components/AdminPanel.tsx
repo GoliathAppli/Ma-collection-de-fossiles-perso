@@ -25,19 +25,7 @@ export default function AdminPanel({
 
   const handlePwaInstall = async () => {
     playDinoSound();
-    // Direct file download
-    const link = document.createElement('a');
-    link.href = '/api/download-app';
-    link.download = 'Conservatoire_de_Fossiles.html';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    try {
-      await install();
-    } catch {
-      // Ignored
-    }
+    await install();
   };
 
   const handleLogin = (e: React.FormEvent) => {

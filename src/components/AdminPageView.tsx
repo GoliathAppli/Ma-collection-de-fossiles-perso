@@ -521,23 +521,16 @@ export default function AdminPageView({
     }
   };
 
-  // Handle PWA Direct Download trigger
+  // Handle PWA Installation trigger
   const handlePwaInstallAction = async () => {
     playDinoSound();
-    
-    // 1. Direct file download
-    const link = document.createElement('a');
-    link.href = '/api/download-app';
-    link.download = 'Conservatoire_de_Fossiles.html';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    // 2. Also attempt PWA native prompt
-    try {
-      await triggerPwaInstallHook();
-    } catch {
-      // Ignored
+    const result = await triggerPwaInstallHook();
+    if (result === 'accepted') {
+      setPwaQuickNotice("✅ Application installée avec succès sur votre appareil !");
+    } else if (result === 'manual_ios') {
+      setShowPwaModal(true);
+    } else if (result === 'unsupported' || result === 'dismissed') {
+      setShowPwaModal(true);
     }
   };
 
@@ -1268,7 +1261,7 @@ export default function AdminPageView({
               </div>
             </div>
 
-            {/* SECTION 3: APPLICATION MOBILE (TÉLÉCHARGEMENT DIRECT) */}
+            {/* SECTION 3: APPLICATION MOBILE (PWA) */}
             <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-amber-950/30 border border-amber-500/40 rounded-2xl p-6 sm:p-8 space-y-6 shadow-2xl relative overflow-hidden">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
                 <div className="flex items-center gap-3">
@@ -1277,14 +1270,26 @@ export default function AdminPageView({
                   </div>
                   <div>
                     <h2 className="text-xl font-bold text-white">
-                      Téléchargement de l'Application
+                      Installation de l'Application Mobile (PWA)
                     </h2>
                     <p className="text-xs text-slate-300 mt-0.5">
-                      Téléchargez directement l'application sur votre appareil pour une utilisation autonome et 100% hors-ligne.
+                      Installez directement l'application sur votre smartphone ou tablette (Android / iOS) comme une véritable application autonome fonctionnant hors-ligne.
                     </p>
                   </div>
                 </div>
               </div>
+
+              {pwaQuickNotice && (
+                <div className="p-3.5 bg-emerald-950/60 border border-emerald-600/70 rounded-xl text-emerald-200 text-xs font-semibold flex items-center justify-between">
+                  <span>{pwaQuickNotice}</span>
+                  <button 
+                    onClick={() => setPwaQuickNotice(null)}
+                    className="text-slate-400 hover:text-white text-[11px] underline ml-2 cursor-pointer"
+                  >
+                    OK
+                  </button>
+                </div>
+              )}
 
               {/* ACTION BUTTON */}
               <div className="pt-2">
@@ -1294,7 +1299,7 @@ export default function AdminPageView({
                   className="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black p-5 rounded-2xl text-sm uppercase tracking-wider transition shadow-xl shadow-yellow-500/20 active:scale-95 cursor-pointer border border-yellow-300/40"
                 >
                   <Download className="w-6 h-6 stroke-[2.5]" />
-                  <span>TÉLÉCHARGER L'APPLICATION</span>
+                  <span>INSTALLER L'APPLICATION</span>
                 </button>
               </div>
             </div>

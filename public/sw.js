@@ -1,5 +1,5 @@
 // Conservatoire de Fossiles - Service Worker for PWA & Offline Support
-const CACHE_NAME = 'fossiles-pwa-v2';
+const CACHE_NAME = 'fossiles-pwa-v3';
 
 const PRECACHE_ASSETS = [
   '/',
@@ -21,8 +21,7 @@ const PRECACHE_ASSETS = [
   '/icons/favicon.png',
   '/favicon.ico',
   '/screenshots/screenshot-mobile.png',
-  '/screenshots/screenshot-desktop.png',
-  '/data/fossiles.json'
+  '/screenshots/screenshot-desktop.png'
 ];
 
 // Install: Cache essential core shell assets immediately
