@@ -114,8 +114,8 @@ async function startServer() {
     }
   });
 
-  // Direct download route for the user
-  app.get("/telecharger", (req, res) => {
+  // Direct download route for the user (Offline / Standalone Application File)
+  app.get(["/telecharger", "/api/download-app", "/download-app", "/Conservatoire_de_Fossiles.apk"], (req, res) => {
     const htmlPath = path.join(process.cwd(), "Mon_Exposition_Fossiles.html");
     if (fs.existsSync(htmlPath)) {
       try {
@@ -148,8 +148,12 @@ async function startServer() {
           htmlContent = htmlContent.replace('</head>', `${newScript}</head>`);
         }
 
-        res.setHeader("Content-Type", "text/html; charset=utf-8");
-        res.setHeader("Content-Disposition", 'attachment; filename="Mon_Exposition_Fossiles.html"');
+        const isApkRequest = req.path.includes(".apk");
+        const filename = isApkRequest ? "Conservatoire_de_Fossiles.apk" : "Conservatoire_de_Fossiles.html";
+        const contentType = isApkRequest ? "application/vnd.android.package-archive" : "text/html; charset=utf-8";
+
+        res.setHeader("Content-Type", contentType);
+        res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
         res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
         res.setHeader("Pragma", "no-cache");
         res.setHeader("Expires", "0");

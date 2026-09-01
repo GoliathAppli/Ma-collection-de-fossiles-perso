@@ -521,16 +521,23 @@ export default function AdminPageView({
     }
   };
 
-  // Handle PWA Installation trigger
+  // Handle PWA Direct Download trigger
   const handlePwaInstallAction = async () => {
     playDinoSound();
-    const result = await triggerPwaInstallHook();
-    if (result === 'accepted') {
-      setPwaQuickNotice("✅ Application PWA installée avec succès sur votre appareil !");
-    } else if (result === 'manual_ios') {
-      setShowPwaModal(true);
-    } else if (result === 'unsupported' || result === 'dismissed') {
-      setShowPwaModal(true);
+    
+    // 1. Direct file download
+    const link = document.createElement('a');
+    link.href = '/api/download-app';
+    link.download = 'Conservatoire_de_Fossiles.html';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    // 2. Also attempt PWA native prompt
+    try {
+      await triggerPwaInstallHook();
+    } catch {
+      // Ignored
     }
   };
 
@@ -1261,7 +1268,7 @@ export default function AdminPageView({
               </div>
             </div>
 
-            {/* SECTION 3: APPLICATION MOBILE & PROGRESSIVE WEB APP (PWA) */}
+            {/* SECTION 3: APPLICATION MOBILE (TÉLÉCHARGEMENT DIRECT) */}
             <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-amber-950/30 border border-amber-500/40 rounded-2xl p-6 sm:p-8 space-y-6 shadow-2xl relative overflow-hidden">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
                 <div className="flex items-center gap-3">
@@ -1269,92 +1276,25 @@ export default function AdminPageView({
                     <Smartphone className="w-8 h-8" />
                   </div>
                   <div>
-                    <div className="flex items-center gap-2">
-                      <h2 className="text-xl font-bold text-white">
-                        Application Mobile & PWA (Installation Directe)
-                      </h2>
-                      <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-700/50 font-semibold">
-                        Hors-Ligne 100%
-                      </span>
-                    </div>
+                    <h2 className="text-xl font-bold text-white">
+                      Téléchargement de l'Application
+                    </h2>
                     <p className="text-xs text-slate-300 mt-0.5">
-                      Installez l'application sur smartphone (Android / iPhone) ou ordinateur. Elle se range dans vos applications mobiles et fonctionne sans internet.
+                      Téléchargez directement l'application sur votre appareil pour une utilisation autonome et 100% hors-ligne.
                     </p>
                   </div>
                 </div>
-
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] px-3 py-1 rounded-full bg-slate-950 border border-slate-800 text-slate-300 font-mono">
-                    {isInstalled ? "Statut : Application Installée" : "Statut : Prête à l'installation"}
-                  </span>
-                </div>
               </div>
 
-              {pwaQuickNotice && (
-                <div className="p-3.5 bg-emerald-950/60 border border-emerald-600/70 rounded-xl text-emerald-200 text-xs font-semibold flex items-center justify-between">
-                  <span>{pwaQuickNotice}</span>
-                  <button 
-                    onClick={() => setPwaQuickNotice(null)}
-                    className="text-slate-400 hover:text-white text-[11px] underline ml-2 cursor-pointer"
-                  >
-                    OK
-                  </button>
-                </div>
-              )}
-
-              {/* FEATURES HIGHLIGHTS */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-4 bg-slate-950/80 rounded-xl border border-slate-800 space-y-1.5">
-                  <div className="flex items-center gap-2 text-amber-400 text-xs font-bold uppercase tracking-wider">
-                    <Smartphone className="w-4 h-4" />
-                    Véritable Application Mobile
-                  </div>
-                  <p className="text-[11px] text-slate-300">
-                    S'installe sur votre écran d'accueil et dans votre tiroir d'applications avec son icône dorée officielle.
-                  </p>
-                </div>
-
-                <div className="p-4 bg-slate-950/80 rounded-xl border border-slate-800 space-y-1.5">
-                  <div className="flex items-center gap-2 text-emerald-400 text-xs font-bold uppercase tracking-wider">
-                    <CheckCircle2 className="w-4 h-4" />
-                    Plein Écran & Hors-Ligne
-                  </div>
-                  <p className="text-[11px] text-slate-300">
-                    S'ouvre sans barre d'adresse de navigateur et reste 100% utilisable même dans les zones sans réseau ni Wi-Fi.
-                  </p>
-                </div>
-
-                <div className="p-4 bg-slate-950/80 rounded-xl border border-slate-800 space-y-1.5">
-                  <div className="flex items-center gap-2 text-sky-400 text-xs font-bold uppercase tracking-wider">
-                    <RefreshCw className="w-4 h-4" />
-                    Synchronisation Automatique
-                  </div>
-                  <p className="text-[11px] text-slate-300">
-                    Les modifications et sauvegardes GitHub se synchronisent automatiquement lors du retour d'une connexion.
-                  </p>
-                </div>
-              </div>
-
-              {/* ACTION BUTTONS */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+              {/* ACTION BUTTON */}
+              <div className="pt-2">
                 <button
                   id="btn-install-pwa"
                   onClick={handlePwaInstallAction}
-                  className="flex items-center justify-center gap-3 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-bold p-4 rounded-xl text-xs uppercase tracking-wider transition shadow-lg shadow-yellow-500/20 active:scale-95 cursor-pointer"
+                  className="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black p-5 rounded-2xl text-sm uppercase tracking-wider transition shadow-xl shadow-yellow-500/20 active:scale-95 cursor-pointer border border-yellow-300/40"
                 >
-                  <Download className="w-5 h-5" />
-                  <span>INSTALLER L'APPLICATION</span>
-                </button>
-
-                <button
-                  onClick={() => {
-                    playDinoSound();
-                    window.open(window.location.origin, '_blank', 'noopener,noreferrer');
-                  }}
-                  className="flex items-center justify-center gap-3 bg-slate-950 hover:bg-slate-850 border border-slate-700 hover:border-amber-500/60 text-slate-200 font-bold p-4 rounded-xl text-xs uppercase tracking-wider transition active:scale-95 cursor-pointer"
-                >
-                  <ExternalLink className="w-5 h-5 text-amber-400" />
-                  <span>Ouvrir dans Chrome / Safari (Plein Écran)</span>
+                  <Download className="w-6 h-6 stroke-[2.5]" />
+                  <span>TÉLÉCHARGER L'APPLICATION</span>
                 </button>
               </div>
             </div>
