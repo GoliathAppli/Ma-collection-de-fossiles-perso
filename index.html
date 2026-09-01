@@ -31,6 +31,56 @@
   </head>
   <body class="bg-slate-950 text-slate-100">
     <div id="root"></div>
+    
+    <!-- PWA Service Worker & Install Prompt Integration -->
+    <script>
+      // 1. Enregistrement direct du Service Worker
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('/sw.js', { scope: '/' })
+            .then(function(registration) {
+              console.log('[PWA] Service Worker enregistré avec succès, scope:', registration.scope);
+            })
+            .catch(function(error) {
+              console.error('[PWA] Échec enregistrement Service Worker:', error);
+            });
+        });
+      }
+
+      // 2. Écoute et stockage de l'événement beforeinstallprompt
+      window.deferredPrompt = null;
+      window.addEventListener('beforeinstallprompt', function(e) {
+        // Empêche la mini-bannière automatique par défaut du navigateur
+        e.preventDefault();
+        // Stocke l'événement pour le déclencher sur le bouton personnalisé
+        window.deferredPrompt = e;
+        console.log('[PWA] Événement beforeinstallprompt capturé et prêt');
+        window.dispatchEvent(new CustomEvent('pwa-installable', { detail: true }));
+      });
+
+      window.addEventListener('appinstalled', function() {
+        window.deferredPrompt = null;
+        console.log('[PWA] Application installée avec succès dans le système');
+        window.dispatchEvent(new CustomEvent('pwa-installed', { detail: true }));
+      });
+
+      // 3. Fonction déclenchée au clic sur le bouton personnalisé
+      window.installPWA = async function() {
+        if (!window.deferredPrompt) {
+          console.warn('[PWA] Aucun prompt d\'installation disponible pour le moment.');
+          return 'unavailable';
+        }
+        // Affiche la véritable boîte de dialogue d'installation native du système
+        window.deferredPrompt.prompt();
+        // Attend la réponse de l'utilisateur
+        const choiceResult = await window.deferredPrompt.userChoice;
+        console.log('[PWA] Choix utilisateur:', choiceResult.outcome);
+        // Réinitialise la variable car le prompt ne peut être utilisé qu'une fois
+        window.deferredPrompt = null;
+        return choiceResult.outcome; // 'accepted' ou 'dismissed'
+      };
+    </script>
+
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
