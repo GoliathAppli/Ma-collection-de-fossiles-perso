@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Fossil, ImageSettings } from '../types';
 import { playDinoSound } from '../utils/data/audio';
-import { Save, Trash2, Globe, Calendar, HelpCircle, Edit3, Image, Info, FileText, Award } from 'lucide-react';
+import { Save, Trash2, Globe, Calendar, HelpCircle, Edit3, Image, Info, FileText, Award, Printer } from 'lucide-react';
 import ImageAdjuster from '../utils/data/ImageAdjuster';
 import InteractiveMap from './InteractiveMap';
 import GeologicTimelineView from './GeologicTimelineView';
+import FossilPrintTemplate from './lib/FossilPrintTemplate';
 
 interface FossilDetailFormProps {
   fossil: Fossil;
@@ -101,17 +102,34 @@ export default function FossilDetailForm({ fossil, onSave, onDelete, onCancel }:
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-slate-900/90 border border-yellow-700/40 rounded-2xl p-6 shadow-2xl space-y-6 text-slate-100 max-w-4xl mx-auto">
+    <form onSubmit={handleSubmit} className="bg-slate-900/90 border border-yellow-700/40 rounded-2xl p-6 shadow-2xl space-y-6 text-slate-100 max-w-4xl mx-auto relative">
+      {/* Printable Sheet Template for Admin */}
+      <FossilPrintTemplate fossil={edited} />
+
       <div className="flex justify-between items-center border-b border-slate-800 pb-3">
-        <h3 className="text-xl font-serif text-white font-bold tracking-tight uppercase text-center w-full">
+        <h3 className="text-xl font-serif text-white font-bold tracking-tight uppercase text-left">
           Fiche de Création / Modification de Fossile
         </h3>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
+          {edited.title && (
+            <button
+              type="button"
+              onClick={() => {
+                playDinoSound();
+                window.print();
+              }}
+              className="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-yellow-600/50 text-slate-200 text-xs px-3 py-1.5 rounded-lg transition font-mono cursor-pointer"
+              title="Imprimer cette fiche de spécimen"
+            >
+              <Printer className="w-3.5 h-3.5 text-yellow-500" />
+              <span>Imprimer la fiche</span>
+            </button>
+          )}
           {onDelete && (
             <button
               type="button"
               onClick={onDelete}
-              className="text-red-400 hover:text-red-300 hover:bg-red-950/30 p-2 rounded-full transition-all"
+              className="text-red-400 hover:text-red-300 hover:bg-red-950/30 p-2 rounded-full transition-all cursor-pointer"
               title="Supprimer ce fossile"
             >
               <Trash2 className="w-4 h-4" />

@@ -3,6 +3,10 @@ import {createRoot} from 'react-dom/client';
 import App from './components/App';
 import ErrorBoundary from './components/ErrorBoundary';
 import './index.css';
+import { registerServiceWorker } from './utils/pwa';
+
+// Register Service Worker for offline PWA capabilities
+registerServiceWorker();
 
 const renderApp = () => {
   const rootElement = document.getElementById('root');

@@ -575,7 +575,29 @@ async function startServer() {
     }
   });
 
-  // Serve custom public/images and public/data statically
+  // Serve PWA assets with explicit mime types
+  app.get("/sw.js", (req, res) => {
+    res.setHeader("Content-Type", "application/javascript");
+    res.setHeader("Service-Worker-Allowed", "/");
+    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    res.sendFile(path.join(process.cwd(), "public", "sw.js"));
+  });
+
+  app.get(["/manifest.webmanifest", "/manifest.json"], (req, res) => {
+    res.setHeader("Content-Type", "application/manifest+json; charset=utf-8");
+    res.setHeader("Cache-Control", "public, max-age=3600");
+    const manifestFile = req.path.endsWith(".webmanifest")
+      ? path.join(process.cwd(), "public", "manifest.webmanifest")
+      : path.join(process.cwd(), "public", "manifest.json");
+    if (fs.existsSync(manifestFile)) {
+      res.sendFile(manifestFile);
+    } else {
+      res.sendFile(path.join(process.cwd(), "public", "manifest.json"));
+    }
+  });
+
+  // Serve custom public/icons, public/images and public/data statically
+  app.use("/icons", express.static(path.join(process.cwd(), "public", "icons")));
   app.use("/images", express.static(path.join(process.cwd(), "public", "images")));
   app.use("/data", express.static(path.join(process.cwd(), "public", "data")));
 

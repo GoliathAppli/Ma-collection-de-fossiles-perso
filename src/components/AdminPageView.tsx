@@ -29,13 +29,21 @@ import {
   Image as ImageIcon,
   Check,
   ShieldCheck,
-  Loader2
+  Loader2,
+  Smartphone,
+  Share2,
+  HelpCircle,
+  Info,
+  Printer
 } from 'lucide-react';
 import { AppConfig, Fossil, GitHubSyncConfig, GitHubSyncStatus } from '../types';
 import { playDinoSound } from '../utils/data/audio';
 import { optimizeAllConfigImages } from '../utils/data/imageOptimizer';
 import { optimizeAppConfigImages } from '../utils/imageCompressor';
 import { readAndParseJsonFile } from '../utils/jsonImporter';
+import { usePWAInstall } from '../utils/pwa';
+import PwaInstallModal from './PwaInstallModal';
+import FossilPrintTemplate from './lib/FossilPrintTemplate';
 import {
   getGitHubConfig,
   saveGitHubConfig,
@@ -118,6 +126,14 @@ export default function AdminPageView({
   const [importProgressText, setImportProgressText] = useState<string>('');
   const [importProgressPercent, setImportProgressPercent] = useState<number>(0);
   const [isExportingJson, setIsExportingJson] = useState(false);
+
+  // PWA Hook and State
+  const { isInstallable, isInstalled, isIOS, install: triggerPwaInstallHook } = usePWAInstall();
+  const [showPwaModal, setShowPwaModal] = useState(false);
+  const [pwaQuickNotice, setPwaQuickNotice] = useState<string | null>(null);
+
+  // Print Fossil State
+  const [fossilToPrint, setFossilToPrint] = useState<Fossil | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -505,6 +521,28 @@ export default function AdminPageView({
     }
   };
 
+  // Handle PWA Installation trigger
+  const handlePwaInstallAction = async () => {
+    playDinoSound();
+    const result = await triggerPwaInstallHook();
+    if (result === 'accepted') {
+      setPwaQuickNotice("✅ Application PWA installée avec succès sur votre appareil !");
+    } else if (result === 'manual_ios') {
+      setShowPwaModal(true);
+    } else if (result === 'unsupported' || result === 'dismissed') {
+      setShowPwaModal(true);
+    }
+  };
+
+  // Handle printing a fossil sheet in Admin mode
+  const handlePrintFossil = (fossil: Fossil) => {
+    playDinoSound();
+    setFossilToPrint(fossil);
+    setTimeout(() => {
+      window.print();
+    }, 150);
+  };
+
   // If currently editing a fossil, show the full edit form
   if (editingFossil) {
     return (
@@ -564,6 +602,17 @@ export default function AdminPageView({
           </div>
 
           <div className="flex items-center gap-2.5">
+            {/* PWA INSTALL QUICK BUTTON */}
+            <button
+              onClick={handlePwaInstallAction}
+              className="flex items-center gap-2 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-bold px-3.5 py-2 rounded-xl text-xs uppercase tracking-wider transition shadow-lg shadow-yellow-500/20 active:scale-95 cursor-pointer"
+              title="Installer l'application sur smartphone (Android / iOS) ou ordinateur (PWA)"
+            >
+              <Smartphone className="w-4 h-4" />
+              <span className="hidden sm:inline">{isInstalled ? "App Installée (PWA)" : "Installer l'App (PWA)"}</span>
+              <span className="sm:hidden">PWA</span>
+            </button>
+
             <button
               onClick={() => {
                 playDinoSound();
@@ -821,6 +870,14 @@ export default function AdminPageView({
                           className="flex-1 flex items-center justify-center gap-1.5 bg-yellow-600 hover:bg-yellow-500 text-slate-950 font-bold py-2 rounded-xl text-xs transition cursor-pointer"
                         >
                           <Edit3 className="w-3.5 h-3.5" /> Modifier
+                        </button>
+
+                        <button
+                          onClick={() => handlePrintFossil(fossil)}
+                          className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-yellow-400 border border-slate-700 hover:border-yellow-600/50 rounded-xl text-xs transition cursor-pointer"
+                          title="Imprimer la fiche de ce fossile (A4 / PDF)"
+                        >
+                          <Printer className="w-3.5 h-3.5" />
                         </button>
                         
                         <button
@@ -1203,6 +1260,103 @@ export default function AdminPageView({
                 </button>
               </div>
             </div>
+
+            {/* SECTION 3: APPLICATION MOBILE & PROGRESSIVE WEB APP (PWA) */}
+            <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-amber-950/30 border border-amber-500/40 rounded-2xl p-6 sm:p-8 space-y-6 shadow-2xl relative overflow-hidden">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-2xl text-amber-400">
+                    <Smartphone className="w-8 h-8" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-xl font-bold text-white">
+                        Application Mobile & PWA (Installation Directe)
+                      </h2>
+                      <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-700/50 font-semibold">
+                        Hors-Ligne 100%
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-300 mt-0.5">
+                      Installez l'application sur smartphone (Android / iPhone) ou ordinateur. Elle se range dans vos applications mobiles et fonctionne sans internet.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] px-3 py-1 rounded-full bg-slate-950 border border-slate-800 text-slate-300 font-mono">
+                    {isInstalled ? "Statut : Application Installée" : "Statut : Prête à l'installation"}
+                  </span>
+                </div>
+              </div>
+
+              {pwaQuickNotice && (
+                <div className="p-3.5 bg-emerald-950/60 border border-emerald-600/70 rounded-xl text-emerald-200 text-xs font-semibold flex items-center justify-between">
+                  <span>{pwaQuickNotice}</span>
+                  <button 
+                    onClick={() => setPwaQuickNotice(null)}
+                    className="text-slate-400 hover:text-white text-[11px] underline ml-2 cursor-pointer"
+                  >
+                    OK
+                  </button>
+                </div>
+              )}
+
+              {/* FEATURES HIGHLIGHTS */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="p-4 bg-slate-950/80 rounded-xl border border-slate-800 space-y-1.5">
+                  <div className="flex items-center gap-2 text-amber-400 text-xs font-bold uppercase tracking-wider">
+                    <Smartphone className="w-4 h-4" />
+                    Véritable Application Mobile
+                  </div>
+                  <p className="text-[11px] text-slate-300">
+                    S'installe sur votre écran d'accueil et dans votre tiroir d'applications avec son icône dorée officielle.
+                  </p>
+                </div>
+
+                <div className="p-4 bg-slate-950/80 rounded-xl border border-slate-800 space-y-1.5">
+                  <div className="flex items-center gap-2 text-emerald-400 text-xs font-bold uppercase tracking-wider">
+                    <CheckCircle2 className="w-4 h-4" />
+                    Plein Écran & Hors-Ligne
+                  </div>
+                  <p className="text-[11px] text-slate-300">
+                    S'ouvre sans barre d'adresse de navigateur et reste 100% utilisable même dans les zones sans réseau ni Wi-Fi.
+                  </p>
+                </div>
+
+                <div className="p-4 bg-slate-950/80 rounded-xl border border-slate-800 space-y-1.5">
+                  <div className="flex items-center gap-2 text-sky-400 text-xs font-bold uppercase tracking-wider">
+                    <RefreshCw className="w-4 h-4" />
+                    Synchronisation Automatique
+                  </div>
+                  <p className="text-[11px] text-slate-300">
+                    Les modifications et sauvegardes GitHub se synchronisent automatiquement lors du retour d'une connexion.
+                  </p>
+                </div>
+              </div>
+
+              {/* ACTION BUTTONS */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                <button
+                  onClick={handlePwaInstallAction}
+                  className="flex items-center justify-center gap-3 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-bold p-4 rounded-xl text-xs uppercase tracking-wider transition shadow-lg shadow-yellow-500/20 active:scale-95 cursor-pointer"
+                >
+                  <Download className="w-5 h-5" />
+                  <span>{isInstalled ? "Réinstaller / Mettre à jour l'App" : "Télécharger & Installer l'App Mobile"}</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    playDinoSound();
+                    setShowPwaModal(true);
+                  }}
+                  className="flex items-center justify-center gap-3 bg-slate-950 hover:bg-slate-850 border border-slate-700 hover:border-amber-500/60 text-slate-200 font-bold p-4 rounded-xl text-xs uppercase tracking-wider transition active:scale-95 cursor-pointer"
+                >
+                  <Share2 className="w-5 h-5 text-amber-400" />
+                  <span>Guide Pas-à-Pas (Android, iPhone iOS, PC)</span>
+                </button>
+              </div>
+            </div>
           </div>
         )}
 
@@ -1412,6 +1566,17 @@ export default function AdminPageView({
           </div>
         )}
       </main>
+
+      {/* PWA INSTALLATION GUIDE MODAL */}
+      <PwaInstallModal
+        isOpen={showPwaModal}
+        onClose={() => setShowPwaModal(false)}
+      />
+
+      {/* PRINT TEMPLATE FOR ADMIN */}
+      {fossilToPrint && (
+        <FossilPrintTemplate fossil={fossilToPrint} />
+      )}
     </div>
   );
 }

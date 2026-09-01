@@ -258,26 +258,31 @@ export default function FossilSelectorAndCarousel({
       {activeFossil && (
         <div className="max-w-4xl mx-auto bg-slate-950/95 border border-yellow-700/20 p-8 rounded-2xl shadow-2xl space-y-8 animate-fade-in relative">
           
-          <FossilPrintTemplate fossil={activeFossil} />
+          {/* Printable sheet template - only rendered for administrator */}
+          {isAdmin && <FossilPrintTemplate fossil={activeFossil} />}
 
           <div className="absolute top-4 right-4 flex gap-2">
-            <button
-              onClick={() => {
-                playDinoSound();
-                window.print();
-              }}
-              className="bg-slate-900 border border-slate-850 px-3 py-1 rounded text-xs text-slate-400 hover:text-white transition-all font-mono uppercase font-bold flex items-center gap-1 hover:border-slate-700 hover:bg-slate-800"
-            >
-              <Printer className="w-3.5 h-3.5" />
-              Imprimer / PDF
-            </button>
+            {/* PRINT BUTTON: ONLY VISIBLE IN ADMIN MODE */}
+            {isAdmin && (
+              <button
+                onClick={() => {
+                  playDinoSound();
+                  window.print();
+                }}
+                className="bg-slate-900 border border-slate-850 px-3 py-1 rounded text-xs text-slate-400 hover:text-white transition-all font-mono uppercase font-bold flex items-center gap-1 hover:border-slate-700 hover:bg-slate-800 cursor-pointer"
+                title="Imprimer la fiche (Mode Administrateur uniquement)"
+              >
+                <Printer className="w-3.5 h-3.5 text-yellow-500" />
+                Imprimer / PDF
+              </button>
+            )}
             {/* HEADER CLOSE BUTTON */}
             <button
               onClick={() => {
                 playDinoSound();
                 setSelectedFossilId(null);
               }}
-              className="bg-slate-900 hover:bg-slate-800 border border-slate-850 py-1 px-3.5 rounded-full text-xs text-slate-400 hover:text-white transition-all font-mono"
+              className="bg-slate-900 hover:bg-slate-800 border border-slate-850 py-1 px-3.5 rounded-full text-xs text-slate-400 hover:text-white transition-all font-mono cursor-pointer"
             >
               Fermer X
             </button>
