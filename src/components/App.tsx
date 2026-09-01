@@ -29,7 +29,10 @@ import {
   ArrowLeft,
   Image as ImageIcon,
   Upload,
+  Download,
+  Smartphone,
 } from "lucide-react";
+import { usePWAInstall } from "../utils/pwa";
 
 // Initialize global standalone mode detector to separate local file preview from active server context
 if (typeof window !== "undefined") {
@@ -38,6 +41,7 @@ if (typeof window !== "undefined") {
 }
 
 export default function App() {
+  const { isInstalled, install } = usePWAInstall();
   const [isSheetsUnlocked, setIsSheetsUnlocked] = useState(() => {
     return safeSessionStorage.getItem("sheets_unlocked") === "true";
   });

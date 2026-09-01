@@ -108,14 +108,21 @@ export async function triggerPWAInstall(): Promise<'accepted' | 'dismissed' | 'm
       }
     } catch (e) {
       console.error('[PWA] Error triggering install prompt:', e);
-      return 'unsupported';
     }
   }
 
   if (isIOSDevice()) {
+    alert("📱 Installation sur iOS / Safari :\nAppuyez sur le bouton de Partage (carré avec une flèche vers le haut ⎋) puis sélectionnez 'Sur l'écran d'accueil'.");
     return 'manual_ios';
   }
 
+  if (isInsideIframe()) {
+    alert("ℹ️ L'installation directe est bloquée à l'intérieur du cadre de prévisualisation.\n\nOuvrez l'application dans un nouvel onglet ou directement dans Google Chrome pour lancer l'installation autonome sur votre écran d'accueil.");
+    return 'unsupported';
+  }
+
+  // Fallback Chrome Android advice
+  alert("ℹ️ Pour installer l'application en mode autonome :\n\nDans Google Chrome, appuyez sur le menu (les 3 points ⋮ en haut à droite) puis sélectionnez 'Installer l'application'.");
   return 'unsupported';
 }
 

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Lock, Unlock, Eye, EyeOff, ShieldCheck, Settings, ArrowRight } from 'lucide-react';
+import { Lock, Unlock, Eye, EyeOff, ShieldCheck, Settings, ArrowRight, Download, Smartphone } from 'lucide-react';
 import { AppConfig } from '../types';
 import { playDinoSound } from '../utils/data/audio';
+import { usePWAInstall } from '../utils/pwa';
 
 interface AdminPanelProps {
   isAdmin: boolean;
@@ -20,6 +21,12 @@ export default function AdminPanel({
   const [showInput, setShowInput] = useState(false);
   const [error, setError] = useState('');
   const [showPasswordChar, setShowPasswordChar] = useState(false);
+  const { isInstalled, install } = usePWAInstall();
+
+  const handlePwaInstall = async () => {
+    playDinoSound();
+    await install();
+  };
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,7 +49,7 @@ export default function AdminPanel({
   };
 
   return (
-    <div className="fixed top-4 right-4 z-40">
+    <div className="fixed top-4 right-4 z-40 flex items-center gap-2">
       {isAdmin ? (
         <div className="flex items-center gap-2 bg-slate-900/95 backdrop-blur border border-yellow-600/40 p-1.5 pl-3 rounded-2xl shadow-2xl">
           <div className="flex items-center gap-2 mr-1">
@@ -52,6 +59,18 @@ export default function AdminPanel({
             </span>
           </div>
 
+          {!isInstalled && (
+            <button
+              id="btn-admin-header-install-pwa"
+              onClick={handlePwaInstall}
+              className="flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-extrabold px-3 py-1.5 rounded-xl text-xs uppercase tracking-wider transition shadow-md active:scale-95 cursor-pointer"
+              title="Installer l'application sur cet appareil"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>Installer l'App</span>
+            </button>
+          )}
+
           <button
             onClick={() => {
               playDinoSound();
@@ -60,7 +79,7 @@ export default function AdminPanel({
             className="flex items-center gap-1.5 bg-yellow-600 hover:bg-yellow-500 text-slate-950 font-bold px-3.5 py-1.5 rounded-xl text-xs uppercase tracking-wider transition shadow-md active:scale-95 cursor-pointer"
           >
             <Settings className="w-3.5 h-3.5" />
-            <span>Menu Administrateur</span>
+            <span>Menu Admin</span>
             <ArrowRight className="w-3 h-3 hidden sm:inline" />
           </button>
 
