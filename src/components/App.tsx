@@ -31,8 +31,14 @@ import {
   Upload,
   Download,
   Smartphone,
+  Search,
+  LayoutGrid,
+  Grid,
+  Tag,
+  Layers,
 } from "lucide-react";
 import { usePWAInstall } from "../utils/pwa";
+import CompleteGalleryView from "./CompleteGalleryView";
 
 // Initialize global standalone mode detector to separate local file preview from active server context
 if (typeof window !== "undefined") {
@@ -77,8 +83,36 @@ export default function App() {
     | "timeline"
     | "sheets"
     | "admin"
+    | "gallery"
   >("welcome");
   const [editingFossil, setEditingFossil] = useState<Fossil | null>(null);
+  const [gallerySearch, setGallerySearch] = useState<string>("");
+  const [galleryFossilId, setGalleryFossilId] = useState<string | null>(null);
+  const [quickRefInput, setQuickRefInput] = useState<string>("");
+
+  const openGalleryWithSearch = (search: string = "", fossilId: string | null = null) => {
+    playDinoSound();
+    setGallerySearch(search);
+    setGalleryFossilId(fossilId);
+    setView("gallery");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleHomeReferenceSearch = (refText: string) => {
+    const clean = refText.trim();
+    if (!clean) {
+      openGalleryWithSearch();
+      return;
+    }
+    const exactMatch = config.fossils.find(
+      (f) => (f.reference || "").trim().toLowerCase() === clean.toLowerCase()
+    );
+    if (exactMatch) {
+      openGalleryWithSearch(clean, exactMatch.id);
+    } else {
+      openGalleryWithSearch(clean, null);
+    }
+  };
 
   // Load configuration from local storage on mount
   useEffect(() => {
@@ -734,8 +768,37 @@ export default function App() {
                 )}
               </div>
 
+              {/* QUICK REFERENCE SEARCH */}
+              <div className="max-w-3xl mx-auto w-full pt-2">
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    handleHomeReferenceSearch(quickRefInput);
+                  }}
+                  className="bg-slate-900/90 border border-yellow-600/40 focus-within:border-yellow-500 rounded-2xl p-2.5 sm:p-3 shadow-xl flex flex-col sm:flex-row gap-2 transition-all"
+                >
+                  <div className="relative flex-1 flex items-center">
+                    <Search className="w-4 h-4 text-yellow-500 absolute left-3.5 pointer-events-none" />
+                    <input
+                      type="text"
+                      placeholder="Recherche rapide : Entrez la référence de la fiche (ex: FOS-001)..."
+                      value={quickRefInput}
+                      onChange={(e) => setQuickRefInput(e.target.value)}
+                      className="w-full bg-slate-950/80 border border-slate-800 focus:border-yellow-500/60 rounded-xl pl-10 pr-4 py-2.5 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none font-mono"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="bg-yellow-600 hover:bg-yellow-500 text-slate-950 font-bold px-5 py-2.5 rounded-xl text-xs uppercase tracking-wider font-mono transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 shadow-md"
+                  >
+                    <Search className="w-3.5 h-3.5" />
+                    <span>Trouver la fiche</span>
+                  </button>
+                </form>
+              </div>
+
               {/* FOUR GEOLOGICAL PERIOD BUTTONS */}
-              <div className="grid grid-cols-2 gap-4 md:gap-6 max-w-3xl mx-auto pt-4">
+              <div className="grid grid-cols-2 gap-4 md:gap-6 max-w-3xl mx-auto pt-2">
                 {/* BUTTON 0: PRECAMBRIAN */}
                 <motion.button
                   onClick={() => navigateTo("era_precambrian")}
@@ -798,29 +861,42 @@ export default function App() {
               </div>
 
               {/* BOTTOM NAVIGATION ZONE EXTRA BUTTONS */}
-              <div className="pt-8 border-t border-slate-900 flex flex-col md:flex-row gap-4 justify-center max-w-2xl mx-auto">
+              <div className="pt-8 border-t border-slate-900 grid grid-cols-1 sm:grid-cols-3 gap-4 justify-center max-w-3xl mx-auto">
+                {/* COMPLETE GALLERY BUTTON */}
+                <button
+                  onClick={() => openGalleryWithSearch()}
+                  className="bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-yellow-600/50 py-4 px-5 rounded-xl transition-all cursor-pointer flex flex-col items-center justify-center space-y-1 group"
+                >
+                  <span className="text-xs font-mono text-yellow-500 uppercase font-bold tracking-wider group-hover:text-yellow-400 flex items-center gap-1.5">
+                    <LayoutGrid className="w-3.5 h-3.5" /> Galerie Complète
+                  </span>
+                  <span className="text-[10px] text-slate-500 text-center">
+                    Toutes les 4 périodes réunies ({config.fossils.length} fiches)
+                  </span>
+                </button>
+
                 {/* GEOLOGIC TIMELINE PAGE BUTTON */}
                 <button
                   onClick={() => navigateTo("timeline")}
-                  className="flex-1 bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-yellow-600/40 py-4 px-6 rounded-xl transition-all cursor-pointer flex flex-col items-center justify-center space-y-1 group"
+                  className="bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-yellow-600/40 py-4 px-5 rounded-xl transition-all cursor-pointer flex flex-col items-center justify-center space-y-1 group"
                 >
                   <span className="text-xs font-mono text-yellow-600 uppercase font-bold tracking-wider group-hover:text-yellow-500">
                     Échelle des temps géologiques
                   </span>
-                  <span className="text-[10px] text-slate-500">
-                    Défilement interactif & Vidéos thématiques
+                  <span className="text-[10px] text-slate-500 text-center">
+                    Défilement interactif & Vidéos
                   </span>
                 </button>
 
                 {/* TECHNICAL SHEETS BUTTON */}
                 <button
                   onClick={() => navigateTo("sheets")}
-                  className="flex-1 bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-yellow-600/40 py-4 px-6 rounded-xl transition-all cursor-pointer flex flex-col items-center justify-center space-y-1 group"
+                  className="bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-yellow-600/40 py-4 px-5 rounded-xl transition-all cursor-pointer flex flex-col items-center justify-center space-y-1 group"
                 >
                   <span className="text-xs font-mono text-yellow-600 uppercase font-bold tracking-wider group-hover:text-yellow-500">
                     Fiches techniques de suivi
                   </span>
-                  <span className="text-[10px] text-slate-500">
+                  <span className="text-[10px] text-slate-500 text-center">
                     Certificats d'authenticité & Traçabilité
                   </span>
                 </button>
@@ -1110,6 +1186,63 @@ export default function App() {
               </div>
             </motion.div>
           )}
+
+          {/* ==================== PAGE: COMPLETE GALLERY (ALL 4 ERAS) ==================== */}
+          {view === "gallery" && (
+            <motion.div
+              key="gallery"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              className="space-y-8"
+            >
+              {editingFossil ? (
+                <FossilDetailForm
+                  fossil={editingFossil}
+                  onSave={handleSaveFossil}
+                  onDelete={
+                    editingFossil.title
+                      ? () => handleDeleteFossil(editingFossil.id)
+                      : undefined
+                  }
+                  onCancel={() => {
+                    playDinoSound();
+                    setEditingFossil(null);
+                  }}
+                />
+              ) : (
+                <CompleteGalleryView
+                  fossils={config.fossils}
+                  isAdmin={isAdmin}
+                  initialSearch={gallerySearch}
+                  initialFossilId={galleryFossilId}
+                  onBackToHome={() => navigateTo("secondHome")}
+                  onOpenEditForm={setEditingFossil}
+                  onDeleteFossil={handleDeleteFossil}
+                  onNavigateToEra={(eraKey) => navigateTo(eraKey as any)}
+                />
+              )}
+
+              {/* Bottom return links */}
+              {!editingFossil && (
+                <div className="flex flex-col sm:flex-row gap-3 justify-center pt-8 border-t border-slate-900 max-w-sm mx-auto">
+                  <button
+                    onClick={() => navigateTo("secondHome")}
+                    className="flex-1 flex items-center justify-center gap-1.5 bg-slate-900 hover:bg-slate-850 border border-slate-800 hover:border-slate-700 py-2.5 px-4 rounded-xl text-xs text-slate-300 hover:text-white font-mono transition-colors"
+                  >
+                    <ArrowLeft className="w-3.5 h-3.5" /> Catalogue Principal
+                  </button>
+                  <button
+                    onClick={() => navigateTo("welcome")}
+                    className="flex-1 flex items-center justify-center gap-1.5 bg-slate-900 hover:bg-slate-850 border border-slate-800 hover:border-slate-700 py-2.5 px-4 rounded-xl text-xs text-slate-300 hover:text-white font-mono transition-colors"
+                  >
+                    <Home className="w-3.5 h-3.5" /> Accueil initial
+                  </button>
+                </div>
+              )}
+            </motion.div>
+          )}
+
           {/* ==================== PAGE: DEDICATED ADMIN MENU ==================== */}
           {view === "admin" && (
             <motion.div
