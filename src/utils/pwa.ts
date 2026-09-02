@@ -35,7 +35,7 @@ export function registerServiceWorker() {
   if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
     const doRegister = async () => {
       try {
-        const reg = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+        const reg = await navigator.serviceWorker.register('./sw.js');
         console.log('[PWA] Service Worker registered with scope:', reg.scope);
         
         if (navigator.storage && navigator.storage.persist) {
@@ -85,7 +85,7 @@ export async function triggerPWAInstall(): Promise<'accepted' | 'dismissed' | 'u
   if (typeof window !== 'undefined') {
     if ('serviceWorker' in navigator) {
       try {
-        await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+        await navigator.serviceWorker.register('./sw.js');
       } catch (e) {
         console.warn('[PWA] SW register warning:', e);
       }
@@ -143,21 +143,32 @@ export function usePWAInstall() {
   const [isInstalled, setIsInstalled] = useState<boolean>(isAppStandalone());
   const [isIOS, setIsIOS] = useState<boolean>(isIOSDevice());
   const [inIframe, setInIframe] = useState<boolean>(isInsideIframe());
+  const [canInstall, setCanInstall] = useState<boolean>(!!deferredPrompt || !!(typeof window !== 'undefined' && (window as any).deferredPrompt));
 
   useEffect(() => {
     const update = () => {
       setIsInstalled(isAppStandalone());
       setIsIOS(isIOSDevice());
       setInIframe(isInsideIframe());
+      setCanInstall(!!deferredPrompt || !!(window as any).deferredPrompt);
     };
 
     update();
+
+    const handlePromptReady = () => {
+      setCanInstall(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handlePromptReady);
+    window.addEventListener('pwa-ready-to-install', handlePromptReady);
 
     const mediaQuery = window.matchMedia('(display-mode: standalone)');
     const handleDisplayModeChange = () => update();
     mediaQuery.addEventListener('change', handleDisplayModeChange);
 
     return () => {
+      window.removeEventListener('beforeinstallprompt', handlePromptReady);
+      window.removeEventListener('pwa-ready-to-install', handlePromptReady);
       mediaQuery.removeEventListener('change', handleDisplayModeChange);
     };
   }, []);
@@ -167,7 +178,8 @@ export function usePWAInstall() {
   };
 
   return {
-    isInstallable: true,
+    isInstallable: canInstall || !isInstalled,
+    canInstall,
     isInstalled,
     isIOS,
     inIframe,
