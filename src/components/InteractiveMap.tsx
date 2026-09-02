@@ -98,11 +98,16 @@ const GPS_FOSSIL_DATABASE: Record<string, { lat: number; lng: number; zoom: numb
   "esperaza": { lat: 42.9300, lng: 2.2100, zoom: 10, label: "Espéraza (Aude, France) - Dinosaures du Crétacé supérieur" },
   "charente": { lat: 45.7000, lng: 0.1500, zoom: 8, label: "Charente / Angeac-Charente (France)" },
   "angeac": { lat: 45.6300, lng: -0.0600, zoom: 11, label: "Angeac-Charente (France) - Dinosaures géants" },
-  "rompon": { lat: 44.7578, lng: 4.7172, zoom: 11, label: "Rompon, Vallée de l'Ouvèze (Ardèche, France) - Gisements fossilifères" },
+  "aix-en-provence": { lat: 43.5297, lng: 5.4474, zoom: 11, label: "Aix-en-Provence (Bouches-du-Rhône, France) - Œufs de dinosaures d'Hypsélosaure" },
+  "aix en provence": { lat: 43.5297, lng: 5.4474, zoom: 11, label: "Aix-en-Provence (France) - Œufs d'Hypsélosaure" },
+  "rompon": { lat: 44.7578, lng: 4.7172, zoom: 11, label: "Rompon, Vallée de l'Ouvèze (Ardèche, France) - Lys de mer jurassiques" },
   "valence": { lat: 44.9333, lng: 4.8917, zoom: 10, label: "Valence, Vallée du Rhône (Drôme, France)" },
   "montelimar": { lat: 44.5569, lng: 4.7495, zoom: 10, label: "Montélimar (Drôme, France)" },
   "luberon": { lat: 43.8300, lng: 5.3800, zoom: 9, label: "Luberon / Apt (Vaucluse, France) - Oligocène, fossiles d'insectes et plantes" },
   "provence": { lat: 43.5300, lng: 5.4400, zoom: 8, label: "Provence (France) - Dinosaures & ammonites barrémiennes" },
+  "mer du nord": { lat: 54.0000, lng: 3.0000, zoom: 7, label: "Mer du Nord (Doggerland) - Faune glaciaire pléistocène draguée" },
+  "doggerland": { lat: 54.0000, lng: 3.0000, zoom: 7, label: "Doggerland (Mer du Nord)" },
+  "north sea": { lat: 54.0000, lng: 3.0000, zoom: 7, label: "North Sea / Mer du Nord" },
   "dordogne": { lat: 45.1500, lng: 0.7000, zoom: 8, label: "Dordogne (France)" },
   "alpes": { lat: 45.0000, lng: 6.0000, zoom: 8, label: "Alpes (France)" },
   "paris": { lat: 48.8566, lng: 2.3522, zoom: 9, label: "Bassin Parisien (France) - Lutétien, coquilles fossiles" },
@@ -189,6 +194,15 @@ const GPS_FOSSIL_DATABASE: Record<string, { lat: number; lng: number; zoom: numb
   "espagne": { lat: 40.4637, lng: -3.7492, zoom: 6, label: "Espagne" },
   "spain": { lat: 40.4637, lng: -3.7492, zoom: 6, label: "Spain" },
 
+  // --- INDONÉSIE (Dents de mégalodon & vertébrés marins de Java) ---
+  "java": { lat: -7.6145, lng: 110.7122, zoom: 8, label: "Java (Indonésie) - Gisements marins miocènes & Mégalodon" },
+  "indonesie": { lat: -0.7893, lng: 113.9213, zoom: 5, label: "Indonésie" },
+  "indonesia": { lat: -0.7893, lng: 113.9213, zoom: 5, label: "Indonesia" },
+
+  // --- POLOGNE (Grottes jurassiques d'Ojców & faune glaciaire) ---
+  "pologne": { lat: 50.1700, lng: 19.8000, zoom: 8, label: "Pologne (Grottes jurassiques d'Ojców) - Ours des cavernes" },
+  "poland": { lat: 50.1700, lng: 19.8000, zoom: 8, label: "Pologne" },
+
   // --- RUSSIE ---
   "yakoutie": { lat: 62.0397, lng: 129.7422, zoom: 5, label: "République de Sakha / Yakoutie (Sibérie, Russie) - Mammouths & faune du Pléistocène" },
   "sibérie": { lat: 60.0000, lng: 105.0000, zoom: 4, label: "Sibérie (Russie)" },
@@ -230,28 +244,42 @@ function resolveCoords(
   rawCoords?: { lat: number; lng: number },
   locationName?: string
 ): { lat: number; lng: number; zoom: number; source: 'offline_match' | 'custom_gps' | 'converted' } {
-  // 1. Try offline database match for the fossil site name first
+  // 1. Try offline database match for the fossil site name
   if (locationName) {
     const match = findOfflineGps(locationName);
     if (match) {
-      // If rawCoords has been customized and differs significantly from the default placeholder (lat 40, lng 50 or lat 46.2, lng 2.2)
-      // and looks like valid GPS, check if it was set explicitly
-      const isDefaultPlaceholder = !rawCoords || 
-        (Math.round(rawCoords.lat) === 40 && Math.round(rawCoords.lng) === 50) ||
-        (Math.abs(rawCoords.lat - 46.2) < 0.1 && Math.abs(rawCoords.lng - 2.2) < 0.1);
-        
-      if (isDefaultPlaceholder) {
+      if (!rawCoords) {
         return { lat: match.lat, lng: match.lng, zoom: match.zoom, source: 'offline_match' };
       }
+
+      // Check if rawCoords is a default placeholder (40, 50) or (46.2, 2.2) or (0, 0)
+      const isDefaultPlaceholder =
+        (Math.round(rawCoords.lat) === 40 && Math.round(rawCoords.lng) === 50) ||
+        (Math.abs(rawCoords.lat - 46.2) < 0.1 && Math.abs(rawCoords.lng - 2.2) < 0.1) ||
+        (rawCoords.lat === 0 && rawCoords.lng === 0);
+
+      // Check if rawCoords is outside valid GPS boundaries (e.g. old SVG percentages where lat > 85)
+      const isOutOfGpsBounds = rawCoords.lat < -85 || rawCoords.lat > 85 || rawCoords.lng < -180 || rawCoords.lng > 180;
+
+      // Check distance in degrees from the matched authentic location.
+      // Legacy SVG world map coordinates (e.g. Rompon {lat:22, lng:43} vs France {lat:44.7, lng:4.7},
+      // or Montana {lat:20, lng:16} vs USA {lat:46.8, lng:-110.3}) have huge offsets (> 7 degrees / ~750km).
+      const degreeDistance = Math.hypot(rawCoords.lat - match.lat, rawCoords.lng - match.lng);
+      const isLegacySvgCoord = degreeDistance > 7.0;
+
+      if (isDefaultPlaceholder || isOutOfGpsBounds || isLegacySvgCoord) {
+        return { lat: match.lat, lng: match.lng, zoom: match.zoom, source: 'offline_match' };
+      }
+
+      // If coordinates are within 7 degrees of the known site, user fine-tuned the pin position
+      return { lat: rawCoords.lat, lng: rawCoords.lng, zoom: match.zoom, source: 'custom_gps' };
     }
   }
 
-  // 2. If rawCoords exists
+  // 2. If rawCoords exists without database match
   if (rawCoords && typeof rawCoords.lat === 'number' && typeof rawCoords.lng === 'number') {
-    // Check if coordinates are in realistic GPS range
-    const isNormalGps = rawCoords.lat >= -90 && rawCoords.lat <= 90 && rawCoords.lng >= -180 && rawCoords.lng <= 180;
+    const isNormalGps = rawCoords.lat >= -85 && rawCoords.lat <= 85 && rawCoords.lng >= -180 && rawCoords.lng <= 180;
     
-    // Only genuine placeholder mock coordinates (40, 50) trigger fallback to locationName match
     const isDefaultMock = (Math.round(rawCoords.lat) === 40 && Math.round(rawCoords.lng) === 50) ||
       (rawCoords.lat === 0 && rawCoords.lng === 0);
 
@@ -270,19 +298,9 @@ function resolveCoords(
         source: 'custom_gps' 
       };
     }
-
-    // Convert old projection if outside normal boundaries
-    const lng = (rawCoords.lng - 45) / 0.3;
-    const lat = (56.5 - rawCoords.lat) / 0.75;
-    return {
-      lat: Math.max(-85, Math.min(85, lat)),
-      lng: Math.max(-180, Math.min(180, lng)),
-      zoom: 6,
-      source: 'converted'
-    };
   }
 
-  // Default fallback: France / Europe center
+  // 3. Default fallback: France / Europe center
   return { lat: 46.2276, lng: 2.2137, zoom: 5, source: 'offline_match' };
 }
 

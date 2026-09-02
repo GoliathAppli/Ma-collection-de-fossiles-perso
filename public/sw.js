@@ -1,5 +1,5 @@
 // Conservatoire de Fossiles - Service Worker for PWA & Offline Support
-const CACHE_NAME = 'fossiles-pwa-v4';
+const CACHE_NAME = 'fossiles-pwa-v5';
 
 const PRECACHE_ASSETS = [
   './',
@@ -93,7 +93,28 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Dynamic assets, scripts, images & JSON data: Stale-While-Revalidate
+  // JSON configuration data requests: Network-First with cache fallback
+  if (url.pathname.endsWith('.json') || url.pathname.includes('/data/')) {
+    event.respondWith(
+      fetch(request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const responseClone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(request, responseClone);
+            });
+          }
+          return networkResponse;
+        })
+        .catch(async () => {
+          const cachedResponse = await caches.match(request);
+          return cachedResponse || null;
+        })
+    );
+    return;
+  }
+
+  // Dynamic assets, scripts, images: Stale-While-Revalidate
   event.respondWith(
     caches.match(request).then((cachedResponse) => {
       const fetchPromise = fetch(request)
