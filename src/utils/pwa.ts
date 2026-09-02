@@ -73,41 +73,12 @@ export function isIOSDevice(): boolean {
   );
 }
 
-export async function triggerPWAInstall(): Promise<'accepted' | 'downloaded' | 'standalone'> {
-  // 1. Trigger direct file download in Chrome
-  try {
-    const link = document.createElement('a');
-    link.href = '/api/download-app';
-    link.download = 'Conservatoire_de_Fossiles.html';
-    link.target = '_blank';
-    document.body.appendChild(link);
-    link.click();
-    setTimeout(() => {
-      if (document.body.contains(link)) {
-        document.body.removeChild(link);
-      }
-    }, 1000);
-  } catch (downloadErr) {
-    console.warn('[PWA] Direct link download failed, trying fetch fallback:', downloadErr);
-    try {
-      const resp = await fetch('/api/download-app');
-      const blob = await resp.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.style.display = 'none';
-      a.href = url;
-      a.download = 'Conservatoire_de_Fossiles.html';
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      setTimeout(() => {
-        if (document.body.contains(a)) {
-          document.body.removeChild(a);
-        }
-      }, 1000);
-    } catch (fetchErr) {
-      console.warn('[PWA] Fetch download fallback warning:', fetchErr);
-    }
+export async function triggerPWAInstall(): Promise<'accepted' | 'dismissed' | 'unsupported' | 'opened_top'> {
+  // 1. If inside an iframe (like AI Studio preview), browser security restricts native install prompt
+  // Open top-level URL directly so Chrome can display the native WebAPK install prompt
+  if (isInsideIframe()) {
+    window.open(window.location.href, '_blank', 'noopener,noreferrer');
+    return 'opened_top';
   }
 
   // 2. Ensure Service Worker is registered & request Persistent Storage permission
@@ -115,12 +86,12 @@ export async function triggerPWAInstall(): Promise<'accepted' | 'downloaded' | '
     if ('serviceWorker' in navigator) {
       try {
         await navigator.serviceWorker.register('/sw.js', { scope: '/' });
-      } catch {
-        // Ignored
+      } catch (e) {
+        console.warn('[PWA] SW register warning:', e);
       }
     }
     
-    // Explicitly request persistent storage permissions (Autorisation d'écriture/stockage permanent Chrome)
+    // Explicitly request persistent storage permissions
     if (navigator.storage && navigator.storage.persist) {
       try {
         const isPersisted = await navigator.storage.persist();
@@ -143,13 +114,14 @@ export async function triggerPWAInstall(): Promise<'accepted' | 'downloaded' | '
       if (typeof window !== 'undefined') {
         (window as any).deferredPrompt = null;
       }
-      return choice.outcome === 'accepted' ? 'accepted' : 'downloaded';
+      return choice.outcome === 'accepted' ? 'accepted' : 'dismissed';
     } catch (e) {
       console.warn('[PWA] Error launching prompt:', e);
     }
   }
 
-  return 'downloaded';
+  // If prompt is not yet ready or unsupported on this platform/browser
+  return 'unsupported';
 }
 
 export function isInsideIframe(): boolean {

@@ -522,8 +522,16 @@ export default function AdminPageView({
   // Handle PWA Installation trigger
   const handlePwaInstallAction = async () => {
     playDinoSound();
-    await triggerPwaInstallHook();
-    setPwaQuickNotice("✅ Téléchargement de l'application autonome lancé ! L'application est enregistrée dans vos téléchargements et le stockage permanent hors-ligne est activé.");
+    const result = await triggerPwaInstallHook();
+    if (result === 'accepted') {
+      setPwaQuickNotice("✅ Application PWA installée avec succès sur votre appareil !");
+    } else if (result === 'opened_top') {
+      setPwaQuickNotice("🚀 Ouverture dans Chrome pour afficher la boîte de dialogue d'installation de l'application PWA.");
+    } else if (result === 'dismissed') {
+      setPwaQuickNotice("Installation annulée.");
+    } else {
+      setPwaQuickNotice("Demande d'installation envoyée au navigateur.");
+    }
   };
 
   // Handle printing a fossil sheet in Admin mode
@@ -1253,7 +1261,7 @@ export default function AdminPageView({
               </div>
             </div>
 
-            {/* SECTION 3: APPLICATION AUTONOME (PWA & TÉLÉCHARGEMENT DIRECT) */}
+            {/* SECTION 3: APPLICATION MOBILE (PWA) */}
             <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-amber-950/30 border border-amber-500/40 rounded-2xl p-6 sm:p-8 space-y-6 shadow-2xl relative overflow-hidden">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
                 <div className="flex items-center gap-3">
@@ -1262,10 +1270,10 @@ export default function AdminPageView({
                   </div>
                   <div>
                     <h2 className="text-xl font-bold text-white">
-                      Téléchargement & Installation de l'Application (PWA)
+                      Installation de l'Application (PWA)
                     </h2>
                     <p className="text-xs text-slate-300 mt-0.5">
-                      Téléchargez et installez l'application autonome complète directement sur votre appareil (Android, PC, Mac, tablette) pour une utilisation 100% hors-ligne.
+                      Installez l'application officielle autonome sur votre appareil (Android, PC, Mac, tablette) pour un accès direct avec icône et fonctionnement hors-ligne.
                     </p>
                   </div>
                 </div>
