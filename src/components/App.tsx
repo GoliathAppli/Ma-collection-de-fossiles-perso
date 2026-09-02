@@ -1086,88 +1086,35 @@ export default function App() {
                 </h1>
               </div>
 
-              {!isAdmin && !isSheetsUnlocked ? (
-                <div className="max-w-md mx-auto bg-slate-900/90 border border-yellow-700/30 p-8 rounded-2xl shadow-2xl text-center space-y-6">
-                  <div className="w-14 h-14 mx-auto rounded-full bg-yellow-950/60 border border-yellow-600/40 flex items-center justify-center text-yellow-500">
-                    <ShieldCheck className="w-8 h-8" />
-                  </div>
-                  <div className="space-y-2">
-                    <h2 className="text-lg font-serif font-bold text-white uppercase tracking-wider">
-                      Section Protégée
-                    </h2>
-                    <p className="text-xs text-slate-400 leading-relaxed">
-                      Cette section contient les informations confidentielles d'acquisition, certificats d'authenticité et prix d'achat. Veuillez saisir le code d'accès pour consulter les fiches.
-                    </p>
-                  </div>
-
-                  <form onSubmit={handleSheetsLogin} className="space-y-4">
-                    <div>
-                      <input
-                        type="password"
-                        placeholder="Mot de passe d'accès..."
-                        value={sheetsPassword}
-                        onChange={(e) => {
-                          setSheetsPassword(e.target.value);
-                          setSheetsAuthError(false);
-                        }}
-                        className="w-full bg-slate-950 border border-slate-700 px-4 py-2.5 rounded-xl focus:outline-none focus:border-yellow-600 text-center text-base tracking-widest text-white"
-                        autoFocus
-                      />
-                      {sheetsAuthError && (
-                        <p className="text-rose-400 text-xs mt-2 font-medium">
-                          Mot de passe incorrect. Veuillez réessayer.
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() => navigateTo("secondHome")}
-                        className="flex-1 bg-slate-800 hover:bg-slate-750 text-slate-300 font-semibold py-2.5 rounded-xl transition-colors text-xs uppercase tracking-wider"
-                      >
-                        Annuler
-                      </button>
-                      <button
-                        type="submit"
-                        className="flex-1 bg-yellow-700 hover:bg-yellow-600 text-white font-bold py-2.5 rounded-xl transition-colors text-xs uppercase tracking-widest shadow-lg shadow-yellow-900/30"
-                      >
-                        Déverrouiller
-                      </button>
-                    </div>
-                  </form>
-                </div>
-              ) : (
-                <TechnicalSheetsView
-                  isAdmin={isAdmin}
-                  sheets={config.technicalSheets}
-                  onSaveSheets={(updatedSheets) => {
-                    const updatedFossils = config.fossils.map((f) => {
-                      const matchedSheet = updatedSheets.find((s) => s.id === f.id);
-                      if (matchedSheet) {
-                        return {
-                          ...f,
-                          title: matchedSheet.fossilName,
-                          thumbnailImage: f.thumbnailImage,
-                          image: f.image,
-                          leFossileImage: matchedSheet.fossilImage,
-                          provenanceDate: matchedSheet.provenanceDate,
-                          periodeDatation: matchedSheet.periodeDatation,
-                          dateLieuAchat: matchedSheet.dateLieuAchat,
-                          prixAchat: matchedSheet.prixAchat,
-                          certificatImage: matchedSheet.certificatImage,
-                        };
-                      }
-                      return f;
-                    });
-                    updateConfig({
-                      ...config,
-                      technicalSheets: updatedSheets,
-                      fossils: updatedFossils,
-                    });
-                  }}
-                />
-              )}
+              <TechnicalSheetsView
+                isAdmin={isAdmin}
+                sheets={config.technicalSheets}
+                onSaveSheets={(updatedSheets) => {
+                  const updatedFossils = config.fossils.map((f) => {
+                    const matchedSheet = updatedSheets.find((s) => s.id === f.id);
+                    if (matchedSheet) {
+                      return {
+                        ...f,
+                        title: matchedSheet.fossilName,
+                        thumbnailImage: f.thumbnailImage,
+                        image: f.image,
+                        leFossileImage: matchedSheet.fossilImage,
+                        provenanceDate: matchedSheet.provenanceDate,
+                        periodeDatation: matchedSheet.periodeDatation,
+                        dateLieuAchat: matchedSheet.dateLieuAchat,
+                        prixAchat: matchedSheet.prixAchat,
+                        certificatImage: matchedSheet.certificatImage,
+                      };
+                    }
+                    return f;
+                  });
+                  updateConfig({
+                    ...config,
+                    technicalSheets: updatedSheets,
+                    fossils: updatedFossils,
+                  });
+                }}
+              />
 
               {/* Return links */}
               <div className="flex flex-col sm:flex-row gap-3 justify-center pt-8 border-t border-slate-900 max-w-sm mx-auto">
