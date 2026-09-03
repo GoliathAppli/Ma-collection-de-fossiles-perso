@@ -273,12 +273,6 @@ export default function TechnicalSheetsView({ isAdmin, sheets, onSaveSheets }: T
 
   return (
     <div className="w-full bg-slate-900/40 p-4 border border-yellow-700/10 rounded-2xl space-y-6">
-      <div className="flex justify-between items-center px-2">
-        <h3 className="text-xl font-bold tracking-tight text-white font-serif uppercase text-center w-full">
-          Fiches Techniques d'Authenticité et de Traçabilité
-        </h3>
-      </div>
-
       {isAdmin && (
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-4 border-b border-slate-800/60">
           <div className="flex items-center gap-2 bg-emerald-950/30 border border-emerald-500/30 px-4 py-2 rounded-xl text-emerald-300 text-xs shadow-md select-none">
