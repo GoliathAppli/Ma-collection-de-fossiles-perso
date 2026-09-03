@@ -204,7 +204,7 @@ export default function FossilPrintTemplate({ fossil }: FossilPrintTemplateProps
             </span>
           </div>
 
-          <h1 className="text-2xl font-serif font-black uppercase tracking-wider text-slate-950 leading-tight">
+          <h1 className="text-2xl font-serif font-black uppercase tracking-wider text-slate-950 leading-tight break-words [overflow-wrap:anywhere]">
             {fossil.title || 'Fiche Spécimen'}
           </h1>
 

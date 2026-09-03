@@ -8,6 +8,7 @@ import ImageAdjuster from '../utils/data/ImageAdjuster';
 import InteractiveMap from './InteractiveMap';
 import GeologicTimelineView from './GeologicTimelineView';
 import FossilPrintTemplate from './lib/FossilPrintTemplate';
+import { getAdaptiveTitleClasses } from '../utils/titleUtils';
 
 interface FossilSelectorAndCarouselProps {
   isAdmin: boolean;
@@ -205,7 +206,7 @@ export default function FossilSelectorAndCarousel({
                       <CroppedImage settings={fos.thumbnailImage?.url ? fos.thumbnailImage : fos.image} alt={fos.title} className="w-full h-full" />
                     </div>
 
-                    <h3 className="text-center font-serif text-sm font-bold uppercase text-white break-words line-clamp-2 mb-1">
+                    <h3 className="text-center font-serif text-sm font-bold uppercase text-white break-words [overflow-wrap:anywhere] hyphens-auto line-clamp-2 mb-1 leading-snug">
                       {fos.title || "Spécimen de Fossil"}
                     </h3>
 
@@ -256,12 +257,12 @@ export default function FossilSelectorAndCarousel({
 
       {/* FULL DETAILED PRESENTATION "FICHE TYPE" OF ACTIVE FOSSIL */}
       {activeFossil && (
-        <div className="max-w-4xl mx-auto bg-slate-950/95 border border-yellow-700/20 p-8 rounded-2xl shadow-2xl space-y-8 animate-fade-in relative">
+        <div className="max-w-4xl mx-auto bg-slate-950/95 border border-yellow-700/20 p-4 sm:p-6 md:p-8 rounded-2xl shadow-2xl space-y-6 sm:space-y-8 animate-fade-in relative">
           
           {/* Printable sheet template - only rendered for administrator */}
           {isAdmin && <FossilPrintTemplate fossil={activeFossil} />}
 
-          <div className="absolute top-4 right-4 flex gap-2">
+          <div className="absolute top-4 right-4 flex gap-2 z-20">
             {/* PRINT BUTTON: ONLY VISIBLE IN ADMIN MODE */}
             {isAdmin && (
               <button
@@ -282,16 +283,16 @@ export default function FossilSelectorAndCarousel({
                 playDinoSound();
                 setSelectedFossilId(null);
               }}
-              className="bg-slate-900 hover:bg-slate-800 border border-slate-850 py-1 px-3.5 rounded-full text-xs text-slate-400 hover:text-white transition-all font-mono cursor-pointer"
+              className="bg-slate-900 hover:bg-slate-800 border border-slate-850 py-1 px-3.5 rounded-full text-xs text-slate-400 hover:text-white transition-all font-mono cursor-pointer shadow-md"
             >
               Fermer X
             </button>
           </div>
 
           {/* 1. UNE ZONE TITRE EN GRAND */}
-          <div className="text-center space-y-1">
-            <span className="text-[10px] font-mono text-yellow-500 tracking-wider">SPÉCIMEN AUTHENTIQUE</span>
-            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-white font-serif uppercase text-center">
+          <div className="text-center space-y-1.5 pt-6 sm:pt-2 px-2 max-w-full">
+            <span className="text-[10px] font-mono text-yellow-500 tracking-wider block">SPÉCIMEN AUTHENTIQUE</span>
+            <h1 className={`${getAdaptiveTitleClasses(activeFossil.title || '')} font-extrabold tracking-tight text-white font-serif uppercase text-center break-words [overflow-wrap:anywhere] hyphens-auto leading-tight`}>
               {activeFossil.title || 'Spécimen sans nom'}
             </h1>
           </div>

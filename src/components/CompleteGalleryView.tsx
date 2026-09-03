@@ -670,7 +670,7 @@ export default function CompleteGalleryView({
 
                 {/* Title & Metadata */}
                 <div className="space-y-2 mt-2">
-                  <h3 className="text-center font-serif text-base font-bold uppercase text-white group-hover:text-yellow-400 transition-colors line-clamp-2">
+                  <h3 className="text-center font-serif text-sm sm:text-base font-bold uppercase text-white group-hover:text-yellow-400 transition-colors line-clamp-2 break-words [overflow-wrap:anywhere] hyphens-auto leading-snug">
                     {fos.title || 'Spécimen sans nom'}
                   </h3>
 
@@ -859,8 +859,8 @@ export default function CompleteGalleryView({
                 </div>
 
                 {/* Title & reference */}
-                <div className="text-center space-y-2">
-                  <h2 className="text-2xl sm:text-3xl font-serif font-bold uppercase text-white">
+                <div className="text-center space-y-2 px-2">
+                  <h2 className="text-xl sm:text-2xl md:text-3xl font-serif font-bold uppercase text-white break-words [overflow-wrap:anywhere] hyphens-auto leading-tight">
                     {currentFossil.title || 'Spécimen sans nom'}
                   </h2>
                   {currentFossil.reference && (

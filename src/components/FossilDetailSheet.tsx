@@ -6,6 +6,7 @@ import CroppedImage from './CroppedImage';
 import InteractiveMap from './InteractiveMap';
 import GeologicTimelineView from './GeologicTimelineView';
 import FossilPrintTemplate from './lib/FossilPrintTemplate';
+import { getAdaptiveTitleClasses } from '../utils/titleUtils';
 import {
   MicrobeIcon,
   TrilobiteIcon,
@@ -109,7 +110,7 @@ export default function FossilDetailSheet({
   };
 
   return (
-    <div className="max-w-4xl mx-auto bg-slate-950/95 border border-yellow-700/30 p-5 sm:p-8 rounded-3xl shadow-2xl space-y-8 animate-fade-in relative text-slate-100">
+    <div className="max-w-4xl mx-auto bg-slate-950/95 border border-yellow-700/30 p-4 sm:p-6 md:p-8 rounded-3xl shadow-2xl space-y-6 sm:space-y-8 animate-fade-in relative text-slate-100">
       {/* Printable sheet template - only rendered for administrator */}
       {isAdmin && <FossilPrintTemplate fossil={fossil} />}
 
@@ -230,11 +231,11 @@ export default function FossilDetailSheet({
       </div>
 
       {/* 1. HEADER TITLE ZONE */}
-      <div className="text-center space-y-2">
+      <div className="text-center space-y-2 px-2 max-w-full">
         <span className="text-[10px] font-mono text-yellow-500 tracking-widest uppercase block">
           FICHE SPÉCIMEN DU CONSERVATOIRE
         </span>
-        <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white font-serif uppercase text-center drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)]">
+        <h1 className={`${getAdaptiveTitleClasses(fossil.title || '')} font-extrabold tracking-tight text-white font-serif uppercase text-center drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)] break-words [overflow-wrap:anywhere] hyphens-auto leading-tight`}>
           {fossil.title || 'Spécimen sans nom'}
         </h1>
         {fossil.lifespanPeriodStart && (
