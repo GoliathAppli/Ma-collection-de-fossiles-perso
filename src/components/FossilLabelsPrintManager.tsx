@@ -50,13 +50,73 @@ function getProvenanceDisplay(fossil: Fossil): string {
     return fossil.provenanceName.trim();
   }
   if (fossil.provenanceDate && fossil.provenanceDate.trim()) {
-    return fossil.provenanceDate.trim();
+    return fossil.provenanceDate.replace(/[\r\n]+/g, ' • ').trim();
   }
   return '';
 }
 
 function getReferenceDisplay(fossil: Fossil): string {
   return fossil.reference?.trim() || '';
+}
+
+// Adapt title font size dynamically based on length & word length to ensure full visibility without truncation
+function getTitleTypography(title: string): { fontSize: string; lineHeight: string } {
+  const clean = title.trim();
+  const len = clean.length;
+  const words = clean.split(/[\s-]+/);
+  const maxWordLen = Math.max(...words.map((w) => w.length), 0);
+
+  if (len <= 16 && maxWordLen <= 10) {
+    return { fontSize: '8.4pt', lineHeight: '1.14' };
+  }
+  if (len <= 24 && maxWordLen <= 12) {
+    return { fontSize: '7.5pt', lineHeight: '1.12' };
+  }
+  if (len <= 32 || maxWordLen > 13) {
+    return { fontSize: '6.7pt', lineHeight: '1.12' };
+  }
+  if (len <= 42) {
+    return { fontSize: '6.0pt', lineHeight: '1.10' };
+  }
+  return { fontSize: '5.5pt', lineHeight: '1.08' };
+}
+
+// Adapt provenance and datation font size dynamically to fit entirely in the 70mm x 30mm frame
+function getDetailsTypography(
+  provenance: string,
+  dating: string,
+  titleLen: number
+): { fontSize: string; lineHeight: string } {
+  const provLen = (provenance ? provenance.length : 0) + 13; // with "Provenance : "
+  const datLen = (dating ? dating.length : 0) + 11; // with "Datation : "
+  const maxFieldLen = Math.max(provLen, datLen);
+  const totalChars = provLen + datLen;
+
+  if (maxFieldLen <= 26 && totalChars <= 50 && titleLen <= 22) {
+    return { fontSize: '7.2pt', lineHeight: '1.16' };
+  }
+  if (maxFieldLen <= 34 && totalChars <= 68 && titleLen <= 28) {
+    return { fontSize: '6.6pt', lineHeight: '1.14' };
+  }
+  if (maxFieldLen <= 42 || totalChars <= 80) {
+    return { fontSize: '6.0pt', lineHeight: '1.12' };
+  }
+  if (maxFieldLen <= 52 || totalChars <= 98) {
+    return { fontSize: '5.5pt', lineHeight: '1.10' };
+  }
+  return { fontSize: '5.0pt', lineHeight: '1.08' };
+}
+
+// Prominent reference badge sizing
+function getReferenceBadgeStyle(ref: string): { fontSize: string; padding: string } {
+  const len = ref.trim().length;
+  if (len <= 3) {
+    return { fontSize: '10.5pt', padding: '1.5px 5px' };
+  }
+  if (len <= 5) {
+    return { fontSize: '9pt', padding: '1px 4px' };
+  }
+  return { fontSize: '8pt', padding: '1px 3px' };
 }
 
 // Single Printable Label (Strict 70mm x 30mm)
@@ -76,6 +136,10 @@ function SingleLabelCard({ fossil, borderStyle, isPreview = false }: SingleLabel
   const provenance = getProvenanceDisplay(fossil);
   const dating = getDatingDisplay(fossil);
   const reference = getReferenceDisplay(fossil);
+
+  const titleTypo = getTitleTypography(title);
+  const detailsTypo = getDetailsTypography(provenance, dating, title.length);
+  const refStyle = getReferenceBadgeStyle(reference);
 
   const borderClass =
     borderStyle === 'dashed'
@@ -101,14 +165,14 @@ function SingleLabelCard({ fossil, borderStyle, isPreview = false }: SingleLabel
         backgroundColor: '#ffffff',
       }}
     >
-      {/* 1. PHOTO PRINCIPALE A GAUCHE (EN PNG / TRANSPARENCE SUR FOND BLANC) */}
+      {/* 1. PHOTO PRINCIPALE A GAUCHE (CADRE ÉTENDU 25.5mm x 26mm EN TRANSPARENCE SUR FOND BLANC) */}
       <div
-        className="shrink-0 bg-white flex items-center justify-center relative overflow-hidden"
+        className="shrink-0 bg-white flex items-center justify-center relative overflow-hidden rounded-xs"
         style={{
-          width: '24.5mm',
+          width: '25.5mm',
           height: '26mm',
-          minWidth: '24.5mm',
-          maxWidth: '24.5mm',
+          minWidth: '25.5mm',
+          maxWidth: '25.5mm',
           boxSizing: 'border-box',
           backgroundColor: '#ffffff',
         }}
@@ -135,60 +199,85 @@ function SingleLabelCard({ fossil, borderStyle, isPreview = false }: SingleLabel
           />
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center text-slate-300 bg-slate-50 border border-slate-200 rounded">
-            <ImageIcon className="w-4 h-4 opacity-40" />
+            <ImageIcon className="w-5 h-5 opacity-40" />
           </div>
         )}
       </div>
 
-      {/* 2. BLOC RENSEIGNEMENTS (ORDRE HOMOGENE & REFERENCE A DROITE) */}
+      {/* 2. BLOC RENSEIGNEMENTS (TITRE, RÉFÉRENCE, PROVENANCE & DATATION AVEC LIBELLÉS EXPLICITES) */}
       <div
-        className="flex-1 flex flex-col justify-between pl-1.5 h-full min-w-0 overflow-hidden"
+        className="flex-1 flex flex-col justify-between pl-2 h-full min-w-0 overflow-hidden"
         style={{ boxSizing: 'border-box' }}
       >
-        {/* Ligne Superieure : Titre a gauche + Reference a droite */}
-        <div className="flex items-start justify-between gap-1 min-w-0">
-          <h4
-            className="font-serif font-black uppercase text-slate-950 text-[7.2pt] leading-[1.14] break-words [overflow-wrap:anywhere] line-clamp-2 flex-1 tracking-tight"
-            style={{ fontFamily: 'Georgia, Cambria, "Times New Roman", Times, serif' }}
-          >
-            {title}
-          </h4>
-
+        {/* Haut : Reference mise en grand + Titre adapte sans coupure */}
+        <div className="min-w-0">
           {reference && (
             <span
-              className="shrink-0 font-mono font-bold text-[7pt] text-slate-900 bg-slate-100 border border-slate-400/80 px-1 py-0.2 rounded text-right tracking-tight leading-tight"
-              style={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace' }}
+              className="float-right ml-1.5 mb-0.5 inline-flex items-center justify-center font-mono font-black text-white bg-slate-950 border border-slate-900 rounded shadow-xs text-center leading-none select-all"
+              style={{
+                fontSize: refStyle.fontSize,
+                padding: refStyle.padding,
+                fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+                letterSpacing: '-0.02em',
+                WebkitPrintColorAdjust: 'exact',
+                printColorAdjust: 'exact',
+              }}
+              title={`Référence spécimen : ${reference}`}
             >
               {reference}
             </span>
           )}
+
+          <h4
+            className="font-serif font-black uppercase text-slate-950 tracking-tight"
+            style={{
+              fontFamily: 'Georgia, Cambria, "Times New Roman", Times, serif',
+              fontSize: titleTypo.fontSize,
+              lineHeight: titleTypo.lineHeight,
+              hyphens: 'auto',
+              WebkitHyphens: 'auto',
+              wordBreak: 'break-word',
+              overflowWrap: 'break-word',
+            }}
+          >
+            {title}
+          </h4>
         </div>
 
-        {/* Lignes Inferieures : Lieu de decouverte puis Datation exacte */}
-        <div className="space-y-0.5 mt-auto pt-0.5 border-t border-slate-200/90">
-          {provenance ? (
-            <p
-              className="font-sans text-[6.6pt] font-semibold text-slate-700 truncate leading-tight tracking-normal"
-              style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}
-              title={provenance}
-            >
-              {provenance}
-            </p>
-          ) : (
-            <p className="font-sans text-[6.6pt] text-slate-400 italic truncate leading-tight">—</p>
-          )}
+        {/* Séparateur horizontal discret pour structurer et habiller l'espace */}
+        <div className="w-full border-t border-slate-300/80 my-auto" />
 
-          {dating ? (
-            <p
-              className="font-sans text-[6.6pt] font-medium text-slate-900 truncate leading-tight tracking-normal"
-              style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}
-              title={dating}
-            >
-              {dating}
-            </p>
-          ) : (
-            <p className="font-sans text-[6.6pt] text-slate-400 italic truncate leading-tight">—</p>
-          )}
+        {/* Bas : Provenance & Datation avec libellés explicites et taille de police dynamique */}
+        <div className="flex flex-col justify-end space-y-0.5 min-w-0">
+          <p
+            className="font-sans text-slate-800 break-words tracking-tight"
+            style={{
+              fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+              fontSize: detailsTypo.fontSize,
+              lineHeight: detailsTypo.lineHeight,
+            }}
+            title={provenance ? `Provenance : ${provenance}` : 'Provenance : indéterminée'}
+          >
+            <span className="font-bold text-slate-600">Provenance : </span>
+            <span className="font-semibold text-slate-900">
+              {provenance || <span className="text-slate-400 italic font-normal">indéterminée</span>}
+            </span>
+          </p>
+
+          <p
+            className="font-sans text-slate-950 break-words tracking-tight"
+            style={{
+              fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+              fontSize: detailsTypo.fontSize,
+              lineHeight: detailsTypo.lineHeight,
+            }}
+            title={dating ? `Datation : ${dating}` : 'Datation : indéterminée'}
+          >
+            <span className="font-bold text-slate-600">Datation : </span>
+            <span className="font-black text-slate-950">
+              {dating || <span className="text-slate-400 italic font-normal">indéterminée</span>}
+            </span>
+          </p>
         </div>
       </div>
     </div>
