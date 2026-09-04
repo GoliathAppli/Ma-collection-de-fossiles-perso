@@ -34,7 +34,8 @@ import {
   Share2,
   HelpCircle,
   Info,
-  Printer
+  Printer,
+  Tag
 } from 'lucide-react';
 import { AppConfig, Fossil, GitHubSyncConfig, GitHubSyncStatus } from '../types';
 import { playDinoSound } from '../utils/data/audio';
@@ -43,6 +44,7 @@ import { optimizeAppConfigImages } from '../utils/imageCompressor';
 import { readAndParseJsonFile } from '../utils/jsonImporter';
 import { usePWAInstall } from '../utils/pwa';
 import FossilPrintTemplate from './lib/FossilPrintTemplate';
+import FossilLabelsPrintManager from './FossilLabelsPrintManager';
 import {
   getGitHubConfig,
   saveGitHubConfig,
@@ -73,7 +75,7 @@ export default function AdminPageView({
   onExitAdmin,
   onNavigateToMuseum
 }: AdminPageViewProps) {
-  const [activeTab, setActiveTab] = useState<'fossils' | 'github' | 'media' | 'tools'>('fossils');
+  const [activeTab, setActiveTab] = useState<'fossils' | 'github' | 'media' | 'tools' | 'labels'>('fossils');
 
   // Fossil Management State
   const [fossilSearch, setFossilSearch] = useState('');
@@ -688,6 +690,18 @@ export default function AdminPageView({
             <Sparkles className="w-4 h-4 text-emerald-400" />
             4. Maintenance & Outils
           </button>
+
+          <button
+            onClick={() => { playDinoSound(); setActiveTab('labels'); }}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition whitespace-nowrap cursor-pointer ${
+              activeTab === 'labels'
+                ? 'bg-yellow-600/20 text-yellow-400 border border-yellow-500/40 shadow-sm'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-850'
+            }`}
+          >
+            <Tag className="w-4 h-4 text-amber-400" />
+            5. Étiquettes (7×3 cm)
+          </button>
         </div>
       </header>
 
@@ -771,12 +785,25 @@ export default function AdminPageView({
                 </div>
               </div>
 
-              <button
-                onClick={handleCreateNewFossil}
-                className="w-full md:w-auto flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-5 py-2.5 rounded-xl text-xs uppercase tracking-wider transition shadow-lg shadow-emerald-600/20 active:scale-95 cursor-pointer whitespace-nowrap"
-              >
-                <Plus className="w-4 h-4" /> Ajouter un Spécimen
-              </button>
+              <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+                <button
+                  onClick={() => {
+                    playDinoSound();
+                    setActiveTab('labels');
+                  }}
+                  className="w-full sm:w-auto flex items-center justify-center gap-2 bg-yellow-600/20 hover:bg-yellow-600/30 text-yellow-400 border border-yellow-500/40 font-bold px-4 py-2.5 rounded-xl text-xs uppercase tracking-wider transition active:scale-95 cursor-pointer whitespace-nowrap"
+                  title="Imprimer des étiquettes (7cm x 3cm) regroupées sur feuille A4"
+                >
+                  <Tag className="w-4 h-4 text-yellow-500" /> Étiquettes (7×3 cm)
+                </button>
+
+                <button
+                  onClick={handleCreateNewFossil}
+                  className="w-full sm:w-auto flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-5 py-2.5 rounded-xl text-xs uppercase tracking-wider transition shadow-lg shadow-emerald-600/20 active:scale-95 cursor-pointer whitespace-nowrap"
+                >
+                  <Plus className="w-4 h-4" /> Ajouter un Spécimen
+                </button>
+              </div>
             </div>
 
             {/* FOSSILS LIST / TABLE */}
@@ -1510,6 +1537,16 @@ export default function AdminPageView({
               </div>
             </div>
           </div>
+        )}
+
+        {/* ========================================================= */}
+        {/* TAB 5: LABELS PRINTING (7x3 cm) */}
+        {/* ========================================================= */}
+        {activeTab === 'labels' && (
+          <FossilLabelsPrintManager
+            fossils={config.fossils}
+            onBackToFossils={() => setActiveTab('fossils')}
+          />
         )}
       </main>
 
