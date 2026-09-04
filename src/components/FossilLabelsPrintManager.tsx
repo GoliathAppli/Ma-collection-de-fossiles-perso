@@ -192,7 +192,7 @@ function SingleLabelCard({ fossil, borderStyle, isPreview = false }: SingleLabel
               transform: `scale(${scale}) translate(${posX}%, ${posY}%)`,
               top: 0,
               left: 0,
-              backgroundColor: '#ffffff',
+              backgroundColor: 'transparent',
               WebkitPrintColorAdjust: 'exact',
               printColorAdjust: 'exact',
             }}
