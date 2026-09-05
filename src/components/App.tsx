@@ -196,21 +196,35 @@ export default function App() {
       
       const sheetIndex = sheets.findIndex((s) => s && s.id === f.id);
       
-      const expectedImage = f.leFossileImage?.url ? f.leFossileImage : (f.thumbnailImage?.url ? f.thumbnailImage : f.image);
+      const currentSheet = sheetIndex !== -1 ? sheets[sheetIndex] : null;
+      
+      const expectedImage = f.leFossileImage?.url 
+        ? f.leFossileImage 
+        : (currentSheet?.fossilImage?.url 
+            ? currentSheet.fossilImage 
+            : (f.thumbnailImage?.url ? f.thumbnailImage : f.image));
+
       const expectedPeriod = f.periodeDatation || 
         (f.lifespanPeriodStart ? 
           (f.lifespanPeriodEnd ? `${f.lifespanPeriodStart} - ${f.lifespanPeriodEnd}` : f.lifespanPeriodStart) 
-          : "");
+          : (currentSheet?.periodeDatation || ""));
+
+      const expectedProvenance = f.provenanceDate || (currentSheet?.provenanceDate || "");
+      const expectedDateLieuAchat = f.dateLieuAchat || (currentSheet?.dateLieuAchat || "");
+      const expectedPrixAchat = f.prixAchat || (currentSheet?.prixAchat || "");
+      const expectedCertificat = f.certificatImage?.url 
+        ? f.certificatImage 
+        : (currentSheet?.certificatImage?.url ? currentSheet.certificatImage : f.certificatImage);
 
       const expectedSheetData: TechnicalSheetRow = {
         id: f.id,
         fossilName: f.title || "Fossile sans nom",
         fossilImage: normalizeImg(expectedImage),
-        provenanceDate: f.provenanceDate || "",
+        provenanceDate: expectedProvenance,
         periodeDatation: expectedPeriod,
-        dateLieuAchat: f.dateLieuAchat || "",
-        prixAchat: f.prixAchat || "",
-        certificatImage: normalizeImg(f.certificatImage)
+        dateLieuAchat: expectedDateLieuAchat,
+        prixAchat: expectedPrixAchat,
+        certificatImage: normalizeImg(expectedCertificat)
       };
 
       if (sheetIndex === -1) {

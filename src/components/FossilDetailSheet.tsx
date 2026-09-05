@@ -465,17 +465,28 @@ export default function FossilDetailSheet({
                 <span className="text-[10px] text-slate-500 font-mono uppercase tracking-wider block text-center">
                   Certificat d'Authenticité
                 </span>
-                <div className="w-32 h-32 rounded-lg overflow-hidden bg-transparent border border-slate-800 relative group cursor-pointer shadow-md">
-                  <CroppedImage settings={fossil.certificatImage} alt="Certificat d'Authenticité" className="w-full h-full" />
-                  <div
+                <div
+                  onClick={() => {
+                    playDinoSound();
+                    setExpandedCertUrl(fossil.certificatImage || null);
+                  }}
+                  className="w-36 h-44 sm:w-40 sm:h-48 rounded-xl overflow-hidden bg-slate-900/90 border border-yellow-700/30 relative group cursor-pointer shadow-lg hover:border-yellow-500/50 transition-all flex items-center justify-center p-1"
+                >
+                  <CroppedImage
+                    settings={fossil.certificatImage}
+                    alt="Certificat d'Authenticité"
+                    className="w-full h-full"
                     onClick={() => {
                       playDinoSound();
                       setExpandedCertUrl(fossil.certificatImage || null);
                     }}
-                    className="absolute inset-0 bg-slate-950/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity"
+                  />
+                  <div
+                    className="absolute inset-0 bg-slate-950/60 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center gap-1.5 text-white transition-opacity p-2 text-center pointer-events-none"
                     title="Agrandir le certificat"
                   >
-                    <Maximize2 className="w-5 h-5 text-yellow-500" />
+                    <Maximize2 className="w-6 h-6 text-yellow-500" />
+                    <span className="text-[10px] font-mono text-yellow-400">Agrandir</span>
                   </div>
                 </div>
                 <span className="text-[9px] font-mono text-emerald-400 flex items-center gap-1 justify-center bg-emerald-950/30 border border-emerald-900/40 py-1 px-2.5 rounded-full">
@@ -541,19 +552,35 @@ export default function FossilDetailSheet({
 
       {/* EXPANDED CERTIFICATE MODAL */}
       {expandedCertUrl && (
-        <div className="fixed inset-0 bg-slate-950/95 backdrop-blur-md flex flex-col items-center justify-center p-4 z-50">
-          <div className="max-w-4xl max-h-[80vh] relative border-2 border-yellow-700/30 rounded-2xl overflow-hidden shadow-2xl bg-slate-900 flex items-center justify-center p-4">
+        <div
+          className="fixed inset-0 bg-slate-950/95 backdrop-blur-md flex flex-col items-center justify-center p-4 z-50 cursor-zoom-out"
+          onClick={() => {
+            playDinoSound();
+            setExpandedCertUrl(null);
+          }}
+        >
+          <div
+            className="max-w-4xl max-h-[82vh] relative border-2 border-yellow-700/30 rounded-2xl overflow-hidden shadow-2xl bg-slate-900 flex items-center justify-center p-4 cursor-default"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => {
+                playDinoSound();
+                setExpandedCertUrl(null);
+              }}
+              className="absolute top-3 right-3 bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white p-1.5 rounded-full transition-colors z-20"
+              title="Fermer"
+            >
+              <X className="w-5 h-5" />
+            </button>
             <img
               src={resolveImageUrl(expandedCertUrl.url)}
-              alt="Certificat Agrandit"
+              alt="Certificat d'Authenticité"
               referrerPolicy="no-referrer"
-              className="max-w-full max-h-[70vh] object-contain rounded"
-              style={{
-                transform: `scale(${expandedCertUrl.scale}) translate(${expandedCertUrl.posX}%, ${expandedCertUrl.posY}%)`
-              }}
+              className="max-w-full max-h-[72vh] object-contain rounded select-none"
             />
           </div>
-          <div className="text-center mt-4 space-y-1">
+          <div className="text-center mt-4 space-y-1" onClick={(e) => e.stopPropagation()}>
             <p className="text-xs text-slate-400">Certificat d'Authenticité Officiel de la Collection</p>
             <button
               onClick={() => {

@@ -77,18 +77,6 @@ export default function UniversalVideoPlayer({
               title="Lecteur Vidéo"
               loading="lazy"
             />
-            {embedInfo.originalUrl && (
-              <div className="absolute top-2 right-2 z-10 opacity-80 hover:opacity-100 transition-opacity flex">
-                <a
-                  href={embedInfo.originalUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="bg-slate-950/80 hover:bg-slate-900 text-yellow-500 hover:text-yellow-400 border border-slate-700/60 px-2.5 py-1 rounded text-[11px] font-mono backdrop-blur-md shadow-lg flex items-center gap-1.5 transition-all pointer-events-auto"
-                >
-                  <ExternalLink className="w-3 h-3" /> Ouvrir en grand
-                </a>
-              </div>
-            )}
           </>
         )}
       </div>

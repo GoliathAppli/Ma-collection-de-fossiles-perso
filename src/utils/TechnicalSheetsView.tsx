@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { TechnicalSheetRow, ImageSettings } from '../types';
 import { playDinoSound } from './data/audio';
-import { Plus, Trash2, Maximize2, ShieldAlert, CheckCircle2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus, Trash2, Maximize2, ShieldAlert, CheckCircle2, ChevronDown, ChevronUp, X } from 'lucide-react';
 import CroppedImage from '../components/CroppedImage';
 import ImageAdjuster from './data/ImageAdjuster';
 import { resolveImageUrl } from './imageUrl';
@@ -168,20 +168,31 @@ function TechnicalSheetRowComponent({
       {/* QUALITY CERTIFICATE IMAGE CELL */}
       <td className="p-3.5 text-center">
         <div className="flex flex-col items-center gap-1.5">
-          <div className="w-16 h-16 rounded overflow-hidden bg-transparent relative group">
-            <CroppedImage settings={row.certificatImage} alt="Certificat" className="w-full h-full" />
-            
-            {row.certificatImage?.url && (
-              <button
-                onClick={() => {
-                  playDinoSound();
-                  setExpandedCertUrl(row.certificatImage);
-                }}
-                className="absolute inset-0 bg-slate-950/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity border-none cursor-pointer"
-                title="Agrandir le certificat"
-              >
-                <Maximize2 className="w-4 h-4 text-yellow-500" />
-              </button>
+          <div className="w-16 h-20 rounded-lg overflow-hidden bg-slate-900/90 border border-yellow-700/30 relative group shadow flex items-center justify-center p-0.5">
+            {row.certificatImage?.url ? (
+              <>
+                <CroppedImage
+                  settings={row.certificatImage}
+                  alt="Certificat"
+                  className="w-full h-full"
+                  onClick={() => {
+                    playDinoSound();
+                    setExpandedCertUrl(row.certificatImage);
+                  }}
+                />
+                <button
+                  onClick={() => {
+                    playDinoSound();
+                    setExpandedCertUrl(row.certificatImage);
+                  }}
+                  className="absolute inset-0 bg-slate-950/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity border-none cursor-pointer"
+                  title="Agrandir le certificat"
+                >
+                  <Maximize2 className="w-4 h-4 text-yellow-500" />
+                </button>
+              </>
+            ) : (
+              <span className="text-[10px] text-slate-600 font-mono italic">Aucun</span>
             )}
           </div>
           
@@ -378,26 +389,42 @@ export default function TechnicalSheetsView({ isAdmin, sheets, onSaveSheets }: T
 
       {/* FULLSCREEN ZOOM POPUP */}
       {expandedCertUrl && (
-        <div className="fixed inset-0 bg-slate-950/95 backdrop-blur-md flex flex-col items-center justify-center p-4 z-50">
-          <div className="max-w-4xl max-h-[80vh] relative border-2 border-yellow-700/30 rounded-2xl overflow-hidden shadow-2xl bg-slate-900 flex items-center justify-center p-4">
+        <div
+          className="fixed inset-0 bg-slate-950/95 backdrop-blur-md flex flex-col items-center justify-center p-4 z-50 cursor-zoom-out"
+          onClick={() => {
+            playDinoSound();
+            setExpandedCertUrl(null);
+          }}
+        >
+          <div
+            className="max-w-4xl max-h-[82vh] relative border-2 border-yellow-700/30 rounded-2xl overflow-hidden shadow-2xl bg-slate-900 flex items-center justify-center p-4 cursor-default"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => {
+                playDinoSound();
+                setExpandedCertUrl(null);
+              }}
+              className="absolute top-3 right-3 bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white p-1.5 rounded-full transition-colors z-20"
+              title="Fermer"
+            >
+              <X className="w-5 h-5" />
+            </button>
             <img
               src={resolveImageUrl(expandedCertUrl.url)}
-              alt="Certificat Agrandit"
+              alt="Certificat d'Authenticité"
               referrerPolicy="no-referrer"
-              className="max-w-full max-h-[70vh] object-contain rounded"
-              style={{
-                transform: `scale(${expandedCertUrl.scale}) translate(${expandedCertUrl.posX}%, ${expandedCertUrl.posY}%)`
-              }}
+              className="max-w-full max-h-[72vh] object-contain rounded select-none"
             />
           </div>
-          <div className="text-center mt-4 space-y-1">
+          <div className="text-center mt-4 space-y-1" onClick={(e) => e.stopPropagation()}>
             <p className="text-xs text-slate-400">Certificat d'Authenticité Officiel de la Collection</p>
             <button
               onClick={() => {
                 playDinoSound();
                 setExpandedCertUrl(null);
               }}
-              className="bg-yellow-700/80 hover:bg-yellow-600 border border-yellow-500/30 py-2 px-6 rounded-full text-xs font-bold text-white uppercase tracking-wider transition-all mt-2"
+              className="bg-yellow-700/80 hover:bg-yellow-600 border border-yellow-500/30 py-2 px-6 rounded-full text-xs font-bold text-white uppercase tracking-wider transition-all mt-2 cursor-pointer"
             >
               Fermer le Visualiseur
             </button>
