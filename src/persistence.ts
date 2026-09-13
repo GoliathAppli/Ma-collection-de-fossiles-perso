@@ -46,6 +46,12 @@ export function sanitizeConfig(config: any): AppConfig {
               image: mainImg,
               thumbnailImage: { ...mainImg },
               saviezVousImage: { url: "", scale: 1, posX: 0, posY: 0 },
+              descImages: Array.isArray(f.descImages)
+                ? f.descImages.filter((img: any) => img && typeof img.url === "string" && img.url.trim() !== "")
+                : [],
+              dietImages: Array.isArray(f.dietImages)
+                ? f.dietImages.filter((img: any) => img && typeof img.url === "string" && img.url.trim() !== "")
+                : [],
             };
           })
         )

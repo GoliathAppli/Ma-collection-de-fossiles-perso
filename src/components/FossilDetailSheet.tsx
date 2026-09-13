@@ -154,6 +154,13 @@ export default function FossilDetailSheet({
     }
   }, [fossil.id, scrollMode]);
 
+  const validDescImages = (fossil.descImages || []).filter(
+    (img) => img && typeof img.url === 'string' && img.url.trim().length > 0
+  );
+  const validDietImages = (fossil.dietImages || []).filter(
+    (img) => img && typeof img.url === 'string' && img.url.trim().length > 0
+  );
+
   return (
     <div
       ref={sheetContainerRef}
@@ -259,7 +266,7 @@ export default function FossilDetailSheet({
       <FossilAudioGuide fossil={fossil} />
 
       {/* 4. RUBRIQUE DESCRIPTION : TEXTE + JUSQU'À 6 IMAGES LES UNES À CÔTÉ DES AUTRES SUR LA MÊME LIGNE */}
-      {(fossil.description || (fossil.descImages && fossil.descImages.length > 0)) && (
+      {(fossil.description || validDescImages.length > 0) && (
         <div className="bg-slate-900/30 border border-slate-850 p-6 rounded-2xl space-y-4">
           <div className="flex items-center justify-center gap-2 border-b border-slate-850 pb-2 text-center">
             <BookOpen className="w-5 h-5 text-yellow-500" />
@@ -272,11 +279,11 @@ export default function FossilDetailSheet({
             </p>
           )}
 
-          {/* 6 images horizontally next to each other on a line */}
-          {fossil.descImages && fossil.descImages.length > 0 && (
+          {/* 6 images horizontally next to each other on a line, centered */}
+          {validDescImages.length > 0 && (
             <div className="overflow-x-auto py-2 scrollbar-none">
-              <div className="flex gap-3 justify-center min-w-max md:justify-start">
-                {fossil.descImages.map((img, i) => (
+              <div className="flex gap-3 justify-center items-center w-full min-w-max">
+                {validDescImages.map((img, i) => (
                   <div key={i} className="w-32 h-32 rounded-lg bg-transparent overflow-hidden relative flex-none">
                     <CroppedImage settings={img} alt={`Description photo ${i + 1}`} className="w-full h-full" />
                   </div>
@@ -288,7 +295,7 @@ export default function FossilDetailSheet({
       )}
 
       {/* 4.5. RUBRIQUE ALIMENTATION : TEXTE + JUSQU'À 6 IMAGES CAROUSEL */}
-      {(fossil.dietText || (fossil.dietImages && fossil.dietImages.length > 0)) && (
+      {(fossil.dietText || validDietImages.length > 0) && (
         <div className="bg-slate-900/30 border border-slate-850 p-6 rounded-2xl space-y-4">
           <div className="flex items-center justify-center gap-2 border-b border-slate-850 pb-2 text-center">
             <span className="text-lg">🍖</span>
@@ -301,10 +308,10 @@ export default function FossilDetailSheet({
             </p>
           )}
 
-          {fossil.dietImages && fossil.dietImages.length > 0 && (
+          {validDietImages.length > 0 && (
             <div className="overflow-x-auto py-2 scrollbar-none">
-              <div className="flex gap-3 justify-center min-w-max md:justify-start">
-                {fossil.dietImages.map((img, i) => (
+              <div className="flex gap-3 justify-center items-center w-full min-w-max">
+                {validDietImages.map((img, i) => (
                   <div key={i} className="w-32 h-32 rounded-lg bg-transparent overflow-hidden relative flex-none">
                     <CroppedImage settings={img} alt={`Alimentation photo ${i + 1}`} className="w-full h-full" />
                   </div>

@@ -102,8 +102,16 @@ export default function FossilDetailForm({ fossil, onSave, onDelete, onCancel }:
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     playDinoSound();
+    const cleanedDescImages = (edited.descImages || []).filter(
+      img => img && typeof img.url === 'string' && img.url.trim().length > 0
+    );
+    const cleanedDietImages = (edited.dietImages || []).filter(
+      img => img && typeof img.url === 'string' && img.url.trim().length > 0
+    );
     onSave({
       ...edited,
+      descImages: cleanedDescImages,
+      dietImages: cleanedDietImages,
       thumbnailImage: edited.image ? { ...edited.image } : emptyImage(),
       saviezVousImage: emptyImage()
     });
