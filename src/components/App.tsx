@@ -1154,6 +1154,7 @@ export default function App() {
                   <TechnicalSheetsView
                     isAdmin={isAdmin || isSheetsUnlocked}
                     sheets={config.technicalSheets}
+                    fossils={config.fossils}
                     onSaveSheets={(updatedSheets) => {
                       const updatedFossils = config.fossils.map((f) => {
                         const matchedSheet = updatedSheets.find((s) => s.id === f.id);
@@ -1277,6 +1278,9 @@ export default function App() {
                 }}
                 onNavigateToMuseum={() => {
                   setView("secondHome");
+                }}
+                onNavigateToSheets={() => {
+                  setView("sheets");
                 }}
               />
             </motion.div>

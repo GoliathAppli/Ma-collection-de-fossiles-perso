@@ -67,6 +67,7 @@ interface AdminPageViewProps {
   onImportConfig: (newConfig: AppConfig) => Promise<void>;
   onExitAdmin: () => void;
   onNavigateToMuseum: () => void;
+  onNavigateToSheets?: () => void;
 }
 
 export default function AdminPageView({
@@ -74,7 +75,8 @@ export default function AdminPageView({
   onUpdateConfig,
   onImportConfig,
   onExitAdmin,
-  onNavigateToMuseum
+  onNavigateToMuseum,
+  onNavigateToSheets
 }: AdminPageViewProps) {
   const [activeTab, setActiveTab] = useState<'fossils' | 'github' | 'media' | 'tools' | 'labels'>('fossils');
 
@@ -625,6 +627,21 @@ export default function AdminPageView({
               <span className="hidden sm:inline">{isInstalled ? "App Installée (PWA)" : "Installer l'App (PWA)"}</span>
               <span className="sm:hidden">PWA</span>
             </button>
+
+            {onNavigateToSheets && (
+              <button
+                onClick={() => {
+                  playDinoSound();
+                  onNavigateToSheets();
+                }}
+                className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 border border-amber-600/40 hover:border-amber-500 text-amber-400 font-bold px-3.5 py-2 rounded-xl text-xs uppercase tracking-wider transition cursor-pointer"
+                title="Consulter et imprimer le tableau complet des fiches techniques de suivi"
+              >
+                <Printer className="w-4 h-4" />
+                <span className="hidden md:inline">Fiches de Suivi & Impression</span>
+                <span className="md:hidden">Fiches</span>
+              </button>
+            )}
 
             <button
               onClick={() => {
@@ -1484,6 +1501,29 @@ export default function AdminPageView({
                     {isOptimizingImages ? 'Optimisation en cours...' : 'Optimiser les photos'}
                   </button>
                 </div>
+
+                {onNavigateToSheets && (
+                  <div className="p-5 bg-slate-950 border border-amber-600/30 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <Printer className="w-4 h-4 text-amber-400" />
+                        <h4 className="text-sm font-bold text-white">Registre & Fiches Techniques de Suivi (Impression A4)</h4>
+                      </div>
+                      <p className="text-xs text-slate-400 mt-1">
+                        Consultez le registre complet des spécimens (datations, lieux et prix d'achat, certificats d'authenticité) et imprimez le tableau au format A4 Paysage ou Portrait.
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        playDinoSound();
+                        onNavigateToSheets();
+                      }}
+                      className="bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold px-5 py-2.5 rounded-xl text-xs uppercase tracking-wider transition whitespace-nowrap cursor-pointer shadow-md shadow-amber-950/40"
+                    >
+                      Ouvrir & Imprimer le Tableau
+                    </button>
+                  </div>
+                )}
 
                 <div className="p-5 bg-slate-950 border border-slate-800 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div>
