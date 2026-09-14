@@ -1,5 +1,5 @@
 {
-  "lastUpdated": 1789400377090,
+  "lastUpdated": 1789400471564,
   "videoUrl1": "https://youtu.be/R-AAm6oEaY8?is=yinXlv1Qufg-KXRc",
   "secondHomeTitle": "Bienvenue !",
   "secondHomeImage": {
@@ -1812,7 +1812,7 @@
         "posX": 0,
         "posY": 0
       },
-      "provenanceDate": "Mer du nord (date inconnue)",
+      "provenanceDate": "Mer du nord \nDate inconnue",
       "periodeDatation": "40 000 ans",
       "dateLieuAchat": "30/08/2026\nBourse de Bernissart",
       "prixAchat": "15",
@@ -2294,7 +2294,7 @@
         "posX": 0,
         "posY": 0
       },
-      "provenanceDate": "Mer du nord (date inconnue)",
+      "provenanceDate": "Mer du nord \nDate inconnue",
       "periodeDatation": "40 000 ans",
       "dateLieuAchat": "30/08/2026\nBourse de Bernissart",
       "prixAchat": "15",
