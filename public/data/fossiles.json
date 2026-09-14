@@ -1,5 +1,5 @@
 {
-  "lastUpdated": 1789398194288,
+  "lastUpdated": 1789398666679,
   "videoUrl1": "https://youtu.be/R-AAm6oEaY8?is=yinXlv1Qufg-KXRc",
   "secondHomeTitle": "Bienvenue !",
   "secondHomeImage": {
@@ -343,9 +343,9 @@
         "posX": 0,
         "posY": 0
       },
-      "provenanceDate": "Angleterre  /  France  / Espagne",
+      "provenanceDate": "Angleterre  /  France  / Espagne\nDate inconnue",
       "periodeDatation": "Dévonien - Crétacé",
-      "dateLieuAchat": "2010-2023\nAngleterre  /  France  / Espagne",
+      "dateLieuAchat": "Angleterre  /  France  / Espagne\n(De 2010 à 2023)",
       "prixAchat": "45",
       "certificatImage": {
         "url": "",
@@ -416,7 +416,7 @@
         "posX": 0,
         "posY": 0
       },
-      "provenanceDate": "Erfoud / Maroc (formation de Kem-Kem)\nDate inconnue ",
+      "provenanceDate": "formation de Kem-Kem (Erfoud / Maroc)\nDate inconnue ",
       "periodeDatation": "100,5 MA à 66 MA",
       "dateLieuAchat": "2025\nVendeur Pro Paleoring ",
       "prixAchat": "175",
@@ -1830,9 +1830,9 @@
         "posX": 0,
         "posY": 0
       },
-      "provenanceDate": "Angleterre  /  France  / Espagne",
+      "provenanceDate": "Angleterre  /  France  / Espagne\nDate inconnue",
       "periodeDatation": "Dévonien - Crétacé",
-      "dateLieuAchat": "2010-2023\nAngleterre  /  France  / Espagne",
+      "dateLieuAchat": "Angleterre  /  France  / Espagne\n(De 2010 à 2023)",
       "prixAchat": "45",
       "certificatImage": {
         "url": "",
@@ -1910,7 +1910,7 @@
         "posX": 0,
         "posY": 0
       },
-      "provenanceDate": "Erfoud / Maroc (formation de Kem-Kem)\nDate inconnue ",
+      "provenanceDate": "formation de Kem-Kem (Erfoud / Maroc)\nDate inconnue ",
       "periodeDatation": "100,5 MA à 66 MA",
       "dateLieuAchat": "2025\nVendeur Pro Paleoring ",
       "prixAchat": "175",
