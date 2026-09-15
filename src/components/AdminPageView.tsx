@@ -1566,7 +1566,10 @@ export default function AdminPageView({
 
       {/* PRINT TEMPLATE FOR ADMIN */}
       {fossilToPrint && (
-        <FossilPrintTemplate fossil={fossilToPrint} />
+        <FossilPrintTemplate
+          fossil={fossilToPrint}
+          sheet={config.technicalSheets?.find((s) => s.id === fossilToPrint.id)}
+        />
       )}
     </div>
   );

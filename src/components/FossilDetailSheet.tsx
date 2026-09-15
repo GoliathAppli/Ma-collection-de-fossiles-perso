@@ -167,7 +167,18 @@ export default function FossilDetailSheet({
       className="max-w-4xl mx-auto bg-slate-950/95 border border-yellow-700/20 p-4 sm:p-6 md:p-8 rounded-2xl shadow-2xl space-y-6 sm:space-y-8 animate-fade-in relative text-slate-100"
     >
       {/* Printable sheet template - only rendered for administrator */}
-      {isAdmin && <FossilPrintTemplate fossil={fossil} />}
+      {isAdmin && (
+        <FossilPrintTemplate
+          fossil={{
+            ...fossil,
+            prixAchat: traceData.prixAchat || fossil.prixAchat,
+            dateLieuAchat: traceData.dateLieuAchat || fossil.dateLieuAchat,
+            provenanceDate: traceData.provenanceDate || fossil.provenanceDate,
+            periodeDatation: traceData.periodeDatation || fossil.periodeDatation,
+            certificatImage: traceData.certificatImage?.url ? traceData.certificatImage : fossil.certificatImage,
+          }}
+        />
+      )}
 
       {/* TOP RIGHT ACTION BUTTONS */}
       <div className="absolute top-4 right-4 flex items-center gap-2 z-20">
