@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { getSafeEmbedUrl } from '../utils/data/videoEmbed';
 import UniversalVideoPlayer from './UniversalVideoPlayer';
 import { GEOLOGIC_PERIODS } from './geologicPeriods';
+import DetailedGeologicTimeline from './DetailedGeologicTimeline';
 import { playDinoSound } from '../utils/data/audio';
 import { ArrowLeft, ArrowRight, Eye, Video, Upload } from 'lucide-react';
 import { GeologicPeriodInfo } from '../types';
@@ -16,6 +17,7 @@ interface GeologicTimelineViewProps {
   onSelectRange?: (start: string, end: string) => void;
   readOnly?: boolean;
   showVideoSection?: boolean;
+  showDetailedScale?: boolean;
 }
 
 export default function GeologicTimelineView({
@@ -26,7 +28,8 @@ export default function GeologicTimelineView({
   highlightedEnd,
   onSelectRange,
   readOnly = false,
-  showVideoSection = false
+  showVideoSection = false,
+  showDetailedScale = false,
 }: GeologicTimelineViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [selectedPeriod, setSelectedPeriod] = useState<GeologicPeriodInfo | null>(null);
@@ -233,6 +236,11 @@ export default function GeologicTimelineView({
             </div>
           </div>
         </div>
+      )}
+
+      {/* DETAILED GEOLOGICAL TIMESCALE (ONLY ON DEDICATED GEOLOGIC TIMELINE PAGE) */}
+      {(showDetailedScale || showVideoSection) && (
+        <DetailedGeologicTimeline />
       )}
 
       {/* VIDEO INSERTION FOR ENTIRE SITE TIMELINE PAGE */}

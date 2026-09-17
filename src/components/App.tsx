@@ -1025,6 +1025,7 @@ export default function App() {
                 <GeologicTimelineView
                   readOnly={false}
                   showVideoSection={true}
+                  showDetailedScale={true}
                   isAdmin={isAdmin}
                   videoUrl={config.scaleVideoUrl}
                   onSaveVideo={(url) =>
