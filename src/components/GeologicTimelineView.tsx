@@ -1,11 +1,14 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { getSafeEmbedUrl } from '../utils/data/videoEmbed';
 import UniversalVideoPlayer from './UniversalVideoPlayer';
 import { GEOLOGIC_PERIODS } from './geologicPeriods';
-import DetailedGeologicTimeline from './DetailedGeologicTimeline';
+import DetailedHorizontalTimeline from './DetailedHorizontalTimeline';
+import CollectionFossilsTimeline from './CollectionFossilsTimeline';
+import CollectionFossilsWorldMap from './CollectionFossilsWorldMap';
+import FossilDetailSheet from './FossilDetailSheet';
 import { playDinoSound } from '../utils/data/audio';
 import { ArrowLeft, ArrowRight, Eye, Video, Upload } from 'lucide-react';
-import { GeologicPeriodInfo } from '../types';
+import { GeologicPeriodInfo, Fossil } from '../types';
 
 interface GeologicTimelineViewProps {
   isAdmin?: boolean;
@@ -18,6 +21,8 @@ interface GeologicTimelineViewProps {
   readOnly?: boolean;
   showVideoSection?: boolean;
   showDetailedScale?: boolean;
+  fossils?: Fossil[];
+  onSelectFossil?: (fossil: Fossil) => void;
 }
 
 export default function GeologicTimelineView({
@@ -30,15 +35,27 @@ export default function GeologicTimelineView({
   readOnly = false,
   showVideoSection = false,
   showDetailedScale = false,
+  fossils = [],
+  onSelectFossil,
 }: GeologicTimelineViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [selectedPeriod, setSelectedPeriod] = useState<GeologicPeriodInfo | null>(null);
   const [videoInput, setVideoInput] = useState(videoUrl);
   const [isUploadingVideo, setIsUploadingVideo] = useState(false);
+  const [activeFossilSheet, setActiveFossilSheet] = useState<Fossil | null>(null);
 
   useEffect(() => {
     setVideoInput(videoUrl);
   }, [videoUrl]);
+
+  const handleSelectFossil = useCallback((f: Fossil) => {
+    playDinoSound();
+    if (onSelectFossil) {
+      onSelectFossil(f);
+    } else {
+      setActiveFossilSheet(f);
+    }
+  }, [onSelectFossil]);
 
   // Determine span of highlights if it's used as a selector or indicator
   const startIndex = highlightedStart ? GEOLOGIC_PERIODS.findIndex(p => p.name === highlightedStart) : -1;
@@ -105,142 +122,160 @@ export default function GeologicTimelineView({
 
 
   return (
-    <div className="space-y-6 w-full py-4 text-slate-100">
-      {/* Horizontal Scroll Controls */}
-      <div className="flex justify-between items-center px-4">
-        <div className="text-xs text-slate-400 font-mono">
-          {readOnly ? (
-            <span className="text-yellow-500/95 font-semibold uppercase">Période de vie estimée de l'espèce</span>
-          ) : (
-            <span>Faites glisser de gauche à droite ↔️ {onSelectRange ? '(Cliquez sur 2 périodes pour définir l\'intervalle)' : '(Cliquez pour en savoir plus)'}</span>
-          )}
+    <div className="space-y-8 w-full py-4 text-slate-100">
+      {/* 1. DEDICATED TIMELINE PAGE VIEW */}
+      {showDetailedScale ? (
+        <div className="space-y-10">
+          {/* Detailed Horizontal Geologic Timeline (Replaces the 1st and 2nd timelines) */}
+          <DetailedHorizontalTimeline />
+
+          {/* Simplified Horizontal Timeline of Collection Fossils in their Epochs */}
+          <CollectionFossilsTimeline
+            fossils={fossils}
+            onSelectFossil={handleSelectFossil}
+          />
+
+          {/* Realistic World Map of Provenances */}
+          <CollectionFossilsWorldMap
+            fossils={fossils}
+            onSelectFossil={handleSelectFossil}
+          />
         </div>
-        <div className="flex gap-2">
-          <button
-            onClick={scrollLeft}
-            type="button"
-            className="p-1.5 rounded-full bg-slate-900 border border-slate-800 hover:border-yellow-600/40 text-slate-300 hover:text-yellow-500 transition-all"
-            title="Naviguer à gauche"
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </button>
-          <button
-            onClick={scrollRight}
-            type="button"
-            className="p-1.5 rounded-full bg-slate-900 border border-slate-800 hover:border-yellow-600/40 text-slate-300 hover:text-yellow-500 transition-all"
-            title="Naviguer à droite"
-          >
-            <ArrowRight className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
-
-      {/* SWIPEABLE SEGMENTS CONTAINER */}
-      <div
-        ref={containerRef}
-        className="flex gap-4 overflow-x-auto py-4 px-4 scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent snap-x"
-        style={{ scrollSnapType: 'x mandatory' }}
-      >
-        {GEOLOGIC_PERIODS.map((p, idx) => {
-          const highlighted = isHighlighted(p.name, idx);
-          const isStart = p.name === highlightedStart;
-          const isEnd = p.name === highlightedEnd;
-
-          return (
-            <div
-              key={p.name}
-              onClick={() => handlePeriodClick(p, idx)}
-              className={`flex-none w-64 snap-start p-4 rounded-xl border transition-all duration-300 cursor-pointer select-none relative overflow-hidden group
-                ${highlighted 
-                  ? 'bg-gradient-to-br from-yellow-950/70 to-amber-900/40 border-yellow-500 text-yellow-100 shadow-[0_0_15px_rgba(234,179,8,0.15)] ring-2 ring-yellow-600/30' 
-                  : 'bg-slate-950/90 hover:bg-slate-900/80 border-slate-800 text-slate-300 hover:border-slate-700'
-                }`}
-            >
-              {/* background design line */}
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-slate-700 to-transparent opacity-40" />
-
-              <div className="flex justify-between items-start mb-2">
-                <span className="text-[10px] font-mono tracking-widest uppercase py-0.5 px-2 bg-slate-900/80 border border-slate-800/60 rounded text-slate-400 group-hover:text-slate-200 transition-colors">
-                  {p.era}
-                </span>
-                <span className="text-xs font-bold text-yellow-600 font-mono tracking-tighter">
-                  {p.duration}
-                </span>
-              </div>
-
-              <h4 className="text-xl font-bold tracking-tight mb-2 text-center text-white font-serif">
-                {p.name}
-              </h4>
-
-              <p className="text-xs text-slate-400 font-sans leading-relaxed text-center line-clamp-3">
-                {p.description}
-              </p>
-
-              {/* Status badges for range select */}
-              {isStart && (
-                <div className="absolute bottom-2 left-2 bg-yellow-500 text-slate-950 font-mono text-[8px] font-bold uppercase px-1 rounded shadow">
-                  Début
-                </div>
-              )}
-              {isEnd && (
-                <div className="absolute bottom-2 right-2 bg-yellow-500 text-slate-950 font-mono text-[8px] font-bold uppercase px-1 rounded shadow">
-                  Fin
-                </div>
-              )}
-
-              {/* Arrow Indicator for interactive info */}
-              {!readOnly && !onSelectRange && (
-                <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-yellow-600">
-                  <Eye className="w-3.5 h-3.5" />
-                </div>
+      ) : (
+        /* 2. COMPACT SELECTOR FOR FOSSIL FORMS / SHEETS (PRESERVED) */
+        <div className="space-y-4">
+          {/* Horizontal Scroll Controls */}
+          <div className="flex justify-between items-center px-4">
+            <div className="text-xs text-slate-400 font-mono">
+              {readOnly ? (
+                <span className="text-yellow-500/95 font-semibold uppercase">Période de vie estimée de l'espèce</span>
+              ) : (
+                <span>Faites glisser de gauche à droite ↔️ {onSelectRange ? '(Cliquez sur 2 périodes pour définir l\'intervalle)' : '(Cliquez pour en savoir plus)'}</span>
               )}
             </div>
-          );
-        })}
-      </div>
-
-      {/* POPUP FOR DETAILED INFO */}
-      {selectedPeriod && (
-        <div className="fixed inset-0 bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-slate-900 border border-yellow-700/30 rounded-2xl p-6 max-w-lg w-full shadow-2xl relative space-y-4">
-            <div className="flex justify-between items-start">
-              <div>
-                <span className="text-[10px] font-mono uppercase tracking-widest text-yellow-600 block mb-1">
-                  Période du {selectedPeriod.era}
-                </span>
-                <h3 className="text-3xl font-bold tracking-tight text-white font-serif">{selectedPeriod.name}</h3>
-              </div>
-              <span className="text-sm font-semibold text-yellow-500 font-mono py-1 px-3.5 rounded bg-slate-950 border border-slate-800">{selectedPeriod.duration}</span>
-            </div>
-
-            <p className="text-sm text-slate-300 leading-relaxed font-sans italic border-l-2 border-yellow-700/60 pl-3">
-              "{selectedPeriod.description}"
-            </p>
-
-            <div className="text-xs text-slate-400 font-sans leading-relaxed space-y-2">
-              <strong className="text-slate-100 block font-serif text-sm">Caractéristiques majeures :</strong>
-              <p>{selectedPeriod.details}</p>
-            </div>
-
-            <div className="flex justify-end pt-2">
+            <div className="flex gap-2">
               <button
+                onClick={scrollLeft}
                 type="button"
-                onClick={() => {
-                  playDinoSound();
-                  setSelectedPeriod(null);
-                }}
-                className="bg-yellow-700/80 hover:bg-yellow-600 border border-yellow-500/30 text-white text-xs px-5 py-2 rounded-lg font-bold transition-all uppercase tracking-wider"
+                className="p-1.5 rounded-full bg-slate-900 border border-slate-800 hover:border-yellow-600/40 text-slate-300 hover:text-yellow-500 transition-all"
+                title="Naviguer à gauche"
               >
-                Fermer
+                <ArrowLeft className="w-4 h-4" />
+              </button>
+              <button
+                onClick={scrollRight}
+                type="button"
+                className="p-1.5 rounded-full bg-slate-900 border border-slate-800 hover:border-yellow-600/40 text-slate-300 hover:text-yellow-500 transition-all"
+                title="Naviguer à droite"
+              >
+                <ArrowRight className="w-4 h-4" />
               </button>
             </div>
           </div>
-        </div>
-      )}
 
-      {/* DETAILED GEOLOGICAL TIMESCALE (ONLY ON DEDICATED GEOLOGIC TIMELINE PAGE) */}
-      {(showDetailedScale || showVideoSection) && (
-        <DetailedGeologicTimeline />
+          {/* SWIPEABLE SEGMENTS CONTAINER */}
+          <div
+            ref={containerRef}
+            className="flex gap-4 overflow-x-auto py-4 px-4 scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent snap-x"
+            style={{ scrollSnapType: 'x mandatory' }}
+          >
+            {GEOLOGIC_PERIODS.map((p, idx) => {
+              const highlighted = isHighlighted(p.name, idx);
+              const isStart = p.name === highlightedStart;
+              const isEnd = p.name === highlightedEnd;
+
+              return (
+                <div
+                  key={p.name}
+                  onClick={() => handlePeriodClick(p, idx)}
+                  className={`flex-none w-64 snap-start p-4 rounded-xl border transition-all duration-300 cursor-pointer select-none relative overflow-hidden group
+                    ${highlighted 
+                      ? 'bg-gradient-to-br from-yellow-950/70 to-amber-900/40 border-yellow-500 text-yellow-100 shadow-[0_0_15px_rgba(234,179,8,0.15)] ring-2 ring-yellow-600/30' 
+                      : 'bg-slate-950/90 hover:bg-slate-900/80 border-slate-800 text-slate-300 hover:border-slate-700'
+                    }`}
+                >
+                  {/* background design line */}
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-slate-700 to-transparent opacity-40" />
+
+                  <div className="flex justify-between items-start mb-2">
+                    <span className="text-[10px] font-mono tracking-widest uppercase py-0.5 px-2 bg-slate-900/80 border border-slate-800/60 rounded text-slate-400 group-hover:text-slate-200 transition-colors">
+                      {p.era}
+                    </span>
+                    <span className="text-xs font-bold text-yellow-600 font-mono tracking-tighter">
+                      {p.duration}
+                    </span>
+                  </div>
+
+                  <h4 className="text-xl font-bold tracking-tight mb-2 text-center text-white font-serif">
+                    {p.name}
+                  </h4>
+
+                  <p className="text-xs text-slate-400 font-sans leading-relaxed text-center line-clamp-3">
+                    {p.description}
+                  </p>
+
+                  {/* Status badges for range select */}
+                  {isStart && (
+                    <div className="absolute bottom-2 left-2 bg-yellow-500 text-slate-950 font-mono text-[8px] font-bold uppercase px-1 rounded shadow">
+                      Début
+                    </div>
+                  )}
+                  {isEnd && (
+                    <div className="absolute bottom-2 right-2 bg-yellow-500 text-slate-950 font-mono text-[8px] font-bold uppercase px-1 rounded shadow">
+                      Fin
+                    </div>
+                  )}
+
+                  {/* Arrow Indicator for interactive info */}
+                  {!readOnly && !onSelectRange && (
+                    <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-yellow-600">
+                      <Eye className="w-3.5 h-3.5" />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* POPUP FOR DETAILED INFO */}
+          {selectedPeriod && (
+            <div className="fixed inset-0 bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+              <div className="bg-slate-900 border border-yellow-700/30 rounded-2xl p-6 max-w-lg w-full shadow-2xl relative space-y-4">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <span className="text-[10px] font-mono uppercase tracking-widest text-yellow-600 block mb-1">
+                      Période du {selectedPeriod.era}
+                    </span>
+                    <h3 className="text-3xl font-bold tracking-tight text-white font-serif">{selectedPeriod.name}</h3>
+                  </div>
+                  <span className="text-sm font-semibold text-yellow-500 font-mono py-1 px-3.5 rounded bg-slate-950 border border-slate-800">{selectedPeriod.duration}</span>
+                </div>
+
+                <p className="text-sm text-slate-300 leading-relaxed font-sans italic border-l-2 border-yellow-700/60 pl-3">
+                  "{selectedPeriod.description}"
+                </p>
+
+                <div className="text-xs text-slate-400 font-sans leading-relaxed space-y-2">
+                  <strong className="text-slate-100 block font-serif text-sm">Caractéristiques majeures :</strong>
+                  <p>{selectedPeriod.details}</p>
+                </div>
+
+                <div className="flex justify-end pt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      playDinoSound();
+                      setSelectedPeriod(null);
+                    }}
+                    className="bg-yellow-700/80 hover:bg-yellow-600 border border-yellow-500/30 text-white text-xs px-5 py-2 rounded-lg font-bold transition-all uppercase tracking-wider"
+                  >
+                    Fermer
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       )}
 
       {/* VIDEO INSERTION FOR ENTIRE SITE TIMELINE PAGE */}
@@ -393,6 +428,16 @@ export default function GeologicTimelineView({
             emptyLabel="Aucun lecteur vidéo configuré par l'administrateur"
           />
         </div>
+      )}
+
+      {/* DETAILED FOSSIL SHEET OVERLAY */}
+      {activeFossilSheet && (
+        <FossilDetailSheet
+          fossil={activeFossilSheet}
+          isAdmin={isAdmin}
+          onClose={() => setActiveFossilSheet(null)}
+          scrollMode="intoView"
+        />
       )}
     </div>
   );

@@ -51,7 +51,7 @@ const TILE_LAYERS: Record<MapLayerType, LayerConfig> = {
 
 // Comprehensive offline database with exact real-world GPS coordinates
 // covering famous fossil formations, world countries, and French departments
-const GPS_FOSSIL_DATABASE: Record<string, { lat: number; lng: number; zoom: number; label: string }> = {
+export const GPS_FOSSIL_DATABASE: Record<string, { lat: number; lng: number; zoom: number; label: string }> = {
   // --- MAROC (Gisements emblématiques du Sahara & Crétacé/Dévonien) ---
   "kem kem": { lat: 30.8250, lng: -4.0170, zoom: 9, label: "Lits des Kem Kem (Maroc) - Dinosaures & Ptérosaures" },
   "kemkem": { lat: 30.8250, lng: -4.0170, zoom: 9, label: "Lits des Kem Kem (Maroc)" },
@@ -208,6 +208,15 @@ const GPS_FOSSIL_DATABASE: Record<string, { lat: number; lng: number; zoom: numb
   "yakoutie": { lat: 62.0397, lng: 129.7422, zoom: 5, label: "République de Sakha / Yakoutie (Sibérie, Russie) - Mammouths & faune du Pléistocène" },
   "sibérie": { lat: 60.0000, lng: 105.0000, zoom: 4, label: "Sibérie (Russie)" },
   "russie": { lat: 61.5240, lng: 105.3188, zoom: 3, label: "Russie" },
+
+  // --- NIGER (Gisement de Gadoufaoua, Elrhaz & Ténéré - Crétacé) ---
+  "gadoufaoua": { lat: 16.8500, lng: 7.9500, zoom: 9, label: "Gadoufaoua, Ténéré (Niger) - Gisement d'Elrhaz, Suchomimus & Sarcosuchus" },
+  "tenere": { lat: 17.7356, lng: 9.3238, zoom: 7, label: "Désert du Ténéré (Niger) - Dinosaures du Crétacé" },
+  "ténéré": { lat: 17.7356, lng: 9.3238, zoom: 7, label: "Désert du Ténéré (Niger)" },
+  "niger": { lat: 17.7356, lng: 9.3238, zoom: 6, label: "Niger (Sahara / Ténéré) - Gisements à Dinosaures" },
+
+  // --- MADAGASCAR COMPLÉMENTAIRE ---
+  "berivotra": { lat: -15.9167, lng: 46.5833, zoom: 9, label: "Berivotra, Mahajanga (Madagascar) - Majungasaurus" },
 };
 
 function normalizeText(text: string): string {
@@ -290,7 +299,7 @@ export function isUnknownLocation(locationName?: string): boolean {
 /**
  * Determines whether raw coordinates are real GPS (-90..90, -180..180) or old 0..100 percentages
  */
-function resolveCoords(
+export function resolveCoords(
   rawCoords?: { lat: number; lng: number },
   locationName?: string
 ): { lat: number; lng: number; zoom: number; source: 'offline_match' | 'custom_gps' | 'converted' | 'unknown' } {
@@ -359,7 +368,7 @@ function resolveCoords(
   return { lat: 46.2276, lng: 2.2137, zoom: 5, source: 'offline_match' };
 }
 
-function formatGpsCoordinates(lat: number, lng: number): string {
+export function formatGpsCoordinates(lat: number, lng: number): string {
   const latDir = lat >= 0 ? 'N' : 'S';
   const lngDir = lng >= 0 ? 'E' : 'O';
   const absLat = Math.abs(lat).toFixed(4);

@@ -1031,6 +1031,7 @@ export default function App() {
                   onSaveVideo={(url) =>
                     updateConfig({ ...config, scaleVideoUrl: url })
                   }
+                  fossils={config.fossils}
                 />
               </div>
 
