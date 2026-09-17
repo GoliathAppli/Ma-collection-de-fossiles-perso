@@ -6,15 +6,11 @@ import {
   ArrowRight,
   ChevronDown,
   ChevronUp,
-  Search,
   Layers,
   Sparkles,
   Info,
-  Maximize2,
   X,
-  Compass,
   Clock,
-  Filter
 } from 'lucide-react';
 
 interface FlattenedPeriod {
@@ -46,8 +42,6 @@ interface FlattenedPeriod {
 
 export default function DetailedHorizontalTimeline() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [selectedEraFilter, setSelectedEraFilter] = useState<string>('all');
-  const [searchQuery, setSearchQuery] = useState('');
   const [expandedCards, setExpandedCards] = useState<Record<string, boolean>>({});
   const [activeModalPeriod, setActiveModalPeriod] = useState<FlattenedPeriod | null>(null);
 
@@ -93,40 +87,6 @@ export default function DetailedHorizontalTimeline() {
     return list;
   }, []);
 
-  // Filter items based on selected era and search query
-  const filteredTimeline = useMemo(() => {
-    return flattenedTimeline.filter((item) => {
-      const matchesEra =
-        selectedEraFilter === 'all' || item.eraId === selectedEraFilter;
-
-      if (!matchesEra) return false;
-
-      if (!searchQuery.trim()) return true;
-
-      const q = searchQuery.toLowerCase().trim();
-      const matchName = item.name.toLowerCase().includes(q);
-      const matchAlt = item.altName?.toLowerCase().includes(q) || false;
-      const matchDesc = item.description?.toLowerCase().includes(q) || false;
-      const matchHighlights =
-        item.highlights?.some((h) => h.toLowerCase().includes(q)) || false;
-
-      const matchStagesOrEpochs =
-        item.epochs?.some(
-          (ep) =>
-            ep.name.toLowerCase().includes(q) ||
-            ep.stages.some((st) => st.toLowerCase().includes(q))
-        ) || false;
-
-      return (
-        matchName ||
-        matchAlt ||
-        matchDesc ||
-        matchHighlights ||
-        matchStagesOrEpochs
-      );
-    });
-  }, [flattenedTimeline, selectedEraFilter, searchQuery]);
-
   const scrollLeft = () => {
     playDinoSound();
     if (containerRef.current) {
@@ -151,209 +111,56 @@ export default function DetailedHorizontalTimeline() {
 
   const toggleExpandAll = () => {
     playDinoSound();
-    const allExpanded = filteredTimeline.every((item) => expandedCards[item.id]);
+    const allExpanded = flattenedTimeline.every((item) => expandedCards[item.id]);
     const newState: Record<string, boolean> = {};
-    filteredTimeline.forEach((item) => {
+    flattenedTimeline.forEach((item) => {
       newState[item.id] = !allExpanded;
     });
     setExpandedCards(newState);
   };
 
-  const scrollToEra = (eraId: string) => {
-    playDinoSound();
-    setSelectedEraFilter(eraId);
-    if (containerRef.current) {
-      containerRef.current.scrollTo({ left: 0, behavior: 'smooth' });
-    }
-  };
-
   return (
     <div className="space-y-4 w-full text-slate-100">
-      {/* Top Banner with Navigation & Controls */}
-      <div className="bg-slate-950/80 border border-slate-800/80 rounded-2xl p-4 sm:p-5 shadow-xl space-y-4">
-        {/* Header row */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="p-1.5 rounded-lg bg-yellow-500/10 text-yellow-400 border border-yellow-500/30">
-                <Layers className="w-4 h-4" />
-              </span>
-              <h2 className="text-xl sm:text-2xl font-serif font-extrabold text-white tracking-wide">
-                Échelle Stratigraphique Mondiale Complète
-              </h2>
-            </div>
-            <p className="text-xs sm:text-sm text-slate-400 mt-1">
-              Frise chronologique horizontale détaillée : du Précambrien (4,5 Ga) au Quaternaire actuel, avec éons, époques et étages stratigraphiques.
-            </p>
-          </div>
-
-          {/* Left / Right Nav Buttons */}
-          <div className="flex items-center gap-2 self-end md:self-auto">
-            <button
-              onClick={toggleExpandAll}
-              type="button"
-              className="text-xs font-mono px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white transition-colors"
-            >
-              {filteredTimeline.every((item) => expandedCards[item.id])
-                ? 'Tout replier'
-                : 'Tout déplier'}
-            </button>
-            <div className="h-6 w-px bg-slate-800 mx-1" />
-            <button
-              onClick={scrollLeft}
-              type="button"
-              className="p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-yellow-500/50 text-slate-300 hover:text-yellow-400 transition-all shadow-md active:scale-95"
-              title="Faire défiler vers le passé"
-            >
-              <ArrowLeft className="w-4 h-4" />
-            </button>
-            <button
-              onClick={scrollRight}
-              type="button"
-              className="p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-yellow-500/50 text-slate-300 hover:text-yellow-400 transition-all shadow-md active:scale-95"
-              title="Faire défiler vers le présent"
-            >
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
+      {/* Header with Title and Scroll / Expand controls */}
+      <div className="bg-slate-950/80 border border-slate-800/80 rounded-2xl p-4 sm:p-5 shadow-xl flex items-center justify-between gap-4">
+        <div className="flex items-center gap-2">
+          <span className="p-1.5 rounded-lg bg-yellow-500/10 text-yellow-400 border border-yellow-500/30">
+            <Layers className="w-5 h-5" />
+          </span>
+          <h2 className="text-xl sm:text-2xl font-serif font-extrabold text-white tracking-wide">
+            Échelle Stratigraphique Mondiale Complète
+          </h2>
         </div>
 
-        {/* Global Era Bar (Proportional / Chronological Anchor) */}
-        <div className="space-y-1.5 pt-2 border-t border-slate-800/60">
-          <div className="flex justify-between text-[11px] font-mono text-slate-400">
-            <span>- 4 500 Ma (Origine Terre)</span>
-            <span className="hidden sm:inline">- 541 Ma</span>
-            <span className="hidden sm:inline">- 252 Ma</span>
-            <span className="hidden sm:inline">- 66 Ma</span>
-            <span className="text-yellow-400 font-semibold">0 Ma (Aujourd'hui)</span>
-          </div>
-
-          <div className="grid grid-cols-4 gap-1.5 h-3 rounded-lg overflow-hidden p-0.5 bg-slate-900 border border-slate-800">
-            <button
-              onClick={() => scrollToEra('precambrian')}
-              className={`h-full rounded transition-all ${
-                selectedEraFilter === 'precambrian'
-                  ? 'bg-emerald-500 ring-2 ring-emerald-400'
-                  : 'bg-emerald-700/70 hover:bg-emerald-600'
-              }`}
-              title="Aller au Précambrien (88% du temps)"
-            />
-            <button
-              onClick={() => scrollToEra('paleozoic')}
-              className={`h-full rounded transition-all ${
-                selectedEraFilter === 'paleozoic'
-                  ? 'bg-amber-500 ring-2 ring-amber-400'
-                  : 'bg-amber-700/70 hover:bg-amber-600'
-              }`}
-              title="Aller au Paléozoïque"
-            />
-            <button
-              onClick={() => scrollToEra('mesozoic')}
-              className={`h-full rounded transition-all ${
-                selectedEraFilter === 'mesozoic'
-                  ? 'bg-orange-500 ring-2 ring-orange-400'
-                  : 'bg-orange-700/70 hover:bg-orange-600'
-              }`}
-              title="Aller au Mésozoïque"
-            />
-            <button
-              onClick={() => scrollToEra('cenozoic')}
-              className={`h-full rounded transition-all ${
-                selectedEraFilter === 'cenozoic'
-                  ? 'bg-yellow-500 ring-2 ring-yellow-400'
-                  : 'bg-yellow-700/70 hover:bg-yellow-600'
-              }`}
-              title="Aller au Cénozoïque"
-            />
-          </div>
+        {/* Controls */}
+        <div className="flex items-center gap-2 self-end md:self-auto">
+          <button
+            onClick={toggleExpandAll}
+            type="button"
+            className="text-xs font-mono px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white transition-colors"
+          >
+            {flattenedTimeline.every((item) => expandedCards[item.id])
+              ? 'Tout replier'
+              : 'Tout déplier'}
+          </button>
+          <div className="h-6 w-px bg-slate-800 mx-1" />
+          <button
+            onClick={scrollLeft}
+            type="button"
+            className="p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-yellow-500/50 text-slate-300 hover:text-yellow-400 transition-all shadow-md active:scale-95"
+            title="Faire défiler vers le passé"
+          >
+            <ArrowLeft className="w-4 h-4" />
+          </button>
+          <button
+            onClick={scrollRight}
+            type="button"
+            className="p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-yellow-500/50 text-slate-300 hover:text-yellow-400 transition-all shadow-md active:scale-95"
+            title="Faire défiler vers le présent"
+          >
+            <ArrowRight className="w-4 h-4" />
+          </button>
         </div>
-
-        {/* Filter Pills and Search */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-1">
-          {/* Era Pills */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
-            <button
-              onClick={() => setSelectedEraFilter('all')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition-all whitespace-nowrap ${
-                selectedEraFilter === 'all'
-                  ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/50'
-                  : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              Toutes les ères ({flattenedTimeline.length})
-            </button>
-            <button
-              onClick={() => setSelectedEraFilter('precambrian')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition-all whitespace-nowrap ${
-                selectedEraFilter === 'precambrian'
-                  ? 'bg-emerald-950 text-emerald-300 border border-emerald-500'
-                  : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              1. Précambrien
-            </button>
-            <button
-              onClick={() => setSelectedEraFilter('paleozoic')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition-all whitespace-nowrap ${
-                selectedEraFilter === 'paleozoic'
-                  ? 'bg-amber-950 text-amber-300 border border-amber-500'
-                  : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              2. Paléozoïque
-            </button>
-            <button
-              onClick={() => setSelectedEraFilter('mesozoic')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition-all whitespace-nowrap ${
-                selectedEraFilter === 'mesozoic'
-                  ? 'bg-orange-950 text-orange-300 border border-orange-500'
-                  : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              3. Mésozoïque
-            </button>
-            <button
-              onClick={() => setSelectedEraFilter('cenozoic')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition-all whitespace-nowrap ${
-                selectedEraFilter === 'cenozoic'
-                  ? 'bg-yellow-950 text-yellow-300 border border-yellow-500'
-                  : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              4. Cénozoïque
-            </button>
-          </div>
-
-          {/* Search Box */}
-          <div className="relative w-full sm:w-64">
-            <Search className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Rechercher étage, époque..."
-              className="w-full pl-8 pr-7 py-1.5 bg-slate-900 border border-slate-800 rounded-lg text-xs text-white placeholder-slate-500 focus:outline-none focus:border-yellow-500/50"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white"
-              >
-                <X className="w-3 h-3" />
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Swipeable Scroll Indicator */}
-      <div className="flex justify-between items-center px-2 text-[11px] font-mono text-slate-400">
-        <span>
-          ↔ Faites glisser de gauche à droite pour parcourir les temps géologiques ({filteredTimeline.length} périodes/éons affichés)
-        </span>
-        <span className="hidden sm:inline text-slate-500">
-          Cliquez sur « Déplier » pour consulter les étages stratigraphiques
-        </span>
       </div>
 
       {/* HORIZONTAL SCROLLING TRACK */}
@@ -362,20 +169,7 @@ export default function DetailedHorizontalTimeline() {
         className="flex gap-4 overflow-x-auto py-3 px-1 scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent snap-x"
         style={{ scrollSnapType: 'x mandatory' }}
       >
-        {filteredTimeline.length === 0 ? (
-          <div className="w-full text-center py-12 bg-slate-950/40 rounded-2xl border border-slate-800">
-            <p className="text-sm text-slate-400">
-              Aucun étage ou période ne correspond à la recherche « {searchQuery} ».
-            </p>
-            <button
-              onClick={() => setSearchQuery('')}
-              className="mt-2 text-xs text-yellow-400 underline font-mono"
-            >
-              Effacer la recherche
-            </button>
-          </div>
-        ) : (
-          filteredTimeline.map((item) => {
+        {flattenedTimeline.map((item) => {
             const isExpanded = !!expandedCards[item.id];
             const totalStagesCount =
               item.epochs?.reduce((acc, ep) => acc + ep.stages.length, 0) || 0;
@@ -541,8 +335,7 @@ export default function DetailedHorizontalTimeline() {
                 </div>
               </div>
             );
-          })
-        )}
+          })}
       </div>
 
       {/* DETAILED MODAL SHEET */}

@@ -6,14 +6,13 @@ import {
   ArrowLeft,
   ArrowRight,
   Sparkles,
-  Search,
   MapPin,
   Calendar,
   Layers,
   ChevronRight,
   Eye,
-  X,
-  Compass
+  Compass,
+  X
 } from 'lucide-react';
 
 interface CollectionFossilsTimelineProps {
@@ -254,8 +253,6 @@ export default function CollectionFossilsTimeline({
   onSelectFossil,
 }: CollectionFossilsTimelineProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedEraFilter, setSelectedEraFilter] = useState<string>('all');
   const [previewFossil, setPreviewFossil] = useState<Fossil | null>(null);
 
   // Classify each fossil into its corresponding period bucket
@@ -314,15 +311,6 @@ export default function CollectionFossilsTimeline({
     return buckets;
   }, [fossils]);
 
-  // Count fossils currently represented
-  const totalRepresentedCount = useMemo(() => {
-    return fossils.length;
-  }, [fossils]);
-
-  const representedPeriodsCount = useMemo(() => {
-    return Object.values(mappedFossils).filter((list) => list.length > 0).length;
-  }, [mappedFossils]);
-
   const scrollLeft = () => {
     playDinoSound();
     if (containerRef.current) {
@@ -337,146 +325,37 @@ export default function CollectionFossilsTimeline({
     }
   };
 
-  // Filter periods if era filter or search query is set
-  const filteredPeriods = useMemo(() => {
-    return COLLECTION_PERIODS.filter((p) => {
-      if (selectedEraFilter !== 'all' && p.era !== selectedEraFilter) {
-        return false;
-      }
-      if (!searchQuery.trim()) return true;
-
-      const q = searchQuery.toLowerCase().trim();
-      const periodMatches =
-        p.name.toLowerCase().includes(q) ||
-        p.subName?.toLowerCase().includes(q) ||
-        p.duration.toLowerCase().includes(q);
-
-      const fossilMatches = mappedFossils[p.id]?.some((f) =>
-        f.title.toLowerCase().includes(q) ||
-        f.provenanceName?.toLowerCase().includes(q) ||
-        f.periodeDatation?.toLowerCase().includes(q)
-      );
-
-      return periodMatches || fossilMatches;
-    });
-  }, [selectedEraFilter, searchQuery, mappedFossils]);
-
   return (
     <div className="space-y-4 w-full text-slate-100">
-      {/* Banner / Header */}
-      <div className="bg-slate-950/80 border border-slate-800/80 rounded-2xl p-4 sm:p-5 shadow-xl space-y-3.5">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="p-1.5 rounded-lg bg-yellow-500/10 text-yellow-400 border border-yellow-500/30">
-                <Sparkles className="w-4 h-4" />
-              </span>
-              <h2 className="text-xl sm:text-2xl font-serif font-extrabold text-white tracking-wide">
-                Frise Chronologique des Fossiles de la Collection
-              </h2>
-            </div>
-            <p className="text-xs sm:text-sm text-slate-400 mt-1">
-              Vue simplifiée et chronologique : vos <span className="text-yellow-400 font-semibold">{totalRepresentedCount} spécimens</span> positionnés dans leurs époques et ères géologiques respectives.
-            </p>
-          </div>
-
-          {/* Controls & Nav */}
-          <div className="flex items-center gap-2 self-end md:self-auto">
-            <div className="text-xs font-mono px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300">
-              <span className="text-yellow-400 font-bold">{representedPeriodsCount}</span> / {COLLECTION_PERIODS.length} époques représentées
-            </div>
-            <button
-              onClick={scrollLeft}
-              type="button"
-              className="p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-yellow-500/50 text-slate-300 hover:text-yellow-400 transition-all shadow-md active:scale-95"
-              title="Faire défiler vers le passé"
-            >
-              <ArrowLeft className="w-4 h-4" />
-            </button>
-            <button
-              onClick={scrollRight}
-              type="button"
-              className="p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-yellow-500/50 text-slate-300 hover:text-yellow-400 transition-all shadow-md active:scale-95"
-              title="Faire défiler vers le présent"
-            >
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
+      {/* Header with Title and Scroll Controls */}
+      <div className="bg-slate-950/80 border border-slate-800/80 rounded-2xl p-4 sm:p-5 shadow-xl flex items-center justify-between gap-4">
+        <div className="flex items-center gap-2">
+          <span className="p-1.5 rounded-lg bg-yellow-500/10 text-yellow-400 border border-yellow-500/30">
+            <Sparkles className="w-5 h-5" />
+          </span>
+          <h2 className="text-xl sm:text-2xl font-serif font-extrabold text-white tracking-wide">
+            Frise Chronologique des Fossiles de la Collection
+          </h2>
         </div>
 
-        {/* Filter Pills & Search */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2 border-t border-slate-800/60">
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
-            <button
-              onClick={() => setSelectedEraFilter('all')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-mono transition-all whitespace-nowrap ${
-                selectedEraFilter === 'all'
-                  ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/50 font-semibold'
-                  : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              Toutes les ères
-            </button>
-            <button
-              onClick={() => setSelectedEraFilter('precambrian')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-mono transition-all whitespace-nowrap ${
-                selectedEraFilter === 'precambrian'
-                  ? 'bg-emerald-950 text-emerald-300 border border-emerald-500 font-semibold'
-                  : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              Précambrien
-            </button>
-            <button
-              onClick={() => setSelectedEraFilter('paleozoic')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-mono transition-all whitespace-nowrap ${
-                selectedEraFilter === 'paleozoic'
-                  ? 'bg-amber-950 text-amber-300 border border-amber-500 font-semibold'
-                  : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              Paléozoïque
-            </button>
-            <button
-              onClick={() => setSelectedEraFilter('mesozoic')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-mono transition-all whitespace-nowrap ${
-                selectedEraFilter === 'mesozoic'
-                  ? 'bg-orange-950 text-orange-300 border border-orange-500 font-semibold'
-                  : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              Mésozoïque
-            </button>
-            <button
-              onClick={() => setSelectedEraFilter('cenozoic')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-mono transition-all whitespace-nowrap ${
-                selectedEraFilter === 'cenozoic'
-                  ? 'bg-yellow-950 text-yellow-300 border border-yellow-500 font-semibold'
-                  : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              Cénozoïque
-            </button>
-          </div>
-
-          <div className="relative w-full sm:w-60">
-            <Search className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Filtrer spécimen ou époque..."
-              className="w-full pl-8 pr-7 py-1.5 bg-slate-900 border border-slate-800 rounded-lg text-xs text-white placeholder-slate-500 focus:outline-none focus:border-yellow-500/50"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white"
-              >
-                <X className="w-3 h-3" />
-              </button>
-            )}
-          </div>
+        {/* Scroll Nav Buttons */}
+        <div className="flex items-center gap-2 self-end md:self-auto">
+          <button
+            onClick={scrollLeft}
+            type="button"
+            className="p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-yellow-500/50 text-slate-300 hover:text-yellow-400 transition-all shadow-md active:scale-95"
+            title="Faire défiler vers le passé"
+          >
+            <ArrowLeft className="w-4 h-4" />
+          </button>
+          <button
+            onClick={scrollRight}
+            type="button"
+            className="p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-yellow-500/50 text-slate-300 hover:text-yellow-400 transition-all shadow-md active:scale-95"
+            title="Faire défiler vers le présent"
+          >
+            <ArrowRight className="w-4 h-4" />
+          </button>
         </div>
       </div>
 
@@ -486,7 +365,7 @@ export default function CollectionFossilsTimeline({
         className="flex gap-4 overflow-x-auto py-3 px-1 scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent snap-x"
         style={{ scrollSnapType: 'x mandatory' }}
       >
-        {filteredPeriods.map((period) => {
+        {COLLECTION_PERIODS.map((period) => {
           const periodFossils = mappedFossils[period.id] || [];
           const hasFossils = periodFossils.length > 0;
 
