@@ -38,6 +38,7 @@ import {
   Grid,
   Tag,
   Layers,
+  Sparkles,
 } from "lucide-react";
 import { usePWAInstall } from "../utils/pwa";
 import CompleteGalleryView from "./CompleteGalleryView";
@@ -1012,13 +1013,27 @@ export default function App() {
               exit={{ opacity: 0, y: -15 }}
               className="space-y-8"
             >
-              <div className="text-center">
-                <span className="text-[10px] font-mono tracking-widest text-slate-500 uppercase block mb-1">
-                  CHRONOLOGIE DE LA TERRE
-                </span>
-                <h1 className="text-3xl font-extrabold tracking-tight text-white font-serif uppercase text-center">
-                  ÉCHELLE DES TEMPS GÉOLOGIQUES
+              {/* GRAND TITRE MAJESTUEUX : ÉCHELLE DES TEMPS GÉOLOGIQUES */}
+              <div className="text-center pt-1 pb-1 space-y-2.5 max-w-3xl mx-auto select-none">
+                <div className="flex items-center justify-center gap-2.5 opacity-90">
+                  <div className="h-px w-10 sm:w-16 bg-gradient-to-r from-transparent via-yellow-600/40 to-yellow-500/70" />
+                  <span className="text-[10px] sm:text-xs font-serif font-bold uppercase tracking-[0.25em] text-yellow-500/90 flex items-center gap-1.5">
+                    <Sparkles className="w-3 h-3 text-yellow-400 shrink-0" />
+                    Chronologie de la Terre
+                    <Sparkles className="w-3 h-3 text-yellow-400 shrink-0" />
+                  </span>
+                  <div className="h-px w-10 sm:w-16 bg-gradient-to-l from-transparent via-yellow-600/40 to-yellow-500/70" />
+                </div>
+
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight font-serif uppercase text-center break-words leading-tight bg-gradient-to-b from-yellow-100 via-amber-200 to-yellow-500 bg-clip-text text-transparent drop-shadow-[0_4px_16px_rgba(234,179,8,0.35)]">
+                  Échelle des Temps Géologiques
                 </h1>
+
+                <div className="flex items-center justify-center gap-2.5 pt-0.5">
+                  <div className="h-[1.5px] w-12 sm:w-20 bg-gradient-to-r from-transparent via-yellow-500/60 to-yellow-400" />
+                  <div className="w-2 h-2 rotate-45 border border-yellow-400/80 bg-yellow-500/50 shadow-[0_0_8px_rgba(250,204,21,0.7)]" />
+                  <div className="h-[1.5px] w-12 sm:w-20 bg-gradient-to-l from-transparent via-yellow-500/60 to-yellow-400" />
+                </div>
               </div>
 
               <div className="bg-slate-900/20 border border-slate-850 rounded-2xl p-6">
@@ -1062,13 +1077,27 @@ export default function App() {
               exit={{ opacity: 0, y: -15 }}
               className="space-y-8"
             >
-              <div className="text-center">
-                <span className="text-[10px] font-mono tracking-widest text-slate-500 uppercase block mb-1">
-                  SUIVI TECHNIQUE & INVENTAIRE
-                </span>
-                <h1 className="text-3xl font-extrabold tracking-tight text-white font-serif uppercase text-center">
-                  FICHES TECHNIQUES & AUTHENTICITÉ
+              {/* GRAND TITRE MAJESTUEUX : FICHES TECHNIQUES & AUTHENTICITÉ */}
+              <div className="text-center pt-1 pb-1 space-y-2.5 max-w-3xl mx-auto select-none">
+                <div className="flex items-center justify-center gap-2.5 opacity-90">
+                  <div className="h-px w-10 sm:w-16 bg-gradient-to-r from-transparent via-yellow-600/40 to-yellow-500/70" />
+                  <span className="text-[10px] sm:text-xs font-serif font-bold uppercase tracking-[0.25em] text-yellow-500/90 flex items-center gap-1.5">
+                    <Sparkles className="w-3 h-3 text-yellow-400 shrink-0" />
+                    Suivi Technique & Inventaire
+                    <Sparkles className="w-3 h-3 text-yellow-400 shrink-0" />
+                  </span>
+                  <div className="h-px w-10 sm:w-16 bg-gradient-to-l from-transparent via-yellow-600/40 to-yellow-500/70" />
+                </div>
+
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight font-serif uppercase text-center break-words leading-tight bg-gradient-to-b from-yellow-100 via-amber-200 to-yellow-500 bg-clip-text text-transparent drop-shadow-[0_4px_16px_rgba(234,179,8,0.35)]">
+                  Fiches Techniques & Authenticité
                 </h1>
+
+                <div className="flex items-center justify-center gap-2.5 pt-0.5">
+                  <div className="h-[1.5px] w-12 sm:w-20 bg-gradient-to-r from-transparent via-yellow-500/60 to-yellow-400" />
+                  <div className="w-2 h-2 rotate-45 border border-yellow-400/80 bg-yellow-500/50 shadow-[0_0_8px_rgba(250,204,21,0.7)]" />
+                  <div className="h-[1.5px] w-12 sm:w-20 bg-gradient-to-l from-transparent via-yellow-500/60 to-yellow-400" />
+                </div>
               </div>
 
               {!isAdmin && !isSheetsUnlocked ? (
@@ -1078,7 +1107,7 @@ export default function App() {
                     <Lock className="w-7 h-7" />
                   </div>
                   <div className="text-center space-y-2">
-                    <h2 className="text-lg font-serif font-bold text-white uppercase tracking-wider">
+                    <h2 className="text-lg font-serif font-extrabold uppercase tracking-wider bg-gradient-to-r from-yellow-100 via-amber-200 to-yellow-400 bg-clip-text text-transparent drop-shadow-sm">
                       Accès Protégé par Mot de Passe
                     </h2>
                     <p className="text-xs text-slate-400 leading-relaxed">

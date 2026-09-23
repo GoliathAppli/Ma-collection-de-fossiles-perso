@@ -329,14 +329,19 @@ export default function CollectionFossilsTimeline({
   return (
     <div className="space-y-4 w-full text-slate-100">
       {/* Header with Title and Scroll Controls */}
-      <div className="bg-slate-950/80 border border-slate-800/80 rounded-2xl p-4 sm:p-5 shadow-xl flex items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
-          <span className="p-1.5 rounded-lg bg-yellow-500/10 text-yellow-400 border border-yellow-500/30">
-            <Sparkles className="w-5 h-5" />
-          </span>
-          <h2 className="text-xl sm:text-2xl font-serif font-extrabold text-white tracking-wide">
-            Frise Chronologique des Fossiles de la Collection
-          </h2>
+      <div className="bg-slate-950/80 border border-yellow-700/30 rounded-2xl p-4 sm:p-5 shadow-xl flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 rounded-xl bg-gradient-to-b from-slate-900 to-slate-950 border border-yellow-600/40 text-yellow-400 shadow-[0_0_15px_rgba(234,179,8,0.15)] shrink-0">
+            <Sparkles className="w-5 h-5 sm:w-6 sm:h-6" />
+          </div>
+          <div>
+            <h2 className="text-lg sm:text-xl md:text-2xl font-serif font-extrabold uppercase tracking-wide bg-gradient-to-r from-yellow-100 via-amber-200 to-yellow-400 bg-clip-text text-transparent drop-shadow-[0_2px_10px_rgba(234,179,8,0.25)]">
+              Frise Chronologique des Fossiles de la Collection
+            </h2>
+            <p className="text-xs sm:text-sm text-amber-300/80 font-mono italic mt-0.5">
+              Positionnement temporel de chaque spécimen du conservatoire
+            </p>
+          </div>
         </div>
 
         {/* Scroll Nav Buttons */}

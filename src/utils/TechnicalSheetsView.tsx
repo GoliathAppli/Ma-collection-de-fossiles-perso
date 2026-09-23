@@ -415,7 +415,24 @@ export default function TechnicalSheetsView({
   };
 
   return (
-    <div className="w-full bg-slate-900/40 p-4 border border-yellow-700/10 rounded-2xl space-y-6">
+    <div className="w-full bg-slate-900/40 p-4 border border-yellow-700/20 rounded-2xl space-y-6">
+      {/* REGISTRE D'INVENTAIRE SECTION HEADER */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3.5 border-b border-yellow-700/30">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 rounded-xl bg-gradient-to-b from-slate-900 to-slate-950 border border-yellow-600/40 text-yellow-400 shadow-[0_0_15px_rgba(234,179,8,0.15)] shrink-0">
+            <FileText className="w-5 h-5 sm:w-6 sm:h-6" />
+          </div>
+          <div>
+            <h2 className="text-lg sm:text-xl md:text-2xl font-serif font-extrabold uppercase tracking-wide bg-gradient-to-r from-yellow-100 via-amber-200 to-yellow-400 bg-clip-text text-transparent drop-shadow-[0_2px_10px_rgba(234,179,8,0.25)]">
+              Registre d'Inventaire & Certificats
+            </h2>
+            <p className="text-xs sm:text-sm text-amber-300/80 font-mono italic mt-0.5">
+              Traçabilité muséale, valeurs d'acquisition et certificats d'authenticité
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* ALWAYS ACCESSIBLE TOP BAR */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-4 border-b border-slate-800/60">
         <div className="flex flex-wrap items-center gap-3">
