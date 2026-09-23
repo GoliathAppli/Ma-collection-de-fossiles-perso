@@ -1,0 +1,6 @@
+{
+  "name": "Conservatoire de Fossiles",
+  "description": "Application de gestion et de catalogue pour collection personnelle de fossiles",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
