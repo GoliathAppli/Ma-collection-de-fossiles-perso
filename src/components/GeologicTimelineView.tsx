@@ -6,6 +6,7 @@ import DetailedHorizontalTimeline from './DetailedHorizontalTimeline';
 import CollectionFossilsTimeline from './CollectionFossilsTimeline';
 import CollectionFossilsWorldMap from './CollectionFossilsWorldMap';
 import FossilDetailSheet from './FossilDetailSheet';
+import FossilSectionDivider from './FossilSectionDivider';
 import { playDinoSound } from '../utils/data/audio';
 import { ArrowLeft, ArrowRight, Eye, Video, Upload } from 'lucide-react';
 import { GeologicPeriodInfo, Fossil } from '../types';
@@ -125,21 +126,30 @@ export default function GeologicTimelineView({
     <div className="space-y-8 w-full py-4 text-slate-100">
       {/* 1. DEDICATED TIMELINE PAGE VIEW */}
       {showDetailedScale ? (
-        <div className="space-y-10">
-          {/* Detailed Horizontal Geologic Timeline (Replaces the 1st and 2nd timelines) */}
-          <DetailedHorizontalTimeline />
+        <div className="space-y-12 sm:space-y-16">
+          {/* Rubrique 1 : Échelle Stratigraphique Mondiale */}
+          <div className="space-y-4">
+            <FossilSectionDivider type="ammonite" size="lg" label="Échelle Stratigraphique Mondiale" />
+            <DetailedHorizontalTimeline />
+          </div>
 
-          {/* Simplified Horizontal Timeline of Collection Fossils in their Epochs */}
-          <CollectionFossilsTimeline
-            fossils={fossils}
-            onSelectFossil={handleSelectFossil}
-          />
+          {/* Rubrique 2 : Frise Chronologique des Fossiles de la Collection */}
+          <div className="space-y-4">
+            <FossilSectionDivider type="trilobite" size="lg" label="Frise Chronologique des Fossiles" />
+            <CollectionFossilsTimeline
+              fossils={fossils}
+              onSelectFossil={handleSelectFossil}
+            />
+          </div>
 
-          {/* Realistic World Map of Provenances */}
-          <CollectionFossilsWorldMap
-            fossils={fossils}
-            onSelectFossil={handleSelectFossil}
-          />
+          {/* Rubrique 3 : Carte Mondiale des Gisements de la Collection */}
+          <div className="space-y-4">
+            <FossilSectionDivider type="gem" size="lg" label="Carte Mondiale des Gisements" />
+            <CollectionFossilsWorldMap
+              fossils={fossils}
+              onSelectFossil={handleSelectFossil}
+            />
+          </div>
         </div>
       ) : (
         /* 2. COMPACT SELECTOR FOR FOSSIL FORMS / SHEETS (PRESERVED) */
@@ -280,13 +290,10 @@ export default function GeologicTimelineView({
 
       {/* VIDEO INSERTION FOR ENTIRE SITE TIMELINE PAGE */}
       {showVideoSection && (
-        <div className="bg-slate-950/65 border border-slate-800/60 rounded-xl p-5 mt-6 max-w-3xl mx-auto space-y-4">
-          <div className="flex items-center gap-2 text-yellow-500 font-medium">
-            <Video className="w-4 h-4" />
-            <h4 className="text-sm font-semibold tracking-wide uppercase font-serif">Vidéo Thématique de l'Échelle des Temps</h4>
-          </div>
-
-          {isAdmin && onSaveVideo ? (
+        <div className="space-y-4 pt-6">
+          <FossilSectionDivider type="leaf" size="lg" label="Vidéo Thématique" />
+          <div className="bg-slate-950/65 border border-slate-800/60 rounded-xl p-5 max-w-3xl mx-auto space-y-4">
+            {isAdmin && onSaveVideo ? (
             <div className="bg-slate-950/60 p-4 rounded-xl border border-yellow-600/20 space-y-3">
               <div className="text-[11px] font-bold text-yellow-500 uppercase tracking-wider">
                 Source Vidéo (Échelle des Temps)
@@ -427,6 +434,7 @@ export default function GeologicTimelineView({
             url={videoUrl || ""}
             emptyLabel="Aucun lecteur vidéo configuré par l'administrateur"
           />
+        </div>
         </div>
       )}
 

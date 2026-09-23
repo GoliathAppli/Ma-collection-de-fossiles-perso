@@ -597,23 +597,15 @@ export default function CollectionFossilsWorldMap({
         }
       `}</style>
 
-      {/* Top Banner / Header without clutter */}
-      <div className="bg-slate-950/90 border border-yellow-700/30 rounded-2xl p-4 sm:p-5 shadow-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-gradient-to-b from-slate-900 to-slate-950 border border-yellow-600/40 text-yellow-400 shadow-[0_0_15px_rgba(234,179,8,0.15)] shrink-0">
-            <Globe className="w-5 h-5 sm:w-6 sm:h-6" />
-          </div>
-          <div>
-            <h2 className="text-lg sm:text-xl md:text-2xl font-serif font-extrabold uppercase tracking-wide bg-gradient-to-r from-yellow-100 via-amber-200 to-yellow-400 bg-clip-text text-transparent drop-shadow-[0_2px_10px_rgba(234,179,8,0.25)] flex items-center gap-2.5 flex-wrap">
-              <span>Carte Mondiale des Gisements de la Collection</span>
-              <span className="text-xs font-mono font-normal px-2.5 py-0.5 rounded-full bg-yellow-950/60 text-yellow-400 border border-yellow-500/40">
-                {localizedFossils.length} spécimens géolocalisés
-              </span>
-            </h2>
-            <p className="text-xs sm:text-sm text-amber-300/80 font-mono italic mt-0.5">
-              Localisation par satellite des gisements et formations géologiques de votre collection
-            </p>
-          </div>
+      {/* Map Toolbar without redundant title (handled by FossilSectionDivider) */}
+      <div className="bg-slate-950/90 border border-slate-800/80 rounded-2xl p-3 sm:p-4 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5">
+          <span className="text-xs font-mono font-bold px-3 py-1 rounded-full bg-yellow-950/70 text-yellow-400 border border-yellow-500/40 shadow-xs">
+            📍 {localizedFossils.length} spécimens géolocalisés
+          </span>
+          <p className="text-xs text-amber-200/70 font-mono italic hidden sm:block">
+            Localisation par satellite des gisements et formations géologiques
+          </p>
         </div>
 
         {/* Quick Actions: Tile Layers + Cadrer + Reset + Fullscreen */}

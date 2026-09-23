@@ -328,28 +328,18 @@ export default function CollectionFossilsTimeline({
 
   return (
     <div className="space-y-4 w-full text-slate-100">
-      {/* Header with Title and Scroll Controls */}
-      <div className="bg-slate-950/80 border border-yellow-700/30 rounded-2xl p-4 sm:p-5 shadow-xl flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-gradient-to-b from-slate-900 to-slate-950 border border-yellow-600/40 text-yellow-400 shadow-[0_0_15px_rgba(234,179,8,0.15)] shrink-0">
-            <Sparkles className="w-5 h-5 sm:w-6 sm:h-6" />
-          </div>
-          <div>
-            <h2 className="text-lg sm:text-xl md:text-2xl font-serif font-extrabold uppercase tracking-wide bg-gradient-to-r from-yellow-100 via-amber-200 to-yellow-400 bg-clip-text text-transparent drop-shadow-[0_2px_10px_rgba(234,179,8,0.25)]">
-              Frise Chronologique des Fossiles de la Collection
-            </h2>
-            <p className="text-xs sm:text-sm text-amber-300/80 font-mono italic mt-0.5">
-              Positionnement temporel de chaque spécimen du conservatoire
-            </p>
-          </div>
-        </div>
+      {/* Controls Bar without redundant title (handled by FossilSectionDivider) */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 px-1 py-1">
+        <p className="text-xs text-amber-200/70 font-mono italic">
+          Positionnement temporel des spécimens de la collection dans leurs époques
+        </p>
 
         {/* Scroll Nav Buttons */}
-        <div className="flex items-center gap-2 self-end md:self-auto">
+        <div className="flex items-center gap-2 self-end sm:self-auto">
           <button
             onClick={scrollLeft}
             type="button"
-            className="p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-yellow-500/50 text-slate-300 hover:text-yellow-400 transition-all shadow-md active:scale-95"
+            className="p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-yellow-500/50 text-slate-300 hover:text-yellow-400 transition-all shadow-md active:scale-95 cursor-pointer"
             title="Faire défiler vers le passé"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -357,7 +347,7 @@ export default function CollectionFossilsTimeline({
           <button
             onClick={scrollRight}
             type="button"
-            className="p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-yellow-500/50 text-slate-300 hover:text-yellow-400 transition-all shadow-md active:scale-95"
+            className="p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-yellow-500/50 text-slate-300 hover:text-yellow-400 transition-all shadow-md active:scale-95 cursor-pointer"
             title="Faire défiler vers le présent"
           >
             <ArrowRight className="w-4 h-4" />
