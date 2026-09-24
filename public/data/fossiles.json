@@ -1,5 +1,5 @@
 {
-  "lastUpdated": 1790280597723,
+  "lastUpdated": 1790280830894,
   "videoUrl1": "https://youtu.be/R-AAm6oEaY8?is=yinXlv1Qufg-KXRc",
   "secondHomeTitle": "Bienvenue !",
   "secondHomeImage": {
@@ -539,7 +539,7 @@
         "lng": 50
       },
       "dimensions": "3,5 cm",
-      "tailleEspece": "De 9,1 M à 12,2 M",
+      "tailleEspece": "De 6 M à 13 M",
       "dietTypes": [
         "Piscivore",
         "Crustacivore",
@@ -549,7 +549,7 @@
       "provenanceVille": "",
       "provenancePays": "",
       "provenanceFormation": "",
-      "poidsEspece": "",
+      "poidsEspece": "4 à 15 T",
       "lifespanYears": "",
       "lifespanDescription": ""
     },
@@ -613,7 +613,7 @@
         "lng": 50
       },
       "dimensions": "4,3 cm",
-      "tailleEspece": "De 15 à 18 M",
+      "tailleEspece": "De 10 à 18 M",
       "dietTypes": [
         "Piscivore",
         "Carnivore",
@@ -622,7 +622,7 @@
       "provenanceVille": "",
       "provenancePays": "",
       "provenanceFormation": "",
-      "poidsEspece": "",
+      "poidsEspece": "4 à 15 T",
       "lifespanYears": "",
       "lifespanDescription": ""
     },
