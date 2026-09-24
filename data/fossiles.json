@@ -1,5 +1,5 @@
 {
-  "lastUpdated": 1790281871451,
+  "lastUpdated": 1790282035999,
   "videoUrl1": "https://youtu.be/R-AAm6oEaY8?is=yinXlv1Qufg-KXRc",
   "secondHomeTitle": "Bienvenue !",
   "secondHomeImage": {
@@ -734,7 +734,7 @@
       "provenanceName": "Kem-Kem  - Erfoud - Maroc",
       "lifespanPeriodStart": "Crétacé",
       "lifespanPeriodEnd": "Crétacé",
-      "saviezVousText": "Le Deltadromeus était un grand théropode carnivore, qui pouvait atteindre environ 8 mètres de long (voire jusqu'à 12 mètres selon certains restes attribués), ce qui en faisait un prédateur significatif.\n\n​Pourtant, ses membres étaient construits pour la vitesse et l'agilité, un peu comme un guépard (mais à l'échelle d'un dinosaure). Cette morphologie est inhabituelle pour un prédateur de cette taille.",
+      "saviezVousText": "Malgré toutes les reconstitutions qu'on peut voir de lui, aucun os de la tête (ni crâne, ni mâchoire) n'a jamais été découvert de manière certaine. Tout ce qu'on sait de son anatomie, de ses proportions de coureur et de son poids provient exclusivement du reste de son squelette (pattes, bassin, vertèbres).\n​Du coup, sur les marchés aux fossiles ou dans certaines boutiques, les \"dents de Deltadromeus\" qu'on essaie de vendre sont en réalité scientifiquement indémontrables, puisque personne ne sait vraiment à quoi ressemblait sa dentition d'origine !",
       "saviezVousImage": {
         "url": "",
         "scale": 1,
@@ -765,7 +765,7 @@
       "provenanceVille": "Erfoud",
       "provenancePays": "Maroc",
       "provenanceFormation": "Kem-Kem ",
-      "poidsEspece": "900kg à 15t",
+      "poidsEspece": "900kg à 4t",
       "lifespanYears": "",
       "lifespanDescription": ""
     },
