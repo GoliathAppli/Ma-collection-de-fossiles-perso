@@ -1,5 +1,5 @@
 {
-  "lastUpdated": 1790280177441,
+  "lastUpdated": 1790280516561,
   "videoUrl1": "https://youtu.be/R-AAm6oEaY8?is=yinXlv1Qufg-KXRc",
   "secondHomeTitle": "Bienvenue !",
   "secondHomeImage": {
@@ -249,7 +249,7 @@
       "provenanceVille": "Erfoud",
       "provenancePays": "Maroc",
       "provenanceFormation": "",
-      "poidsEspece": "",
+      "poidsEspece": "10g à 500kg",
       "lifespanYears": "",
       "lifespanDescription": ""
     },
@@ -332,7 +332,7 @@
       "provenanceVille": "",
       "provenancePays": "France / Espagne / Angleterre ",
       "provenanceFormation": "",
-      "poidsEspece": "",
+      "poidsEspece": "1g à 700kg (ammonites) 1 à 150g (goniatites)",
       "lifespanYears": "",
       "lifespanDescription": ""
     },
@@ -406,7 +406,7 @@
       "provenanceFormation": "Formation de Kem-Kem",
       "poidsEspece": "",
       "lifespanYears": "",
-      "lifespanDescription": ""
+      "lifespanDescription": "4 à 12 T"
     },
     {
       "id": "0.9113376256041475",
