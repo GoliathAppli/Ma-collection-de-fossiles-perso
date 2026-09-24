@@ -1,5 +1,5 @@
 {
-  "lastUpdated": 1790280901971,
+  "lastUpdated": 1790281043653,
   "videoUrl1": "https://youtu.be/R-AAm6oEaY8?is=yinXlv1Qufg-KXRc",
   "secondHomeTitle": "Bienvenue !",
   "secondHomeImage": {
@@ -396,7 +396,7 @@
         "posY": 0
       },
       "dimensions": "11 cm",
-      "tailleEspece": "15 M (longueur) / 4,50 M (Hauteur)",
+      "tailleEspece": "11 à 18M (longueur) / 4,50 M (Hauteur)",
       "dietTypes": [
         "Piscivore",
         "Carnivore"
@@ -404,7 +404,7 @@
       "provenanceVille": "Erfoud",
       "provenancePays": "Maroc ",
       "provenanceFormation": "Formation de Kem-Kem",
-      "poidsEspece": "",
+      "poidsEspece": "4 à 12t",
       "lifespanYears": "",
       "lifespanDescription": "4 à 12 T"
     },
