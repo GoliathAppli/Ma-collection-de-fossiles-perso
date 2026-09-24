@@ -582,13 +582,13 @@ export default function FossilDetailSheet({
                 </div>
 
                 {/* Description du fossile */}
-                <div className="flex flex-col justify-center">
+                <div className="flex flex-col justify-center items-center text-center">
                   {fossil.leFossileText ? (
-                    <p className="text-xs sm:text-sm text-slate-200 leading-relaxed font-sans whitespace-pre-wrap">
+                    <p className="text-xs sm:text-sm text-slate-200 leading-relaxed font-sans whitespace-pre-wrap text-center">
                       {fossil.leFossileText}
                     </p>
                   ) : (
-                    <p className="text-xs text-slate-500 italic">
+                    <p className="text-xs text-slate-500 italic text-center">
                       Spécimen fossile préservé dans sa matrice d'origine.
                     </p>
                   )}
