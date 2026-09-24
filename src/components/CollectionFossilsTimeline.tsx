@@ -13,7 +13,8 @@ import {
   Eye,
   Compass,
   X,
-  Ruler
+  Ruler,
+  Scale
 } from 'lucide-react';
 
 interface CollectionFossilsTimelineProps {
@@ -551,7 +552,12 @@ export default function CollectionFossilsTimeline({
                 )}
                 {previewFossil.tailleEspece && (
                   <span className="flex items-center gap-1 text-amber-300">
-                    <Ruler className="w-3 h-3 text-amber-400" /> Espèce : {previewFossil.tailleEspece}
+                    <Ruler className="w-3 h-3 text-amber-400" /> Taille : {previewFossil.tailleEspece}
+                  </span>
+                )}
+                {previewFossil.poidsEspece && (
+                  <span className="flex items-center gap-1 text-amber-300">
+                    <Scale className="w-3 h-3 text-amber-400" /> Poids : {previewFossil.poidsEspece}
                   </span>
                 )}
               </div>

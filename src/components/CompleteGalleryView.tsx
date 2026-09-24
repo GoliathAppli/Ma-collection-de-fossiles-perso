@@ -444,6 +444,7 @@ export default function CompleteGalleryView({
       reference: '',
       dimensions: '',
       tailleEspece: '',
+      poidsEspece: '',
       description: '',
       descImages: [],
       dietText: '',
@@ -454,6 +455,8 @@ export default function CompleteGalleryView({
       provenanceName: '',
       lifespanPeriodStart: '',
       lifespanPeriodEnd: '',
+      lifespanYears: '',
+      lifespanDescription: '',
       saviezVousText: '',
       saviezVousImage: { url: '', scale: 1, posX: 0, posY: 0 }
     };

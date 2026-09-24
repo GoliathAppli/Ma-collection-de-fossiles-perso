@@ -12,11 +12,13 @@ import FossilAudioGuide from './FossilAudioGuide';
 import { DietBadges } from './DietIcons';
 import BurntPaperPhoto from './BurntPaperPhoto';
 import FossilSectionDivider from './FossilSectionDivider';
+import { formatPeriodYears, formatPeriodDescription } from './geologicPeriods';
 import {
   Printer,
   Sparkles,
   Compass,
   Calendar,
+  Clock,
   Tag,
   Maximize2,
   CheckCircle2,
@@ -30,6 +32,7 @@ import {
   Upload,
   Image as ImageIcon,
   Ruler,
+  Scale,
   ChevronDown,
   Globe,
   BookOpen,
@@ -369,7 +372,7 @@ export default function FossilDetailSheet({
       {/* ============================================================== */}
       {/* PARTIE 1 : CÔTÉ ESPÈCE (PALÉOBIOLOGIE & DESCRIPTION)           */}
       {/* ============================================================== */}
-      {(fossil.description || validDescImages.length > 0 || fossil.tailleEspece || (isAdmin && onEdit)) && (
+      {(fossil.description || validDescImages.length > 0 || fossil.tailleEspece || fossil.poidsEspece || (isAdmin && onEdit)) && (
         <div className="space-y-10 sm:space-y-14 pt-4 sm:pt-8">
           {/* GRAND TITRE SÉPARATION MAJEUR CÔTÉ ESPÈCE */}
           <FossilSectionDivider type="ammonite" size="lg" label="Description de l'espèce" />
@@ -383,40 +386,73 @@ export default function FossilDetailSheet({
             </div>
           )}
 
-          {/* SÉPARATION AVEC TITRE INTÉGRÉ : TAILLE DE L'ESPÈCE */}
-          {(fossil.tailleEspece || validDescImages.length > 0 || (isAdmin && onEdit)) && (
+          {/* SÉPARATION AVEC TITRE INTÉGRÉ : TAILLE ET POIDS */}
+          {(fossil.tailleEspece || fossil.poidsEspece || validDescImages.length > 0 || (isAdmin && onEdit)) && (
             <div className="space-y-4 pt-2 sm:pt-4">
-              <FossilSectionDivider type="leaf" size="md" label="Taille de l'espèce" />
+              <FossilSectionDivider type="leaf" size="md" label="Taille et poids" />
 
-              {/* MÊME CADRE POUR LA TAILLE DE L'ESPÈCE ET LA PHOTO */}
+              {/* MÊME CADRE POUR LA TAILLE, LE POIDS ET LA PHOTO */}
               <div className="bg-slate-900/40 border border-slate-800/90 p-6 sm:p-8 rounded-2xl space-y-6 shadow-xl max-w-3xl mx-auto w-full">
-                {/* CASE TAILLE DE L'ESPÈCE (SANS TITRE REDONDANT DANS LE CADRE) */}
-                {fossil.tailleEspece ? (
-                  <div className="flex items-center justify-center gap-2.5 bg-slate-950/70 border border-slate-850 px-5 py-3 rounded-xl text-slate-200 text-center max-w-md mx-auto shadow-md">
-                    <span className="p-1.5 rounded-lg bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 shrink-0">
-                      <Ruler className="w-4 h-4" />
-                    </span>
-                    <span className="text-sm sm:text-base font-semibold text-yellow-400 font-mono tracking-wide">
-                      {fossil.tailleEspece}
-                    </span>
+                {/* CASES TAILLE ET POIDS */}
+                {(fossil.tailleEspece || fossil.poidsEspece || (isAdmin && onEdit)) && (
+                  <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 max-w-xl mx-auto">
+                    {/* Case Taille */}
+                    {fossil.tailleEspece ? (
+                      <div className="flex-1 min-w-[200px] flex items-center justify-center gap-2.5 bg-slate-950/70 border border-slate-850 px-4 sm:px-5 py-3 rounded-xl text-slate-200 text-center shadow-md">
+                        <span className="p-1.5 rounded-lg bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 shrink-0">
+                          <Ruler className="w-4 h-4" />
+                        </span>
+                        <div className="flex flex-col items-center">
+                          <span className="text-[10px] uppercase font-mono tracking-wider text-slate-400">Taille</span>
+                          <span className="text-sm sm:text-base font-semibold text-yellow-400 font-mono tracking-wide">
+                            {fossil.tailleEspece}
+                          </span>
+                        </div>
+                      </div>
+                    ) : (isAdmin && onEdit) ? (
+                      <div className="flex-1 min-w-[180px] flex items-center justify-center gap-2 bg-slate-950/40 border border-dashed border-slate-850 px-4 py-3 rounded-xl text-slate-400 text-xs text-center">
+                        <Ruler className="w-3.5 h-3.5 text-slate-500" />
+                        <button
+                          onClick={() => {
+                            playDinoSound();
+                            onEdit(fossil);
+                          }}
+                          className="text-[11px] font-mono text-yellow-500 hover:text-yellow-400 underline underline-offset-2 cursor-pointer"
+                        >
+                          + Ajouter la taille
+                        </button>
+                      </div>
+                    ) : null}
+
+                    {/* Case Poids */}
+                    {fossil.poidsEspece ? (
+                      <div className="flex-1 min-w-[200px] flex items-center justify-center gap-2.5 bg-slate-950/70 border border-slate-850 px-4 sm:px-5 py-3 rounded-xl text-slate-200 text-center shadow-md">
+                        <span className="p-1.5 rounded-lg bg-amber-500/10 text-amber-500 border border-amber-500/20 shrink-0">
+                          <Scale className="w-4 h-4" />
+                        </span>
+                        <div className="flex flex-col items-center">
+                          <span className="text-[10px] uppercase font-mono tracking-wider text-slate-400">Poids</span>
+                          <span className="text-sm sm:text-base font-semibold text-amber-400 font-mono tracking-wide">
+                            {fossil.poidsEspece}
+                          </span>
+                        </div>
+                      </div>
+                    ) : (isAdmin && onEdit) ? (
+                      <div className="flex-1 min-w-[180px] flex items-center justify-center gap-2 bg-slate-950/40 border border-dashed border-slate-850 px-4 py-3 rounded-xl text-slate-400 text-xs text-center">
+                        <Scale className="w-3.5 h-3.5 text-slate-500" />
+                        <button
+                          onClick={() => {
+                            playDinoSound();
+                            onEdit(fossil);
+                          }}
+                          className="text-[11px] font-mono text-amber-500 hover:text-amber-400 underline underline-offset-2 cursor-pointer"
+                        >
+                          + Ajouter le poids
+                        </button>
+                      </div>
+                    ) : null}
                   </div>
-                ) : (isAdmin && onEdit) ? (
-                  <div className="flex items-center justify-center gap-3 bg-slate-950/40 border border-dashed border-slate-850 px-5 py-3 rounded-xl text-slate-400 text-xs max-w-md mx-auto text-center">
-                    <div className="flex items-center gap-2">
-                      <Ruler className="w-4 h-4 text-slate-500" />
-                      <span className="italic text-slate-500">Taille non renseignée</span>
-                    </div>
-                    <button
-                      onClick={() => {
-                        playDinoSound();
-                        onEdit(fossil);
-                      }}
-                      className="text-[11px] font-mono text-yellow-500 hover:text-yellow-400 underline underline-offset-2 flex items-center gap-1 cursor-pointer"
-                    >
-                      + Ajouter la taille
-                    </button>
-                  </div>
-                ) : null}
+                )}
 
                 {/* PHOTOS D'ILLUSTRATION DANS LE MÊME CADRE (SANS SÉPARATION SUPPLÉMENTAIRE) */}
                 {validDescImages.length > 0 && (
@@ -470,13 +506,40 @@ export default function FossilDetailSheet({
           <FossilSectionDivider type="gem" size="md" label="Période de vie" />
           {(fossil.lifespanPeriodStart || fossil.lifespanPeriodEnd) ? (
             <div className="border border-slate-800/90 bg-slate-900/40 rounded-2xl p-6 sm:p-7 shadow-xl space-y-4 max-w-2xl mx-auto text-center w-full">
-              <div className="flex flex-col items-center justify-center gap-3 text-center">
+              <div className="flex flex-col items-center justify-center gap-2.5 text-center">
                 <div className="text-base sm:text-lg font-bold font-serif text-yellow-400 tracking-wide text-center">
                   {fossil.lifespanPeriodStart}
                   {fossil.lifespanPeriodEnd && fossil.lifespanPeriodEnd !== fossil.lifespanPeriodStart
                     ? ` — ${fossil.lifespanPeriodEnd}`
                     : ''}
                 </div>
+
+                {/* LES ANNÉES DE LA PÉRIODE */}
+                {(() => {
+                  const years = (fossil.lifespanYears && fossil.lifespanYears.trim())
+                    ? fossil.lifespanYears.trim()
+                    : formatPeriodYears(fossil.lifespanPeriodStart, fossil.lifespanPeriodEnd);
+                  if (!years) return null;
+                  return (
+                    <div className="inline-flex items-center justify-center gap-1.5 px-3 py-1 rounded-full bg-yellow-950/40 border border-yellow-700/50 text-xs sm:text-sm font-mono font-medium text-amber-300 shadow-inner">
+                      <Clock className="w-3.5 h-3.5 text-yellow-500 shrink-0" />
+                      <span>{years}</span>
+                    </div>
+                  );
+                })()}
+
+                {/* UNE BRÈVE DESCRIPTION DE LA PÉRIODE */}
+                {(() => {
+                  const desc = (fossil.lifespanDescription && fossil.lifespanDescription.trim())
+                    ? fossil.lifespanDescription.trim()
+                    : formatPeriodDescription(fossil.lifespanPeriodStart, fossil.lifespanPeriodEnd);
+                  if (!desc) return null;
+                  return (
+                    <p className="text-xs sm:text-sm text-slate-300 font-sans italic max-w-xl mx-auto leading-relaxed pt-0.5 text-center">
+                      {desc}
+                    </p>
+                  );
+                })()}
 
                 {/* BOUTON DÉPLIANT DISCRET POUR L'ÉCHELLE GÉOLOGIQUE */}
                 <button

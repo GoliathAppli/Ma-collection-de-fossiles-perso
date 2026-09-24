@@ -15,6 +15,7 @@ export interface Fossil {
   
   dimensions?: string; // Taille / dimensions du fossile (ex: 12 × 8 cm)
   tailleEspece?: string; // Taille estimée de l'espèce vivante (ex: ~1,5 m, Envergure: 80 cm)
+  poidsEspece?: string;  // Poids estimé de l'espèce vivante (ex: ~45 kg, 2 à 4 tonnes)
   description: string;
   descImages: ImageSettings[]; // up to 6
   
@@ -31,6 +32,8 @@ export interface Fossil {
   provenanceFormation?: string;   // Formation géologique séparée
   lifespanPeriodStart: string; // e.g., "Cambrien"
   lifespanPeriodEnd: string;   // e.g., "Ordovicien"
+  lifespanYears?: string;      // Années de la période (ex: 201 - 145 Ma)
+  lifespanDescription?: string;// Brève description de la période
   
   saviezVousText: string;
   saviezVousImage: ImageSettings;

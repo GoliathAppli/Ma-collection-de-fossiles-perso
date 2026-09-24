@@ -187,6 +187,7 @@ export default function AdminPageView({
       reference: '',
       dimensions: '',
       tailleEspece: '',
+      poidsEspece: '',
       description: '',
       descImages: [],
       dietText: '',
@@ -205,6 +206,8 @@ export default function AdminPageView({
       prixAchat: '',
       lifespanPeriodStart: '',
       lifespanPeriodEnd: '',
+      lifespanYears: '',
+      lifespanDescription: '',
       provenanceCoords: { lat: 46.2276, lng: 2.2137 }
     };
     setEditingFossil(newFossil);

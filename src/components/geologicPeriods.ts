@@ -112,3 +112,54 @@ export const GEOLOGIC_PERIODS: GeologicPeriodInfo[] = [
     color: "from-emerald-950/80 to-emerald-900/60"
   }
 ];
+
+export function getGeologicPeriodInfo(name?: string): GeologicPeriodInfo | undefined {
+  if (!name) return undefined;
+  const clean = name.trim().toLowerCase();
+  return GEOLOGIC_PERIODS.find(p => p.name.toLowerCase() === clean);
+}
+
+export function formatPeriodYears(start?: string, end?: string): string {
+  if (!start && !end) return '';
+  const pStart = getGeologicPeriodInfo(start);
+  const pEnd = getGeologicPeriodInfo(end);
+
+  if (pStart && (!pEnd || pStart.name.toLowerCase() === pEnd.name.toLowerCase())) {
+    return pStart.duration;
+  }
+
+  if (pStart && pEnd) {
+    // Both periods exist: extract beginning of start duration and end of end duration
+    const startMatch = pStart.duration.match(/^([\d.,]+)/);
+    const endMatch = pEnd.duration.match(/-\s*([\d.,]+\s*Ma|Présent)$/i) || pEnd.duration.match(/([\d.,]+\s*Ma|Présent)$/i);
+
+    if (startMatch && endMatch) {
+      const fromVal = startMatch[1];
+      const toVal = endMatch[1].trim();
+      return `${fromVal} - ${toVal}`;
+    }
+    return `${pStart.duration} — ${pEnd.duration}`;
+  }
+
+  if (pStart) return pStart.duration;
+  if (pEnd) return pEnd.duration;
+  return '';
+}
+
+export function formatPeriodDescription(start?: string, end?: string): string {
+  if (!start && !end) return '';
+  const pStart = getGeologicPeriodInfo(start);
+  const pEnd = getGeologicPeriodInfo(end);
+
+  if (pStart && (!pEnd || pStart.name.toLowerCase() === pEnd.name.toLowerCase())) {
+    return pStart.description;
+  }
+
+  if (pStart && pEnd) {
+    return `${pStart.name} : ${pStart.description} / ${pEnd.name} : ${pEnd.description}`;
+  }
+
+  if (pStart) return pStart.description;
+  if (pEnd) return pEnd.description;
+  return '';
+}

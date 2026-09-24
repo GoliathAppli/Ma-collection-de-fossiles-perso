@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { Fossil, ImageSettings } from '../types';
 import { playDinoSound } from '../utils/data/audio';
-import { Save, Trash2, Globe, Calendar, HelpCircle, Edit3, Image, Info, FileText, Award, Printer, Ruler, BookOpen, Utensils } from 'lucide-react';
+import { Save, Trash2, Globe, Calendar, Clock, HelpCircle, Edit3, Image, Info, FileText, Award, Printer, Ruler, Scale, BookOpen, Utensils } from 'lucide-react';
 import ImageAdjuster from '../utils/data/ImageAdjuster';
 import InteractiveMap from './InteractiveMap';
 import GeologicTimelineView from './GeologicTimelineView';
 import FossilPrintTemplate from './lib/FossilPrintTemplate';
 import { DietSelector } from './DietIcons';
+import { formatPeriodYears, formatPeriodDescription } from './geologicPeriods';
 
 interface FossilDetailFormProps {
   fossil: Fossil;
@@ -24,6 +25,9 @@ export default function FossilDetailForm({ fossil, onSave, onDelete, onCancel }:
     thumbnailImage: fossil.image ? { ...fossil.image } : emptyImage(),
     dimensions: fossil.dimensions || '',
     tailleEspece: fossil.tailleEspece || '',
+    poidsEspece: fossil.poidsEspece || '',
+    lifespanYears: fossil.lifespanYears || '',
+    lifespanDescription: fossil.lifespanDescription || '',
     descImages: fossil.descImages || [],
     dietText: fossil.dietText || '',
     dietImages: [],
@@ -187,22 +191,41 @@ export default function FossilDetailForm({ fossil, onSave, onDelete, onCancel }:
           />
         </div>
 
-        {/* 2. CASE TAILLE DE L'ESPÈCE */}
-        <div className="space-y-1 bg-slate-900/50 p-3 rounded-lg border border-slate-850">
-          <label className="text-xs text-yellow-400 font-mono font-medium flex items-center gap-1.5">
-            <Ruler className="w-3.5 h-3.5 text-yellow-500 shrink-0" />
-            <span>Taille de l'espèce (organisme vivant : animal / végétal)</span>
-          </label>
-          <input
-            type="text"
-            className="w-full bg-slate-900 border border-slate-700 text-slate-100 px-3 py-2 text-xs rounded focus:outline-none focus:border-yellow-600/50 font-mono placeholder:text-slate-500"
-            placeholder="Ex : Longueur adulte : ~1,80 m, Envergure : 2,50 m ou Hauteur : 45 cm..."
-            value={edited.tailleEspece || ''}
-            onChange={(e) => handleFieldChange('tailleEspece', e.target.value)}
-          />
-          <p className="text-[10.5px] text-slate-400 font-sans">
-            Indiquez la taille ou envergure estimée de l'animal ou plante dans la description scientifique.
-          </p>
+        {/* 2. CASES TAILLE ET POIDS DE L'ESPÈCE */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-900/50 p-3 rounded-lg border border-slate-850">
+          <div className="space-y-1">
+            <label className="text-xs text-yellow-400 font-mono font-medium flex items-center gap-1.5">
+              <Ruler className="w-3.5 h-3.5 text-yellow-500 shrink-0" />
+              <span>Taille de l'espèce (organisme vivant)</span>
+            </label>
+            <input
+              type="text"
+              className="w-full bg-slate-900 border border-slate-700 text-slate-100 px-3 py-2 text-xs rounded focus:outline-none focus:border-yellow-600/50 font-mono placeholder:text-slate-500"
+              placeholder="Ex : Longueur : ~1,80 m, Hauteur : 45 cm..."
+              value={edited.tailleEspece || ''}
+              onChange={(e) => handleFieldChange('tailleEspece', e.target.value)}
+            />
+            <p className="text-[10.5px] text-slate-400 font-sans">
+              Taille ou envergure estimée de l'animal ou végétal.
+            </p>
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-xs text-amber-400 font-mono font-medium flex items-center gap-1.5">
+              <Scale className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+              <span>Poids de l'espèce (organisme vivant)</span>
+            </label>
+            <input
+              type="text"
+              className="w-full bg-slate-900 border border-slate-700 text-slate-100 px-3 py-2 text-xs rounded focus:outline-none focus:border-yellow-600/50 font-mono placeholder:text-slate-500"
+              placeholder="Ex : ~45 kg, 2 à 4 tonnes, 500 g..."
+              value={edited.poidsEspece || ''}
+              onChange={(e) => handleFieldChange('poidsEspece', e.target.value)}
+            />
+            <p className="text-[10.5px] text-slate-400 font-sans">
+              Poids / masse corporelle estimée de l'organisme vivant.
+            </p>
+          </div>
         </div>
 
         {/* 6 HORIZONTAL IMAGES */}
@@ -266,6 +289,36 @@ export default function FossilDetailForm({ fossil, onSave, onDelete, onCancel }:
               <div className="text-yellow-600 font-bold py-1 bg-slate-900/60 border border-slate-800 rounded text-center mt-1">
                 {edited.lifespanPeriodEnd || 'Même période'}
               </div>
+            </div>
+          </div>
+
+          {/* DÉTAILS DE LA PÉRIODE : ANNÉES ET BRÈVE DESCRIPTION */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+            <div className="space-y-1">
+              <label className="block text-[10px] text-slate-400 uppercase font-mono flex items-center gap-1.5">
+                <Clock className="w-3 h-3 text-yellow-500" />
+                <span>Les années de la période :</span>
+              </label>
+              <input
+                type="text"
+                value={edited.lifespanYears || ''}
+                onChange={e => handleFieldChange('lifespanYears', e.target.value)}
+                placeholder={formatPeriodYears(edited.lifespanPeriodStart, edited.lifespanPeriodEnd) || "Calcul automatique selon la période"}
+                className="w-full bg-slate-900/90 border border-slate-700/80 rounded-lg px-3 py-1.5 text-xs text-amber-300 placeholder:text-slate-500 font-mono focus:outline-none focus:border-yellow-500"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="block text-[10px] text-slate-400 uppercase font-mono flex items-center gap-1.5">
+                <Info className="w-3 h-3 text-yellow-500" />
+                <span>Brève description de la période :</span>
+              </label>
+              <input
+                type="text"
+                value={edited.lifespanDescription || ''}
+                onChange={e => handleFieldChange('lifespanDescription', e.target.value)}
+                placeholder={formatPeriodDescription(edited.lifespanPeriodStart, edited.lifespanPeriodEnd) || "Description automatique selon la période"}
+                className="w-full bg-slate-900/90 border border-slate-700/80 rounded-lg px-3 py-1.5 text-xs text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-yellow-500"
+              />
             </div>
           </div>
 

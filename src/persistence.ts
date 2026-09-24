@@ -47,6 +47,9 @@ export function sanitizeConfig(config: any): AppConfig {
               thumbnailImage: { ...mainImg },
               dimensions: typeof f.dimensions === "string" ? f.dimensions : "",
               tailleEspece: typeof f.tailleEspece === "string" ? f.tailleEspece : "",
+              poidsEspece: typeof f.poidsEspece === "string" ? f.poidsEspece : "",
+              lifespanYears: typeof f.lifespanYears === "string" ? f.lifespanYears : "",
+              lifespanDescription: typeof f.lifespanDescription === "string" ? f.lifespanDescription : "",
               saviezVousImage: { url: "", scale: 1, posX: 0, posY: 0 },
               descImages: Array.isArray(f.descImages)
                 ? f.descImages.filter((img: any) => img && typeof img.url === "string" && img.url.trim() !== "")

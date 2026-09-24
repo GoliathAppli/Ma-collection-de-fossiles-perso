@@ -59,6 +59,7 @@ export default function FossilSelectorAndCarousel({
       reference: '',
       dimensions: '',
       tailleEspece: '',
+      poidsEspece: '',
       description: '',
       descImages: [],
       dietText: '',
@@ -69,6 +70,8 @@ export default function FossilSelectorAndCarousel({
       provenanceName: '',
       lifespanPeriodStart: '',
       lifespanPeriodEnd: '',
+      lifespanYears: '',
+      lifespanDescription: '',
       saviezVousText: '',
       saviezVousImage: { url: '', scale: 1, posX: 0, posY: 0 }
     };

@@ -2,6 +2,7 @@ import React from 'react';
 import { createPortal } from 'react-dom';
 import { Fossil, ImageSettings, TechnicalSheetRow } from '../../types';
 import { resolveImageUrl } from '../../utils/imageUrl';
+import { formatPeriodYears } from '../geologicPeriods';
 
 interface FossilPrintTemplateProps {
   fossil: Fossil;
@@ -408,12 +409,18 @@ export default function FossilPrintTemplate({ fossil, sheet }: FossilPrintTempla
                   {fossil.description || 'Description anatomique et morphologique certifiée par les archives paléontologiques.'}
                 </p>
 
-                {(fossil.lifespanPeriodStart || fossil.lifespanPeriodEnd || fossil.tailleEspece) && (
+                {(fossil.lifespanPeriodStart || fossil.lifespanPeriodEnd || fossil.tailleEspece || fossil.poidsEspece) && (
                   <div className="text-[8px] font-mono font-bold text-slate-800 py-0.5 border-t border-b border-slate-200 flex flex-wrap items-center gap-x-2 gap-y-0.5 shrink-0 bg-slate-50/80 px-1 rounded">
                     {fossil.tailleEspece && (
                       <span className="flex items-center gap-1">
-                        <span className="text-slate-500 uppercase tracking-wider text-[7px]">Taille espèce :</span>
+                        <span className="text-slate-500 uppercase tracking-wider text-[7px]">Taille :</span>
                         <span className="text-slate-900 font-semibold">{fossil.tailleEspece}</span>
+                      </span>
+                    )}
+                    {fossil.poidsEspece && (
+                      <span className="flex items-center gap-1">
+                        <span className="text-slate-500 uppercase tracking-wider text-[7px]">Poids :</span>
+                        <span className="text-slate-900 font-semibold">{fossil.poidsEspece}</span>
                       </span>
                     )}
                     {(fossil.lifespanPeriodStart || fossil.lifespanPeriodEnd) && (
@@ -424,6 +431,12 @@ export default function FossilPrintTemplate({ fossil, sheet }: FossilPrintTempla
                           {fossil.lifespanPeriodEnd && fossil.lifespanPeriodEnd !== fossil.lifespanPeriodStart
                             ? ` — ${fossil.lifespanPeriodEnd}`
                             : ''}
+                          {(() => {
+                            const years = (fossil.lifespanYears && fossil.lifespanYears.trim())
+                              ? fossil.lifespanYears.trim()
+                              : formatPeriodYears(fossil.lifespanPeriodStart, fossil.lifespanPeriodEnd);
+                            return years ? ` (${years})` : '';
+                          })()}
                         </span>
                       </span>
                     )}
