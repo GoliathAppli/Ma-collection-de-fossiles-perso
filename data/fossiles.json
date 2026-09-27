@@ -1,5 +1,5 @@
 {
-  "lastUpdated": 1790515586164,
+  "lastUpdated": 1790516148256,
   "videoUrl1": "https://youtu.be/R-AAm6oEaY8?is=yinXlv1Qufg-KXRc",
   "secondHomeTitle": "Bienvenue !",
   "secondHomeImage": {
@@ -1329,7 +1329,7 @@
         "posX": 0,
         "posY": 0
       },
-      "dimensions": "",
+      "dimensions": "2,4 cm",
       "tailleEspece": "6 à 7 M",
       "dietTypes": [
         "Carnivore"
@@ -1472,7 +1472,7 @@
         "posX": 0,
         "posY": 0
       },
-      "dimensions": "",
+      "dimensions": "2,3 cm",
       "tailleEspece": "7 M",
       "dietTypes": [
         "Herbivore"
