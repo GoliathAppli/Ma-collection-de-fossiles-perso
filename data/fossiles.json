@@ -1,5 +1,5 @@
 {
-  "lastUpdated": 1790516148256,
+  "lastUpdated": 1790516882734,
   "videoUrl1": "https://youtu.be/R-AAm6oEaY8?is=yinXlv1Qufg-KXRc",
   "secondHomeTitle": "Bienvenue !",
   "secondHomeImage": {
@@ -1400,7 +1400,7 @@
         "posX": 0,
         "posY": 0
       },
-      "dimensions": "",
+      "dimensions": "2,2 cm",
       "tailleEspece": "6 à 7 M",
       "dietTypes": [
         "Carnivore",
@@ -1543,7 +1543,7 @@
         "posX": 0,
         "posY": 0
       },
-      "dimensions": "",
+      "dimensions": "2,6 cm",
       "tailleEspece": "7,5 à 9 M",
       "dietTypes": [
         "Herbivore"
@@ -1614,7 +1614,7 @@
         "posX": 0,
         "posY": 0
       },
-      "dimensions": "",
+      "dimensions": "2 cm",
       "tailleEspece": "13,5 à 20 M",
       "poidsEspece": "8t",
       "lifespanYears": "",
@@ -1685,7 +1685,7 @@
         "posX": 0,
         "posY": 0
       },
-      "dimensions": "",
+      "dimensions": "10 cm",
       "tailleEspece": "11 à 25 cm",
       "poidsEspece": "10 à 50g",
       "lifespanYears": "",
@@ -1758,7 +1758,7 @@
         "posX": 0,
         "posY": 0
       },
-      "dimensions": "",
+      "dimensions": "12,7 cm",
       "tailleEspece": "15 à 24,4 M",
       "poidsEspece": "30 à 65t",
       "lifespanYears": "",
