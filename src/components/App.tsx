@@ -39,6 +39,7 @@ import {
   Tag,
   Layers,
   Sparkles,
+  Edit3,
 } from "lucide-react";
 import { usePWAInstall } from "../utils/pwa";
 import CompleteGalleryView from "./CompleteGalleryView";
@@ -742,6 +743,51 @@ export default function App() {
               exit={{ opacity: 0, scale: 0.98 }}
               className="space-y-10 py-4 max-w-4xl mx-auto"
             >
+              {/* TITRE DE L'EXPOSITION (MODIFIABLE DIRECTEMENT PAR L'ADMINISTRATEUR) */}
+              <div className="text-center space-y-2 max-w-3xl mx-auto">
+                {config.secondHomeTitle && (
+                  <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight font-serif uppercase text-center break-words leading-tight bg-gradient-to-b from-yellow-100 via-amber-200 to-yellow-500 bg-clip-text text-transparent drop-shadow-[0_4px_16px_rgba(234,179,8,0.35)]">
+                    {config.secondHomeTitle}
+                  </h1>
+                )}
+
+                {isAdmin && (
+                  <div className="bg-slate-900/80 border border-yellow-600/30 rounded-2xl p-4 text-left max-w-xl mx-auto space-y-3 mt-3 shadow-lg">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-yellow-500 uppercase tracking-wider flex items-center gap-1.5 font-mono">
+                        <Edit3 className="w-3.5 h-3.5" /> Titre de l'Exposition (Modifiable en direct)
+                      </span>
+                      <span className="text-[10px] text-slate-400 bg-slate-800 px-2 py-0.5 rounded">
+                        Visible par tous les visiteurs
+                      </span>
+                    </div>
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        playDinoSound();
+                        updateConfigInstant({ ...config, secondHomeTitle: secondHomeTitleInput.trim() });
+                        alert("✅ Titre de l'exposition enregistré et synchronisé !");
+                      }}
+                      className="flex gap-2"
+                    >
+                      <input
+                        type="text"
+                        value={secondHomeTitleInput}
+                        onChange={(e) => setSecondHomeTitleInput(e.target.value)}
+                        placeholder="Ex: Conservatoire des Spécimens Fossiles..."
+                        className="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-yellow-500 font-serif"
+                      />
+                      <button
+                        type="submit"
+                        className="bg-yellow-600 hover:bg-yellow-500 text-slate-950 font-bold px-3.5 py-1.5 rounded-xl text-xs uppercase tracking-wider transition cursor-pointer"
+                      >
+                        Enregistrer
+                      </button>
+                    </form>
+                  </div>
+                )}
+              </div>
+
               {/* IMAGE ZONE (EDITABLE BY ADMIN) */}
               <div className="space-y-4">
                 <div className="relative h-64 md:h-80 w-full max-w-3xl mx-auto rounded-2xl overflow-hidden bg-transparent flex items-center justify-center">

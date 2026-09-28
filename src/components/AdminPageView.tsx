@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { 
   Lock, 
-  Unlock, 
   ArrowLeft,
   Plus,
   Search,
@@ -15,37 +14,30 @@ import {
   Cloud,
   CloudUpload,
   CloudDownload,
-  GitBranch,
   ExternalLink,
   CheckCircle2,
   AlertTriangle,
   XCircle,
   Eye,
   EyeOff,
-  Sparkles,
-  Video,
-  FileCode,
   Layers,
   Image as ImageIcon,
   Check,
   ShieldCheck,
   Loader2,
   Smartphone,
-  Share2,
-  HelpCircle,
-  Info,
   Printer,
-  Tag
+  Tag,
+  X
 } from 'lucide-react';
 import { AppConfig, Fossil, GitHubSyncConfig, GitHubSyncStatus } from '../types';
 import { playDinoSound } from '../utils/data/audio';
-import { optimizeAllConfigImages } from '../utils/data/imageOptimizer';
 import { optimizeAppConfigImages } from '../utils/imageCompressor';
 import { readAndParseJsonFile } from '../utils/jsonImporter';
 import { usePWAInstall } from '../utils/pwa';
 import FossilPrintTemplate from './lib/FossilPrintTemplate';
 import FossilLabelsPrintManager from './FossilLabelsPrintManager';
-import { sortFossilsChronologically } from '../utils/chronology';
+import { sortFossilsChronologically, parseFossilReference } from '../utils/chronology';
 import {
   getGitHubConfig,
   saveGitHubConfig,
@@ -78,7 +70,8 @@ export default function AdminPageView({
   onNavigateToMuseum,
   onNavigateToSheets
 }: AdminPageViewProps) {
-  const [activeTab, setActiveTab] = useState<'fossils' | 'github' | 'media' | 'tools' | 'labels'>('fossils');
+  // 3 streamlined, focused tabs
+  const [activeTab, setActiveTab] = useState<'fossils' | 'labels' | 'backup'>('fossils');
 
   // Fossil Management State
   const [fossilSearch, setFossilSearch] = useState('');
@@ -107,25 +100,7 @@ export default function AdminPageView({
   const [syncOverallStatus, setSyncOverallStatus] = useState<'idle' | 'running' | 'success' | 'error'>('idle');
   const [syncMessage, setSyncMessage] = useState<string>('');
 
-  // Media Management State
-  const [videoUrl1Input, setVideoUrl1Input] = useState(config.videoUrl1 || '');
-  const [secondHomeTitleInput, setSecondHomeTitleInput] = useState(config.secondHomeTitle || '');
-  const [scaleVideoUrlInput, setScaleVideoUrlInput] = useState(config.scaleVideoUrl || '');
-  const [mediaSaveNotice, setMediaSaveNotice] = useState<string | null>(null);
-  const [isUploadingVideo, setIsUploadingVideo] = useState(false);
-
-  // Sync inputs with config changes
-  useEffect(() => {
-    setVideoUrl1Input(config.videoUrl1 || '');
-    setSecondHomeTitleInput(config.secondHomeTitle || '');
-    setScaleVideoUrlInput(config.scaleVideoUrl || '');
-  }, [config.videoUrl1, config.secondHomeTitle, config.scaleVideoUrl]);
-
-  // Tools & Maintenance State
-  const [isOptimizingImages, setIsOptimizingImages] = useState(false);
-  const [isRestoringTransparency, setIsRestoringTransparency] = useState(false);
-  const [toolNotice, setToolNotice] = useState<string | null>(null);
-  const [isDownloadingApp, setIsDownloadingApp] = useState(false);
+  // JSON Import & Export State
   const [isImportingJson, setIsImportingJson] = useState(false);
   const [importProgressText, setImportProgressText] = useState<string>('');
   const [importProgressPercent, setImportProgressPercent] = useState<number>(0);
@@ -136,7 +111,10 @@ export default function AdminPageView({
   const [pwaQuickNotice, setPwaQuickNotice] = useState<string | null>(null);
 
   // Print Fossil State
-  const [fossilToPrint, setFossilToPrint] = useState<Fossil | null>(null);
+  const [fossilsToPrint, setFossilsToPrint] = useState<Fossil[] | null>(null);
+  const [isBulkPrintModalOpen, setIsBulkPrintModalOpen] = useState(false);
+  const [bulkPrintScope, setBulkPrintScope] = useState<'all' | 'filtered'>('all');
+  const [bulkPrintOrder, setBulkPrintOrder] = useState<'chronological' | 'reference' | 'alphabetical'>('chronological');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -394,7 +372,6 @@ export default function AdminPageView({
         setSyncPercent(100);
         setSyncMessage('🎉 Synchronisation terminée avec succès sur GitHub !');
         playDinoSound();
-        // Update local status timestamp
         const updated = {
           ...githubConfig,
           lastSyncTime: Date.now(),
@@ -446,7 +423,6 @@ export default function AdminPageView({
     setIsExportingJson(true);
     try {
       playDinoSound();
-      // Compress and optimize images before generating the file
       const optimized = await optimizeAppConfigImages(config);
       const dataStr = JSON.stringify(optimized, null, 2);
       const blob = new Blob([dataStr], { type: "application/json" });
@@ -459,7 +435,7 @@ export default function AdminPageView({
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch (err: any) {
-      console.warn("Export optimization error, falling back to direct export:", err);
+      console.warn("Export optimization fallback:", err);
       const dataStr = JSON.stringify(config, null, 2);
       const blob = new Blob([dataStr], { type: "application/json" });
       const url = URL.createObjectURL(blob);
@@ -475,7 +451,7 @@ export default function AdminPageView({
     }
   };
 
-  // Import JSON file with resilient parser, memory guard, and auto-repair
+  // Import JSON file with auto-repair
   const handleImportFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -510,35 +486,6 @@ export default function AdminPageView({
     }
   };
 
-  // Download Standalone App
-  const handleDownloadStandalone = async () => {
-    setIsDownloadingApp(true);
-    try {
-      playDinoSound();
-      window.location.href = "/telecharger";
-    } catch (err: any) {
-      alert(`Erreur lors du téléchargement : ${err.message}`);
-    } finally {
-      setIsDownloadingApp(false);
-    }
-  };
-
-  // Optimize Images
-  const handleOptimizeImages = async () => {
-    setIsOptimizingImages(true);
-    setToolNotice(null);
-    try {
-      playDinoSound();
-      const optimized = await optimizeAllConfigImages(config);
-      await onUpdateConfig(optimized);
-      setToolNotice("✅ Toutes les photos ont été compressées et optimisées avec succès !");
-    } catch (err: any) {
-      setToolNotice(`❌ Erreur lors de l'optimisation : ${err.message}`);
-    } finally {
-      setIsOptimizingImages(false);
-    }
-  };
-
   // Handle PWA Installation trigger
   const handlePwaInstallAction = async () => {
     playDinoSound();
@@ -546,7 +493,7 @@ export default function AdminPageView({
     if (result === 'accepted') {
       setPwaQuickNotice("✅ Application PWA installée avec succès sur votre appareil !");
     } else if (result === 'opened_top') {
-      setPwaQuickNotice("🚀 Ouverture dans Chrome pour afficher la boîte de dialogue d'installation de l'application PWA.");
+      setPwaQuickNotice("🚀 Ouverture dans Chrome pour afficher la boîte de dialogue d'installation.");
     } else if (result === 'dismissed') {
       setPwaQuickNotice("Installation annulée.");
     } else {
@@ -554,13 +501,43 @@ export default function AdminPageView({
     }
   };
 
-  // Handle printing a fossil sheet in Admin mode
+  // Handle printing a single fossil sheet
   const handlePrintFossil = (fossil: Fossil) => {
     playDinoSound();
-    setFossilToPrint(fossil);
+    setFossilsToPrint([fossil]);
     setTimeout(() => {
       window.print();
     }, 150);
+  };
+
+  // Handle bulk print
+  const handleExecuteBulkPrint = (
+    scope: 'all' | 'filtered' = bulkPrintScope,
+    order: 'chronological' | 'reference' | 'alphabetical' = bulkPrintOrder
+  ) => {
+    playDinoSound();
+    let target = scope === 'filtered' ? filteredFossils : config.fossils;
+    if (order === 'reference') {
+      target = [...target].sort((a, b) => {
+        const parsedA = parseFossilReference(a.reference);
+        const parsedB = parseFossilReference(b.reference);
+        if (parsedA.prefix === parsedB.prefix && parsedA.num !== 999999) {
+          return parsedA.num - parsedB.num;
+        }
+        return (a.reference || '').localeCompare(b.reference || '');
+      });
+    } else if (order === 'alphabetical') {
+      target = [...target].sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+    } else {
+      target = sortFossilsChronologically(target);
+    }
+
+    setFossilsToPrint(target);
+    setIsBulkPrintModalOpen(false);
+
+    setTimeout(() => {
+      window.print();
+    }, 300);
   };
 
   // If currently editing a fossil, show the full edit form
@@ -622,32 +599,6 @@ export default function AdminPageView({
           </div>
 
           <div className="flex items-center gap-2.5">
-            {/* PWA INSTALL QUICK BUTTON */}
-            <button
-              onClick={handlePwaInstallAction}
-              className="flex items-center gap-2 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-bold px-3.5 py-2 rounded-xl text-xs uppercase tracking-wider transition shadow-lg shadow-yellow-500/20 active:scale-95 cursor-pointer"
-              title="Installer l'application sur smartphone (Android / iOS) ou ordinateur (PWA)"
-            >
-              <Smartphone className="w-4 h-4" />
-              <span className="hidden sm:inline">{isInstalled ? "App Installée (PWA)" : "Installer l'App (PWA)"}</span>
-              <span className="sm:hidden">PWA</span>
-            </button>
-
-            {onNavigateToSheets && (
-              <button
-                onClick={() => {
-                  playDinoSound();
-                  onNavigateToSheets();
-                }}
-                className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 border border-amber-600/40 hover:border-amber-500 text-amber-400 font-bold px-3.5 py-2 rounded-xl text-xs uppercase tracking-wider transition cursor-pointer"
-                title="Consulter et imprimer le tableau complet des fiches techniques de suivi"
-              >
-                <Printer className="w-4 h-4" />
-                <span className="hidden md:inline">Fiches de Suivi & Impression</span>
-                <span className="md:hidden">Fiches</span>
-              </button>
-            )}
-
             <button
               onClick={() => {
                 playDinoSound();
@@ -671,7 +622,7 @@ export default function AdminPageView({
           </div>
         </div>
 
-        {/* NAVIGATION TABS */}
+        {/* 3 CLEAN NAVIGATION TABS */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex overflow-x-auto gap-2 border-t border-slate-800/60 pt-2 pb-2">
           <button
             onClick={() => { playDinoSound(); setActiveTab('fossils'); }}
@@ -682,46 +633,7 @@ export default function AdminPageView({
             }`}
           >
             <Layers className="w-4 h-4 text-yellow-500" />
-            1. Collection des Fossiles ({eraCounts.total})
-          </button>
-
-          <button
-            onClick={() => { playDinoSound(); setActiveTab('github'); }}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition whitespace-nowrap cursor-pointer ${
-              activeTab === 'github'
-                ? 'bg-yellow-600/20 text-yellow-400 border border-yellow-500/40 shadow-sm'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-850'
-            }`}
-          >
-            <Cloud className="w-4 h-4 text-sky-400" />
-            2. Sauvegarde & GitHub
-            {githubConfig.owner && githubConfig.repo ? (
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            ) : null}
-          </button>
-
-          <button
-            onClick={() => { playDinoSound(); setActiveTab('media'); }}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition whitespace-nowrap cursor-pointer ${
-              activeTab === 'media'
-                ? 'bg-yellow-600/20 text-yellow-400 border border-yellow-500/40 shadow-sm'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-850'
-            }`}
-          >
-            <Video className="w-4 h-4 text-rose-400" />
-            3. Documentaires & Titres
-          </button>
-
-          <button
-            onClick={() => { playDinoSound(); setActiveTab('tools'); }}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition whitespace-nowrap cursor-pointer ${
-              activeTab === 'tools'
-                ? 'bg-yellow-600/20 text-yellow-400 border border-yellow-500/40 shadow-sm'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-850'
-            }`}
-          >
-            <Sparkles className="w-4 h-4 text-emerald-400" />
-            4. Maintenance & Outils
+            1. Collection des Spécimens ({eraCounts.total})
           </button>
 
           <button
@@ -733,7 +645,22 @@ export default function AdminPageView({
             }`}
           >
             <Tag className="w-4 h-4 text-amber-400" />
-            5. Étiquettes (7×3 & 5,5×3 cm)
+            2. Planches d'Étiquettes (7×3 & 5,5×3 cm)
+          </button>
+
+          <button
+            onClick={() => { playDinoSound(); setActiveTab('backup'); }}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition whitespace-nowrap cursor-pointer ${
+              activeTab === 'backup'
+                ? 'bg-yellow-600/20 text-yellow-400 border border-yellow-500/40 shadow-sm'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-850'
+            }`}
+          >
+            <Cloud className="w-4 h-4 text-sky-400" />
+            3. Sauvegarde & Synchronisation (GitHub, JSON, PWA)
+            {githubConfig.owner && githubConfig.repo ? (
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            ) : null}
           </button>
         </div>
       </header>
@@ -755,7 +682,7 @@ export default function AdminPageView({
         {/* ========================================================= */}
         {activeTab === 'fossils' && (
           <div className="space-y-6">
-            {/* TOP BAR: STATS & ADD BUTTON */}
+            {/* STATS COUNTERS */}
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
               <div className="bg-slate-900 border border-slate-800 p-3.5 rounded-xl flex flex-col justify-between">
                 <span className="text-[11px] font-mono text-slate-400 uppercase">Total Spécimens</span>
@@ -819,6 +746,18 @@ export default function AdminPageView({
               </div>
 
               <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+                <button
+                  onClick={() => {
+                    playDinoSound();
+                    setIsBulkPrintModalOpen(true);
+                  }}
+                  className="w-full sm:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-slate-950 font-extrabold px-4 py-2.5 rounded-xl text-xs uppercase tracking-wider transition shadow-lg shadow-amber-900/30 active:scale-95 cursor-pointer whitespace-nowrap"
+                  title="Imprimer toutes les fiches A4 / exporter en 1 seul document PDF"
+                >
+                  <Printer className="w-4 h-4 text-slate-950" />
+                  <span>Imprimer toutes les fiches ({config.fossils.length} PDF)</span>
+                </button>
+
                 <button
                   onClick={() => {
                     playDinoSound();
@@ -965,12 +904,22 @@ export default function AdminPageView({
         )}
 
         {/* ========================================================= */}
-        {/* TAB 2: SAUVEGARDE & GITHUB */}
+        {/* TAB 2: LABELS PRINTING (7x3 cm & 5.5x3 cm) */}
         {/* ========================================================= */}
-        {activeTab === 'github' && (
+        {activeTab === 'labels' && (
+          <FossilLabelsPrintManager
+            fossils={config.fossils}
+            onBackToFossils={() => setActiveTab('fossils')}
+          />
+        )}
+
+        {/* ========================================================= */}
+        {/* TAB 3: SAUVEGARDE & SYNCHRONISATION (GITHUB, JSON, PWA) */}
+        {/* ========================================================= */}
+        {activeTab === 'backup' && (
           <div className="space-y-8 max-w-5xl mx-auto">
             
-            {/* SECTION 1: SYNCHRONISATION GITHUB EN 1 CLIC */}
+            {/* SECTION 1: SYNCHRONISATION GITHUB CLOUD */}
             <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 space-y-6 shadow-xl">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
                 <div className="flex items-center gap-3">
@@ -979,10 +928,10 @@ export default function AdminPageView({
                   </div>
                   <div>
                     <h2 className="text-xl font-bold text-white">
-                      Enregistrement en Ligne (GitHub)
+                      Enregistrement en Ligne (GitHub Cloud)
                     </h2>
                     <p className="text-xs text-slate-400 mt-0.5">
-                      Sauvegarde automatique et permanente de toute votre exposition sur votre dépôt GitHub.
+                      Synchronisez automatiquement et de manière permanente toute votre exposition sur votre dépôt GitHub.
                     </p>
                   </div>
                 </div>
@@ -1101,16 +1050,16 @@ export default function AdminPageView({
                 </div>
               )}
 
-              {/* CONFIGURATION FORM */}
+              {/* GITHUB REPOSITORY CONFIGURATION FORM */}
               <div className="bg-slate-950/60 border border-slate-800 rounded-2xl p-5 space-y-4">
-                <div className="flex items-center justify-between pb-2 border-b border-slate-800">
-                  <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                    <GitBranch className="w-4 h-4 text-yellow-500" />
-                    Paramètres de Connexion GitHub
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-bold text-slate-200 flex items-center gap-2">
+                    <Database className="w-4 h-4 text-sky-400" />
+                    Configuration du Dépôt GitHub
                   </h3>
                   {saveSuccessNotice && (
-                    <span className="text-xs text-emerald-400 font-semibold animate-pulse">
-                      ✅ Paramètres enregistrés !
+                    <span className="text-xs text-emerald-400 flex items-center gap-1 font-semibold animate-fade-in">
+                      <Check className="w-3.5 h-3.5" /> Paramètres enregistrés !
                     </span>
                   )}
                 </div>
@@ -1118,13 +1067,13 @@ export default function AdminPageView({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-semibold text-slate-300 mb-1">
-                      Nom d'utilisateur GitHub (Owner) :
+                      Nom d'utilisateur ou Organisation GitHub :
                     </label>
                     <input
                       type="text"
                       value={githubConfig.owner}
                       onChange={(e) => setGithubConfig({ ...githubConfig, owner: e.target.value })}
-                      placeholder="ex: VotreNomUtilisateur"
+                      placeholder="Ex: fabienpiazza"
                       className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-yellow-600 font-mono"
                     />
                   </div>
@@ -1137,18 +1086,18 @@ export default function AdminPageView({
                       type="text"
                       value={githubConfig.repo}
                       onChange={(e) => setGithubConfig({ ...githubConfig, repo: e.target.value })}
-                      placeholder="ex: conservatoire-de-fossiles"
+                      placeholder="Ex: conservatoire-fossiles"
                       className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-yellow-600 font-mono"
                     />
                   </div>
 
-                  <div>
+                  <div className="sm:col-span-2">
                     <div className="flex items-center justify-between mb-1">
                       <label className="text-xs font-semibold text-slate-300">
-                        Token GitHub (Personal Access Token) :
+                        GitHub Token (Personal Access Token avec permission 'repo') :
                       </label>
                       <a
-                        href="https://github.com/settings/tokens/new?description=Conservatoire%20Fossiles&scopes=repo"
+                        href="https://github.com/settings/tokens/new?scopes=repo&description=Conservatoire+Fossiles+Sync"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-[11px] text-yellow-500 hover:underline flex items-center gap-1"
@@ -1228,7 +1177,7 @@ export default function AdminPageView({
               </div>
             </div>
 
-            {/* SECTION 2: SAUVEGARDE LOCALE (FICHIERS JSON & APPLICATION AUTONOME) */}
+            {/* SECTION 2: SAUVEGARDES LOCALES (FICHIERS JSON) */}
             <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 space-y-6 shadow-xl">
               <div className="flex items-center gap-3 pb-4 border-b border-slate-800">
                 <div className="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-2xl text-yellow-500">
@@ -1236,10 +1185,10 @@ export default function AdminPageView({
                 </div>
                 <div>
                   <h2 className="text-xl font-bold text-white">
-                    Sauvegardes et Fichiers Locaux
+                    Sauvegardes et Fichiers Locaux (JSON)
                   </h2>
                   <p className="text-xs text-slate-400 mt-0.5">
-                    Téléchargez ou restaurez vos fiches sous forme de fichier sur votre ordinateur.
+                    Téléchargez ou restaurez l'intégralité de vos spécimens sous forme de fichier JSON sécurisé sur votre ordinateur.
                   </p>
                 </div>
               </div>
@@ -1270,58 +1219,50 @@ export default function AdminPageView({
                 </div>
               )}
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <button
                   onClick={handleExportJSON}
                   disabled={isExportingJson || isImportingJson}
-                  className="flex flex-col items-center text-center gap-3 bg-slate-950 border border-slate-800 hover:border-yellow-500/50 p-5 rounded-2xl transition group cursor-pointer disabled:opacity-50"
+                  className="flex flex-col items-center text-center gap-3 bg-slate-950 border border-slate-800 hover:border-yellow-500/50 p-6 rounded-2xl transition group cursor-pointer disabled:opacity-50"
                 >
                   {isExportingJson ? (
-                    <Loader2 className="w-7 h-7 text-yellow-500 animate-spin" />
+                    <Loader2 className="w-8 h-8 text-yellow-500 animate-spin" />
                   ) : (
-                    <Download className="w-7 h-7 text-yellow-500 group-hover:scale-110 transition" />
+                    <Download className="w-8 h-8 text-yellow-500 group-hover:scale-110 transition" />
                   )}
                   <div>
-                    <h4 className="text-xs font-bold text-white uppercase tracking-wider">
-                      {isExportingJson ? 'Optimisation...' : 'Télécharger Sauvegarde'}
+                    <h4 className="text-sm font-bold text-white uppercase tracking-wider">
+                      {isExportingJson ? 'Optimisation en cours...' : 'Télécharger une Sauvegarde'}
                     </h4>
-                    <p className="text-[11px] text-slate-400 mt-1">Export optimisé et léger de toutes les fiches (.json)</p>
+                    <p className="text-xs text-slate-400 mt-1">
+                      Export complet et optimisé de toutes les fiches, textes, photos et certificats (.json)
+                    </p>
                   </div>
                 </button>
 
                 <button
                   onClick={() => fileInputRef.current?.click()}
                   disabled={isExportingJson || isImportingJson}
-                  className="flex flex-col items-center text-center gap-3 bg-slate-950 border border-slate-800 hover:border-sky-500/50 p-5 rounded-2xl transition group cursor-pointer disabled:opacity-50"
+                  className="flex flex-col items-center text-center gap-3 bg-slate-950 border border-slate-800 hover:border-sky-500/50 p-6 rounded-2xl transition group cursor-pointer disabled:opacity-50"
                 >
                   {isImportingJson ? (
-                    <Loader2 className="w-7 h-7 text-sky-400 animate-spin" />
+                    <Loader2 className="w-8 h-8 text-sky-400 animate-spin" />
                   ) : (
-                    <Upload className="w-7 h-7 text-sky-400 group-hover:scale-110 transition" />
+                    <Upload className="w-8 h-8 text-sky-400 group-hover:scale-110 transition" />
                   )}
                   <div>
-                    <h4 className="text-xs font-bold text-white uppercase tracking-wider">
-                      {isImportingJson ? 'Importation en cours...' : 'Restaurer Sauvegarde'}
+                    <h4 className="text-sm font-bold text-white uppercase tracking-wider">
+                      {isImportingJson ? 'Importation en cours...' : 'Restaurer une Sauvegarde'}
                     </h4>
-                    <p className="text-[11px] text-slate-400 mt-1">Importer et réparer un fichier .json depuis votre appareil</p>
-                  </div>
-                </button>
-
-                <button
-                  onClick={handleDownloadStandalone}
-                  disabled={isDownloadingApp || isExportingJson || isImportingJson}
-                  className="flex flex-col items-center text-center gap-3 bg-slate-950 border border-slate-800 hover:border-emerald-500/50 p-5 rounded-2xl transition group cursor-pointer disabled:opacity-50"
-                >
-                  <FileCode className="w-7 h-7 text-emerald-400 group-hover:scale-110 transition" />
-                  <div>
-                    <h4 className="text-xs font-bold text-white uppercase tracking-wider">Application Autonome (HTML)</h4>
-                    <p className="text-[11px] text-slate-400 mt-1">Fichier unique tout-en-un pour consultation hors-ligne</p>
+                    <p className="text-xs text-slate-400 mt-1">
+                      Importer et restaurer un fichier .json de sauvegarde depuis votre appareil
+                    </p>
                   </div>
                 </button>
               </div>
             </div>
 
-            {/* SECTION 3: APPLICATION MOBILE (PWA) */}
+            {/* SECTION 3: APPLICATION MOBILE & ORDINATEUR (PWA) */}
             <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-amber-950/30 border border-amber-500/40 rounded-2xl p-6 sm:p-8 space-y-6 shadow-2xl relative overflow-hidden">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
                 <div className="flex items-center gap-3">
@@ -1333,10 +1274,17 @@ export default function AdminPageView({
                       Installation de l'Application (PWA)
                     </h2>
                     <p className="text-xs text-slate-300 mt-0.5">
-                      Installez l'application officielle autonome sur votre appareil (Android, PC, Mac, tablette) pour un accès direct avec icône et fonctionnement hors-ligne.
+                      Installez l'application officielle autonome sur votre appareil (Android, iPhone, PC Windows, Mac, tablette) pour un accès direct avec icône sur l'écran d'accueil et consultation hors-ligne.
                     </p>
                   </div>
                 </div>
+                <span className={`text-xs font-mono font-bold px-3 py-1 rounded-full border ${
+                  isInstalled
+                    ? 'bg-emerald-950 text-emerald-400 border-emerald-700/60'
+                    : 'bg-amber-950 text-amber-400 border-amber-700/60'
+                }`}>
+                  {isInstalled ? '✓ Déjà Installée' : '● Prête à être installée'}
+                </span>
               </div>
 
               {pwaQuickNotice && (
@@ -1359,187 +1307,35 @@ export default function AdminPageView({
                   className="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black p-5 rounded-2xl text-sm uppercase tracking-wider transition shadow-xl shadow-yellow-500/20 active:scale-95 cursor-pointer border border-yellow-300/40"
                 >
                   <Download className="w-6 h-6 stroke-[2.5]" />
-                  <span>INSTALLER L'APPLICATION</span>
+                  <span>{isInstalled ? "APPLICATION DÉJÀ INSTALLÉE (PWA)" : "INSTALLER L'APPLICATION SUR CET APPAREIL (PWA)"}</span>
                 </button>
               </div>
-            </div>
-          </div>
-        )}
 
-        {/* ========================================================= */}
-        {/* TAB 3: MÉDIAS & ACCUEIL */}
-        {/* ========================================================= */}
-        {activeTab === 'media' && (
-          <div className="space-y-8 max-w-4xl mx-auto">
-            
-            {mediaSaveNotice && (
-              <div className="p-4 rounded-xl bg-slate-900 border border-emerald-500/50 text-emerald-300 text-xs font-semibold flex items-center justify-between shadow-lg">
-                <div className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-emerald-400" />
-                  <span>{mediaSaveNotice}</span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 text-[11px] text-slate-400">
+                <div className="bg-slate-950/50 p-3 rounded-xl border border-slate-800">
+                  <span className="font-bold text-amber-300 block mb-0.5">📱 Sur Smartphone & Tablette</span>
+                  Sur Android (Chrome) ou iPhone (Safari "Ajouter à l'écran d'accueil"), l'app se lance en plein écran comme une application native.
                 </div>
-                <button
-                  onClick={() => setMediaSaveNotice(null)}
-                  className="text-slate-400 hover:text-white text-xs px-2 py-0.5 rounded cursor-pointer"
-                >
-                  Fermer
-                </button>
-              </div>
-            )}
-
-            {/* WELCOME VIDEO ZONE */}
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-5">
-              <div className="flex items-center gap-3 pb-3 border-b border-slate-800">
-                <Video className="w-6 h-6 text-rose-400" />
-                <div>
-                  <h3 className="text-base font-bold text-white">Documentaire d'Accueil (Page 1)</h3>
-                  <p className="text-xs text-slate-400">Vidéo présentée en page de bienvenue pour les visiteurs.</p>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <label className="block text-xs font-semibold text-slate-300">
-                  Lien de la vidéo (YouTube, MP4, etc.) :
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={videoUrl1Input}
-                    onChange={(e) => setVideoUrl1Input(e.target.value)}
-                    placeholder="https://www.youtube.com/watch?v=..."
-                    className="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-slate-100 focus:outline-none focus:border-yellow-600"
-                  />
-                  <button
-                    onClick={async () => {
-                      playDinoSound();
-                      await onUpdateConfig({ ...config, videoUrl1: videoUrl1Input.trim() });
-                      setMediaSaveNotice("✅ Vidéo d'accueil enregistrée et synchronisée avec le serveur et tous vos appareils !");
-                      setTimeout(() => setMediaSaveNotice(null), 5000);
-                    }}
-                    className="bg-yellow-600 hover:bg-yellow-500 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs uppercase tracking-wider cursor-pointer transition-all active:scale-95"
-                  >
-                    Enregistrer
-                  </button>
+                <div className="bg-slate-950/50 p-3 rounded-xl border border-slate-800">
+                  <span className="font-bold text-amber-300 block mb-0.5">💻 Sur PC & Mac</span>
+                  Dans Chrome ou Edge, cliquez sur l'icône d'installation dans la barre d'adresse pour créer un raccourci direct sur votre bureau.
                 </div>
               </div>
             </div>
 
-            {/* TIMELINE VIDEO ZONE */}
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-5">
-              <div className="flex items-center gap-3 pb-3 border-b border-slate-800">
-                <Video className="w-6 h-6 text-sky-400" />
+            {/* SECTION 4: ZONE DE RÉINITIALISATION */}
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 space-y-4 shadow-xl">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
-                  <h3 className="text-base font-bold text-white">Vidéo de la Frise Chronologique</h3>
-                  <p className="text-xs text-slate-400">Documentaire sur l'échelle des temps géologiques.</p>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <label className="block text-xs font-semibold text-slate-300">
-                  Lien de la vidéo frise (YouTube, MP4, etc.) :
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={scaleVideoUrlInput}
-                    onChange={(e) => setScaleVideoUrlInput(e.target.value)}
-                    placeholder="https://www.youtube.com/watch?v=..."
-                    className="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-slate-100 focus:outline-none focus:border-yellow-600"
-                  />
-                  <button
-                    onClick={async () => {
-                      playDinoSound();
-                      await onUpdateConfig({ ...config, scaleVideoUrl: scaleVideoUrlInput.trim() });
-                      setMediaSaveNotice("✅ Vidéo de la frise mise à jour et synchronisée avec le serveur et tous vos appareils !");
-                      setTimeout(() => setMediaSaveNotice(null), 5000);
-                    }}
-                    className="bg-yellow-600 hover:bg-yellow-500 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs uppercase tracking-wider cursor-pointer transition-all active:scale-95"
-                  >
-                    Enregistrer
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ========================================================= */}
-        {/* TAB 4: MAINTENANCE & OUTILS */}
-        {/* ========================================================= */}
-        {activeTab === 'tools' && (
-          <div className="space-y-8 max-w-4xl mx-auto">
-            
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 space-y-6">
-              <div className="flex items-center gap-3 pb-4 border-b border-slate-800">
-                <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl text-emerald-400">
-                  <Sparkles className="w-8 h-8" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold text-white">
-                    Outils & Optimisation des Données
-                  </h2>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    Maintenez votre conservatoire rapide, léger et fluide.
+                  <h4 className="text-sm font-bold text-white">Zone de Réinitialisation</h4>
+                  <p className="text-xs text-slate-400 mt-1">
+                    Permet d'effacer la collection locale sur cet appareil si vous souhaitez repartir d'une base vierge.
                   </p>
                 </div>
-              </div>
-
-              {toolNotice && (
-                <div className="p-4 rounded-xl bg-slate-950 border border-emerald-700/50 text-emerald-300 text-xs font-semibold">
-                  {toolNotice}
-                </div>
-              )}
-
-              <div className="space-y-4">
-                <div className="p-5 bg-slate-950 border border-slate-800 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                  <div>
-                    <h4 className="text-sm font-bold text-white">Compression & Optimisation des Photos</h4>
-                    <p className="text-xs text-slate-400 mt-1">
-                      Compresse automatiquement les images en haute définition pour réduire le poids de la sauvegarde et accélérer les chargements.
-                    </p>
-                  </div>
-                  <button
-                    onClick={handleOptimizeImages}
-                    disabled={isOptimizingImages}
-                    className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-5 py-2.5 rounded-xl text-xs uppercase tracking-wider transition whitespace-nowrap cursor-pointer"
-                  >
-                    {isOptimizingImages ? 'Optimisation en cours...' : 'Optimiser les photos'}
-                  </button>
-                </div>
-
-                {onNavigateToSheets && (
-                  <div className="p-5 bg-slate-950 border border-amber-600/30 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <Printer className="w-4 h-4 text-amber-400" />
-                        <h4 className="text-sm font-bold text-white">Registre & Fiches Techniques de Suivi (Impression A4)</h4>
-                      </div>
-                      <p className="text-xs text-slate-400 mt-1">
-                        Consultez le registre complet des spécimens (datations, lieux et prix d'achat, certificats d'authenticité) et imprimez le tableau au format A4 Paysage ou Portrait.
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => {
-                        playDinoSound();
-                        onNavigateToSheets();
-                      }}
-                      className="bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold px-5 py-2.5 rounded-xl text-xs uppercase tracking-wider transition whitespace-nowrap cursor-pointer shadow-md shadow-amber-950/40"
-                    >
-                      Ouvrir & Imprimer le Tableau
-                    </button>
-                  </div>
-                )}
-
-                <div className="p-5 bg-slate-950 border border-slate-800 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                  <div>
-                    <h4 className="text-sm font-bold text-white">Réinitialisation des Données</h4>
-                    <p className="text-xs text-slate-400 mt-1">
-                      Remet à zéro la collection locale si vous souhaitez repartir sur une base vierge.
-                    </p>
-                  </div>
-                  <button
-                    onClick={async () => {
-                      if (window.confirm("⚠️ Attention : Voulez-vous vraiment effacer tous les fossiles et repartir de zéro ? Pensez à exporter une sauvegarde avant !")) {
+                <button
+                  onClick={async () => {
+                    if (window.confirm("⚠️ Attention : Voulez-vous vraiment effacer tous les fossiles et repartir de zéro ? Pensez à exporter une sauvegarde avant !")) {
+                      if (window.confirm("⚠️ Confirmation finale : toutes les fiches non sauvegardées sur GitHub ou en fichier JSON seront définitivement perdues. Continuer ?")) {
                         await onUpdateConfig({
                           ...config,
                           fossils: [],
@@ -1547,33 +1343,183 @@ export default function AdminPageView({
                         });
                         alert("Base réinitialisée.");
                       }
-                    }}
-                    className="bg-rose-950 hover:bg-rose-900 border border-rose-700 text-rose-300 font-bold px-5 py-2.5 rounded-xl text-xs uppercase tracking-wider transition whitespace-nowrap cursor-pointer"
-                  >
-                    Vider la collection
-                  </button>
-                </div>
+                    }
+                  }}
+                  className="bg-rose-950 hover:bg-rose-900 border border-rose-700 text-rose-300 font-bold px-5 py-2.5 rounded-xl text-xs uppercase tracking-wider transition whitespace-nowrap cursor-pointer"
+                >
+                  Vider la collection locale
+                </button>
               </div>
             </div>
-          </div>
-        )}
 
-        {/* ========================================================= */}
-        {/* TAB 5: LABELS PRINTING (7x3 cm) */}
-        {/* ========================================================= */}
-        {activeTab === 'labels' && (
-          <FossilLabelsPrintManager
-            fossils={config.fossils}
-            onBackToFossils={() => setActiveTab('fossils')}
-          />
+          </div>
         )}
       </main>
 
-      {/* PRINT TEMPLATE FOR ADMIN */}
-      {fossilToPrint && (
+      {/* MODAL IMPRESSION GROUPÉE DE TOUTES LES FICHES A4 / PDF */}
+      {isBulkPrintModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-yellow-600/40 rounded-3xl max-w-lg w-full p-6 space-y-6 shadow-2xl animate-fade-in text-slate-100">
+            {/* Modal Header */}
+            <div className="flex items-start justify-between gap-4 border-b border-slate-800 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400">
+                  <Printer className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-white font-serif uppercase tracking-wider">
+                    Impression Groupée des Fiches (PDF)
+                  </h3>
+                  <p className="text-xs text-slate-400">
+                    Générez et imprimez l'ensemble des fiches A4 en 1 seul document
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsBulkPrintModalOpen(false)}
+                className="p-1.5 text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Scope Selection */}
+            <div className="space-y-3">
+              <label className="text-xs font-mono uppercase font-bold text-amber-400 tracking-wider block">
+                1. Périmètre des fiches à imprimer
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setBulkPrintScope('all')}
+                  className={`p-3.5 rounded-2xl border text-left transition cursor-pointer flex flex-col justify-between ${
+                    bulkPrintScope === 'all'
+                      ? 'bg-amber-950/40 border-amber-500 text-white shadow-md shadow-amber-950/40'
+                      : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700'
+                  }`}
+                >
+                  <span className="font-bold text-sm block text-amber-200">
+                    Toute la collection
+                  </span>
+                  <span className="text-xs text-slate-400 mt-1">
+                    {config.fossils.length} spécimen{config.fossils.length > 1 ? 's' : ''} ({config.fossils.length} pages A4)
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setBulkPrintScope('filtered')}
+                  className={`p-3.5 rounded-2xl border text-left transition cursor-pointer flex flex-col justify-between ${
+                    bulkPrintScope === 'filtered'
+                      ? 'bg-amber-950/40 border-amber-500 text-white shadow-md shadow-amber-950/40'
+                      : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700'
+                  }`}
+                >
+                  <span className="font-bold text-sm block text-amber-200">
+                    Sélection filtrée
+                  </span>
+                  <span className="text-xs text-slate-400 mt-1">
+                    {filteredFossils.length} spécimen{filteredFossils.length > 1 ? 's' : ''} ({filteredFossils.length} pages A4)
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            {/* Order Selection */}
+            <div className="space-y-3">
+              <label className="text-xs font-mono uppercase font-bold text-amber-400 tracking-wider block">
+                2. Ordre de pagination
+              </label>
+              <div className="space-y-2">
+                {[
+                  {
+                    id: 'chronological' as const,
+                    title: 'Ordre Chronologique',
+                    desc: 'Cénozoïque ➔ Mésozoïque ➔ Paléozoïque ➔ Précambrien'
+                  },
+                  {
+                    id: 'reference' as const,
+                    title: 'Par Référence d\'Archive',
+                    desc: 'Numéro d\'inventaire croissant (ex: P1, P2...)'
+                  },
+                  {
+                    id: 'alphabetical' as const,
+                    title: 'Par Ordre Alphabétique',
+                    desc: 'De A à Z selon le nom du fossile'
+                  }
+                ].map((ord) => (
+                  <label
+                    key={ord.id}
+                    onClick={() => setBulkPrintOrder(ord.id)}
+                    className={`flex items-start gap-3 p-2.5 rounded-xl border cursor-pointer transition ${
+                      bulkPrintOrder === ord.id
+                        ? 'bg-slate-800/80 border-amber-500/70 text-white'
+                        : 'bg-slate-950/50 border-slate-850 text-slate-400 hover:border-slate-800'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="bulkPrintOrder"
+                      checked={bulkPrintOrder === ord.id}
+                      onChange={() => setBulkPrintOrder(ord.id)}
+                      className="mt-1 accent-amber-500 cursor-pointer"
+                    />
+                    <div className="text-xs">
+                      <span className="font-bold block text-slate-200">{ord.title}</span>
+                      <span className="text-[11px] text-slate-400">{ord.desc}</span>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Summary & Instructions */}
+            <div className="bg-slate-950/80 border border-slate-800 p-3.5 rounded-2xl text-xs space-y-1.5 text-slate-300">
+              <div className="flex justify-between font-mono">
+                <span className="text-slate-400">Total pages générées :</span>
+                <span className="text-amber-400 font-bold">
+                  {bulkPrintScope === 'filtered' ? filteredFossils.length : config.fossils.length} page(s) A4
+                </span>
+              </div>
+              <div className="flex justify-between font-mono">
+                <span className="text-slate-400">Disposition :</span>
+                <span className="text-slate-200">1 fiche d'authenticité par page</span>
+              </div>
+              <p className="text-[11px] text-slate-400 pt-1 border-t border-slate-850">
+                💡 <em>Astuce :</em> Dans la fenêtre d'impression, choisissez « <strong>Enregistrer au format PDF</strong> » comme imprimante de destination pour générer le fichier PDF complet en 1 clic.
+              </p>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center justify-end gap-3 pt-2 border-t border-slate-800">
+              <button
+                type="button"
+                onClick={() => setIsBulkPrintModalOpen(false)}
+                className="px-4 py-2.5 rounded-xl text-xs font-mono uppercase tracking-wider text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
+              >
+                Annuler
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleExecuteBulkPrint()}
+                className="flex items-center gap-2 bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-slate-950 font-extrabold px-5 py-2.5 rounded-xl text-xs uppercase tracking-wider transition shadow-lg shadow-amber-900/40 active:scale-95 cursor-pointer"
+              >
+                <Printer className="w-4 h-4 text-slate-950" />
+                <span>
+                  Lancer l'impression ({bulkPrintScope === 'filtered' ? filteredFossils.length : config.fossils.length} pages PDF)
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* PRINT TEMPLATE FOR ADMIN (SINGLE OR BULK) */}
+      {fossilsToPrint && fossilsToPrint.length > 0 && (
         <FossilPrintTemplate
-          fossil={fossilToPrint}
-          sheet={config.technicalSheets?.find((s) => s.id === fossilToPrint.id)}
+          fossils={fossilsToPrint}
+          sheets={config.technicalSheets}
         />
       )}
     </div>

@@ -442,6 +442,7 @@ export default function GeologicTimelineView({
       {activeFossilSheet && (
         <FossilDetailSheet
           fossil={activeFossilSheet}
+          allFossils={fossils}
           isAdmin={isAdmin}
           onClose={() => setActiveFossilSheet(null)}
           scrollMode="intoView"

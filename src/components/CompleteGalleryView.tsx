@@ -26,8 +26,10 @@ import {
   Layers,
   Sparkles,
   SlidersHorizontal,
-  Clock
+  Clock,
+  Printer
 } from 'lucide-react';
+import FossilPrintTemplate from './lib/FossilPrintTemplate';
 import { parseFossilReference } from '../utils/chronology';
 
 interface CompleteGalleryViewProps {
@@ -323,6 +325,7 @@ export default function CompleteGalleryView({
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [viewMode, setViewMode] = useState<ViewMode>('carousels');
   const [activeFossilId, setActiveFossilId] = useState<string | null>(initialFossilId);
+  const [isPrintingGalleryFossils, setIsPrintingGalleryFossils] = useState(false);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -472,6 +475,7 @@ export default function CompleteGalleryView({
       <div className="space-y-6">
         <FossilDetailSheet
           fossil={activeFossil}
+          allFossils={fossils}
           isAdmin={isAdmin}
           onClose={() => setActiveFossilId(null)}
           onEdit={(f) => {
@@ -592,7 +596,26 @@ export default function CompleteGalleryView({
         </div>
 
         {/* BOUTONS DE CHOIX D'AFFICHAGE (DISCRETS & ÉPURÉS) */}
-        <div className="flex items-center gap-1 bg-slate-950/80 p-1 border border-slate-800/80 rounded-xl self-end sm:self-auto shadow-inner">
+        <div className="flex flex-wrap items-center gap-1.5 self-end sm:self-auto">
+          {isAdmin && fossils.length > 0 && (
+            <button
+              onClick={() => {
+                playDinoSound();
+                setIsPrintingGalleryFossils(true);
+                setTimeout(() => {
+                  window.print();
+                }, 300);
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-amber-600/30 to-yellow-600/30 hover:from-amber-600/40 hover:to-yellow-600/40 border border-amber-500/50 hover:border-amber-400 text-amber-300 hover:text-white rounded-xl text-[11px] font-mono font-bold uppercase tracking-wider transition cursor-pointer shadow-md active:scale-95 whitespace-nowrap"
+              title={`Imprimer toutes les fiches A4 (${fossils.length} spécimens en 1 seul PDF)`}
+            >
+              <Printer className="w-3.5 h-3.5 text-amber-400" />
+              <span className="hidden sm:inline">Imprimer toutes les fiches ({fossils.length} PDF)</span>
+              <span className="sm:hidden">Tout imprimer ({fossils.length})</span>
+            </button>
+          )}
+
+          <div className="flex items-center gap-1 bg-slate-950/80 p-1 border border-slate-800/80 rounded-xl shadow-inner">
           <button
             onClick={() => {
               playDinoSound();
@@ -642,6 +665,7 @@ export default function CompleteGalleryView({
           </button>
         </div>
       </div>
+    </div>
 
       {/* RENDER ACTIVE VIEW */}
       {viewMode === 'carousels' && (
@@ -858,6 +882,11 @@ export default function CompleteGalleryView({
             })
           )}
         </div>
+      )}
+
+      {/* BULK PRINT TEMPLATE FOR GALLERY */}
+      {isPrintingGalleryFossils && (
+        <FossilPrintTemplate fossils={sortFossilsCenozoicToPrecambrian(fossils)} />
       )}
     </div>
   );

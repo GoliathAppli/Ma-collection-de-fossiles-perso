@@ -43,6 +43,8 @@ import {
 
 interface FossilDetailSheetProps {
   fossil: Fossil;
+  allFossils?: Fossil[];
+  technicalSheets?: any[];
   isAdmin: boolean;
   onClose: () => void;
   onEdit?: (fossil: Fossil) => void;
@@ -53,6 +55,8 @@ interface FossilDetailSheetProps {
 
 export default function FossilDetailSheet({
   fossil,
+  allFossils,
+  technicalSheets,
   isAdmin,
   onClose,
   onEdit,
@@ -62,6 +66,7 @@ export default function FossilDetailSheet({
 }: FossilDetailSheetProps) {
   const [expandedCertUrl, setExpandedCertUrl] = useState<ImageSettings | null>(null);
   const [showGeologicTimeline, setShowGeologicTimeline] = useState(false);
+  const [isPrintingAll, setIsPrintingAll] = useState(false);
   const sheetContainerRef = useRef<HTMLDivElement>(null);
 
   // Traceability editing state for Administrator
@@ -182,7 +187,7 @@ export default function FossilDetailSheet({
       {/* Printable sheet template - only rendered for administrator */}
       {isAdmin && (
         <FossilPrintTemplate
-          fossil={{
+          fossil={isPrintingAll ? undefined : {
             ...fossil,
             prixAchat: traceData.prixAchat || fossil.prixAchat,
             dateLieuAchat: traceData.dateLieuAchat || fossil.dateLieuAchat,
@@ -190,6 +195,8 @@ export default function FossilDetailSheet({
             periodeDatation: traceData.periodeDatation || fossil.periodeDatation,
             certificatImage: traceData.certificatImage?.url ? traceData.certificatImage : fossil.certificatImage,
           }}
+          fossils={isPrintingAll ? (allFossils && allFossils.length > 0 ? allFossils : [fossil]) : undefined}
+          sheets={technicalSheets}
         />
       )}
 
@@ -227,19 +234,42 @@ export default function FossilDetailSheet({
           </button>
         )}
 
-        {/* PRINT BUTTON: ONLY VISIBLE IN ADMIN MODE */}
+        {/* PRINT BUTTONS: ONLY VISIBLE IN ADMIN MODE */}
         {isAdmin && (
-          <button
-            onClick={() => {
-              playDinoSound();
-              window.print();
-            }}
-            className="bg-slate-900 border border-slate-850 px-3 py-1 rounded text-xs text-slate-400 hover:text-white transition-all font-mono uppercase font-bold flex items-center gap-1 hover:border-slate-700 hover:bg-slate-800 cursor-pointer"
-            title="Imprimer la fiche (Mode Administrateur uniquement)"
-          >
-            <Printer className="w-3.5 h-3.5 text-yellow-500" />
-            <span className="hidden sm:inline">Imprimer / PDF</span>
-          </button>
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => {
+                playDinoSound();
+                setIsPrintingAll(false);
+                setTimeout(() => {
+                  window.print();
+                }, 150);
+              }}
+              className="bg-slate-900 border border-slate-850 px-3 py-1 rounded text-xs text-slate-300 hover:text-white transition-all font-mono uppercase font-bold flex items-center gap-1 hover:border-slate-700 hover:bg-slate-800 cursor-pointer"
+              title="Imprimer la fiche de ce spécimen (A4 / PDF)"
+            >
+              <Printer className="w-3.5 h-3.5 text-yellow-500" />
+              <span className="hidden sm:inline">Imprimer / PDF</span>
+            </button>
+
+            {allFossils && allFossils.length > 1 && (
+              <button
+                onClick={() => {
+                  playDinoSound();
+                  setIsPrintingAll(true);
+                  setTimeout(() => {
+                    window.print();
+                  }, 250);
+                }}
+                className="bg-amber-950/70 border border-amber-600/50 hover:border-amber-400 px-3 py-1 rounded text-xs text-amber-300 hover:text-amber-100 transition-all font-mono uppercase font-bold flex items-center gap-1.5 hover:bg-amber-900/80 cursor-pointer shadow-sm shadow-amber-950/40"
+                title={`Imprimer toutes les fiches A4 (${allFossils.length} spécimens en 1 seul PDF)`}
+              >
+                <Printer className="w-3.5 h-3.5 text-amber-400" />
+                <span className="hidden sm:inline">Tout imprimer ({allFossils.length} PDF)</span>
+                <span className="sm:hidden">Tous ({allFossils.length})</span>
+              </button>
+            )}
+          </div>
         )}
 
         {/* HEADER CLOSE BUTTON */}

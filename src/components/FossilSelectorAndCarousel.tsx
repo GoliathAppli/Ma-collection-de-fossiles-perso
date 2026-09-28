@@ -261,6 +261,7 @@ export default function FossilSelectorAndCarousel({
       {activeFossil && (
         <FossilDetailSheet
           fossil={activeFossil}
+          allFossils={fossils}
           isAdmin={isAdmin}
           scrollMode="intoView"
           onClose={() => setSelectedFossilId(null)}
