@@ -30,17 +30,15 @@ export default function SecretLockCharacter({
     audio.volume = 0.85;
     audioRef.current = audio;
 
+    audio.addEventListener("play", () => setIsPlaying(true));
+    audio.addEventListener("pause", () => setIsPlaying(false));
+
     const startPlayback = () => {
       if (!audioRef.current) return;
       audioRef.current
         .play()
-        .then(() => {
-          setIsPlaying(true);
-        })
-        .catch(() => {
-          // Bloqué par la politique de sécurité autoplay du navigateur avant interaction
-          setIsPlaying(false);
-        });
+        .then(() => setIsPlaying(true))
+        .catch(() => setIsPlaying(false));
     };
 
     // Tente de jouer dès le chargement
@@ -53,12 +51,14 @@ export default function SecretLockCharacter({
       }
     };
 
+    window.addEventListener("pointerdown", handleUserGesture, { passive: true });
     window.addEventListener("click", handleUserGesture, { passive: true });
     window.addEventListener("keydown", handleUserGesture, { passive: true });
     window.addEventListener("touchstart", handleUserGesture, { passive: true });
 
     // Nettoyage impératif : coupe le son dès que le mot de passe est validé ou qu'on quitte la vue
     return () => {
+      window.removeEventListener("pointerdown", handleUserGesture);
       window.removeEventListener("click", handleUserGesture);
       window.removeEventListener("keydown", handleUserGesture);
       window.removeEventListener("touchstart", handleUserGesture);
