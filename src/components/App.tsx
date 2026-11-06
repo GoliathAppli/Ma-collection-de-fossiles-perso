@@ -44,6 +44,8 @@ import {
 import { usePWAInstall } from "../utils/pwa";
 import CompleteGalleryView from "./CompleteGalleryView";
 import DinosaurLoadingScreen from "./DinosaurLoadingScreen";
+import SecretLockCharacter from "./SecretLockCharacter";
+import BackgroundMusicPlayer from "./BackgroundMusicPlayer";
 
 // Initialize global standalone mode detector to separate local file preview from active server context
 if (typeof window !== "undefined") {
@@ -560,6 +562,9 @@ export default function App() {
           onImportConfig={handleImportConfig}
         />
       )}
+
+      {/* MUSIQUE D'AMBIANCE (OPENING TITLES - JOUÉE UNE SEULE FOIS SUR LA PAGE PRINCIPALE) */}
+      <BackgroundMusicPlayer currentView={view} />
 
       {/* PRIMARY TRANSITIONAL VIEWPORT */}
       <main className="max-w-6xl mx-auto px-4 py-8 pb-24 relative z-10">
@@ -1185,19 +1190,9 @@ export default function App() {
               </div>
 
               {!isAdmin && !isSheetsUnlocked ? (
-                /* ACCÈS SÉCURISÉ PAR MOT DE PASSE */
+                /* ACCÈS SÉCURISÉ - ANIMATION DU PERSONNAGE (2 FRAMES PNG ALTERNÉES TOUTES LES 0.5s) */
                 <div className="max-w-md mx-auto bg-slate-900/90 border border-yellow-700/30 p-6 sm:p-8 rounded-2xl shadow-2xl space-y-6">
-                  <div className="w-14 h-14 rounded-full bg-yellow-950/60 border border-yellow-500/40 mx-auto flex items-center justify-center text-yellow-400 shadow-inner">
-                    <Lock className="w-7 h-7" />
-                  </div>
-                  <div className="text-center space-y-2">
-                    <h2 className="text-lg font-serif font-extrabold uppercase tracking-wider bg-gradient-to-r from-yellow-100 via-amber-200 to-yellow-400 bg-clip-text text-transparent drop-shadow-sm">
-                      Accès Protégé par Mot de Passe
-                    </h2>
-                    <p className="text-xs text-slate-400 leading-relaxed">
-                      L'accès à la rubrique des fiches techniques de suivi (données de traçabilité, valeurs d'achat et certificats d'authenticité) est sécurisé. Veuillez renseigner le mot de passe administrateur pour continuer.
-                    </p>
-                  </div>
+                  <SecretLockCharacter />
 
                   <form onSubmit={handleSheetsLogin} className="space-y-4">
                     <div>
