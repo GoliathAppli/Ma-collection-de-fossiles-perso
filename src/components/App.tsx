@@ -53,7 +53,8 @@ if (typeof window !== "undefined") {
 
 export default function App() {
   const { isInstalled, install } = usePWAInstall();
-  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isConfigLoaded, setIsConfigLoaded] = useState(false);
+  const [showLoadingScreen, setShowLoadingScreen] = useState(true);
   const [isSheetsUnlocked, setIsSheetsUnlocked] = useState(() => {
     return safeSessionStorage.getItem("sheets_unlocked") === "true";
   });
@@ -148,14 +149,11 @@ export default function App() {
             setSecondHomeTitleInput(loaded.secondHomeTitle);
           }
         }
-        // Small graceful pause so the user sees the smooth fossil loading transition without flickering
-        setTimeout(() => {
-          if (isMounted) setIsInitialLoading(false);
-        }, 350);
+        setIsConfigLoaded(true);
       })
       .catch((err) => {
         console.warn("Failed to load initial config:", err);
-        if (isMounted) setIsInitialLoading(false);
+        setIsConfigLoaded(true);
       });
 
     return () => {
@@ -527,10 +525,10 @@ export default function App() {
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans relative overflow-x-hidden selection:bg-yellow-600 selection:text-slate-950">
       {/* THEMED FOSSIL / DINOSAUR INITIAL LOADING SCREEN */}
       <AnimatePresence>
-        {isInitialLoading && (
+        {showLoadingScreen && (
           <DinosaurLoadingScreen
-            message="Fouilles paléontologiques en cours..."
-            submessage="Synchronisation des spécimens fossiles, des données géologiques et des documentaires vidéo..."
+            isReady={isConfigLoaded}
+            onFinish={() => setShowLoadingScreen(false)}
           />
         )}
       </AnimatePresence>
@@ -722,7 +720,7 @@ export default function App() {
 
                 <UniversalVideoPlayer
                   url={config.videoUrl1 || ""}
-                  isLoading={isInitialLoading}
+                  isLoading={showLoadingScreen}
                   loadingLabel="Synchronisation du reportage vidéo de bienvenue en cours, veuillez patienter un instant..."
                   emptyLabel="Aucun reportage vidéo configuré (Modifiable par l'administrateur)"
                 />
@@ -1118,7 +1116,7 @@ export default function App() {
                   showDetailedScale={true}
                   isAdmin={isAdmin}
                   videoUrl={config.scaleVideoUrl}
-                  isLoadingVideo={isInitialLoading}
+                  isLoadingVideo={showLoadingScreen}
                   onSaveVideo={(url) =>
                     updateConfig({ ...config, scaleVideoUrl: url })
                   }
