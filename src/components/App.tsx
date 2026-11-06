@@ -43,6 +43,7 @@ import {
 } from "lucide-react";
 import { usePWAInstall } from "../utils/pwa";
 import CompleteGalleryView from "./CompleteGalleryView";
+import DinosaurLoadingScreen from "./DinosaurLoadingScreen";
 
 // Initialize global standalone mode detector to separate local file preview from active server context
 if (typeof window !== "undefined") {
@@ -52,6 +53,7 @@ if (typeof window !== "undefined") {
 
 export default function App() {
   const { isInstalled, install } = usePWAInstall();
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isSheetsUnlocked, setIsSheetsUnlocked] = useState(() => {
     return safeSessionStorage.getItem("sheets_unlocked") === "true";
   });
@@ -120,30 +122,45 @@ export default function App() {
 
   // Load configuration from local storage on mount
   useEffect(() => {
-    loadAppConfig().then((loaded) => {
-      if (loaded) {
-        const sanitized: AppConfig = {
-          ...loaded,
-          fossils: (loaded.fossils || []).map((f) => {
-            const mainImg = f.image ? { ...f.image } : { url: "", scale: 1, posX: 0, posY: 0 };
-            return {
-              ...f,
-              image: mainImg,
-              thumbnailImage: { ...mainImg },
-              saviezVousImage: { url: "", scale: 1, posX: 0, posY: 0 },
-            };
-          }),
-        };
-        setConfig(sanitized);
-        latestConfigRef.current = sanitized;
-        if (loaded.videoUrl1) {
-          setHomeVideoInput(loaded.videoUrl1);
+    let isMounted = true;
+    loadAppConfig()
+      .then((loaded) => {
+        if (!isMounted) return;
+        if (loaded) {
+          const sanitized: AppConfig = {
+            ...loaded,
+            fossils: (loaded.fossils || []).map((f) => {
+              const mainImg = f.image ? { ...f.image } : { url: "", scale: 1, posX: 0, posY: 0 };
+              return {
+                ...f,
+                image: mainImg,
+                thumbnailImage: { ...mainImg },
+                saviezVousImage: { url: "", scale: 1, posX: 0, posY: 0 },
+              };
+            }),
+          };
+          setConfig(sanitized);
+          latestConfigRef.current = sanitized;
+          if (loaded.videoUrl1) {
+            setHomeVideoInput(loaded.videoUrl1);
+          }
+          if (loaded.secondHomeTitle) {
+            setSecondHomeTitleInput(loaded.secondHomeTitle);
+          }
         }
-        if (loaded.secondHomeTitle) {
-          setSecondHomeTitleInput(loaded.secondHomeTitle);
-        }
-      }
-    });
+        // Small graceful pause so the user sees the smooth fossil loading transition without flickering
+        setTimeout(() => {
+          if (isMounted) setIsInitialLoading(false);
+        }, 350);
+      })
+      .catch((err) => {
+        console.warn("Failed to load initial config:", err);
+        if (isMounted) setIsInitialLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   // Update homeVideoInput when config.videoUrl1 changes (e.g. on import or edit)
@@ -508,6 +525,16 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans relative overflow-x-hidden selection:bg-yellow-600 selection:text-slate-950">
+      {/* THEMED FOSSIL / DINOSAUR INITIAL LOADING SCREEN */}
+      <AnimatePresence>
+        {isInitialLoading && (
+          <DinosaurLoadingScreen
+            message="Fouilles paléontologiques en cours..."
+            submessage="Synchronisation des spécimens fossiles, des données géologiques et des documentaires vidéo..."
+          />
+        )}
+      </AnimatePresence>
+
       {/* BACKGROUND DECORATIVE PNG CANVASES / GLOWS */}
       <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-radial from-yellow-900/10 to-transparent pointer-events-none -z-10" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-radial from-emerald-900/10 to-transparent pointer-events-none -z-10" />
@@ -695,6 +722,8 @@ export default function App() {
 
                 <UniversalVideoPlayer
                   url={config.videoUrl1 || ""}
+                  isLoading={isInitialLoading}
+                  loadingLabel="Synchronisation du reportage vidéo de bienvenue en cours, veuillez patienter un instant..."
                   emptyLabel="Aucun reportage vidéo configuré (Modifiable par l'administrateur)"
                 />
               </div>
@@ -1089,6 +1118,7 @@ export default function App() {
                   showDetailedScale={true}
                   isAdmin={isAdmin}
                   videoUrl={config.scaleVideoUrl}
+                  isLoadingVideo={isInitialLoading}
                   onSaveVideo={(url) =>
                     updateConfig({ ...config, scaleVideoUrl: url })
                   }

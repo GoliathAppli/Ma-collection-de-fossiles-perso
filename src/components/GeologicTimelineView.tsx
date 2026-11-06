@@ -24,6 +24,7 @@ interface GeologicTimelineViewProps {
   showDetailedScale?: boolean;
   fossils?: Fossil[];
   onSelectFossil?: (fossil: Fossil) => void;
+  isLoadingVideo?: boolean;
 }
 
 export default function GeologicTimelineView({
@@ -38,6 +39,7 @@ export default function GeologicTimelineView({
   showDetailedScale = false,
   fossils = [],
   onSelectFossil,
+  isLoadingVideo = false,
 }: GeologicTimelineViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [selectedPeriod, setSelectedPeriod] = useState<GeologicPeriodInfo | null>(null);
@@ -432,6 +434,8 @@ export default function GeologicTimelineView({
           {/* Video display player */}
           <UniversalVideoPlayer
             url={videoUrl || ""}
+            isLoading={isLoadingVideo}
+            loadingLabel="Synchronisation du documentaire de la frise chronologique en cours..."
             emptyLabel="Aucun lecteur vidéo configuré par l'administrateur"
           />
         </div>
