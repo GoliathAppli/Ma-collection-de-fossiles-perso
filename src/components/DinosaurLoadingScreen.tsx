@@ -3,49 +3,59 @@ import { motion } from 'motion/react';
 import { AmmoniteIcon } from '../utils/data/PeriodIcons';
 
 interface DinosaurLoadingScreenProps {
+  progress?: number;
   isReady?: boolean;
   onFinish?: () => void;
 }
 
 export default function DinosaurLoadingScreen({
+  progress = 10,
   isReady = false,
   onFinish,
 }: DinosaurLoadingScreenProps) {
-  const [progress, setProgress] = useState(8);
+  const [displayedProgress, setDisplayedProgress] = useState(progress);
 
   useEffect(() => {
-    let timer: NodeJS.Timeout;
+    const target = isReady ? 100 : Math.min(progress, 95);
 
-    if (!isReady) {
-      // Progressively advance from left to right as the app loads
-      const interval = setInterval(() => {
-        setProgress((prev) => {
-          if (prev < 30) return prev + Math.random() * 6 + 3;
-          if (prev < 65) return prev + Math.random() * 4 + 2;
-          if (prev < 88) return prev + Math.random() * 2 + 1;
-          if (prev < 94) return prev + 0.4;
-          return prev;
-        });
-      }, 100);
+    const interval = setInterval(() => {
+      setDisplayedProgress((current) => {
+        if (current >= target) {
+          if (target >= 100) {
+            clearInterval(interval);
+            if (onFinish) {
+              setTimeout(onFinish, 120);
+            }
+          }
+          return target;
+        }
 
-      return () => clearInterval(interval);
-    } else {
-      // When configuration and assets are ready, complete smoothly to 100%
-      setProgress(100);
-      timer = setTimeout(() => {
-        if (onFinish) onFinish();
-      }, 350);
+        // Smooth progressive easing towards actual loading status
+        const diff = target - current;
+        const step = Math.max(0.6, diff * 0.16);
+        const next = current + step;
 
-      return () => clearTimeout(timer);
-    }
-  }, [isReady, onFinish]);
+        if (next >= 100) {
+          clearInterval(interval);
+          if (onFinish) {
+            setTimeout(onFinish, 120);
+          }
+          return 100;
+        }
 
-  const clampedProgress = Math.min(Math.max(progress, 0), 100);
+        return next;
+      });
+    }, 25);
+
+    return () => clearInterval(interval);
+  }, [progress, isReady, onFinish]);
+
+  const clampedProgress = Math.min(Math.max(displayedProgress, 0), 100);
 
   return (
     <motion.div
       initial={{ opacity: 1 }}
-      exit={{ opacity: 0, scale: 0.98, transition: { duration: 0.4, ease: "easeInOut" } }}
+      exit={{ opacity: 0, scale: 0.98, transition: { duration: 0.35, ease: "easeInOut" } }}
       className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-950 text-slate-100 p-6 overflow-hidden select-none"
     >
       {/* Ambient background glows */}
@@ -101,25 +111,40 @@ export default function DinosaurLoadingScreen({
             {/* Interior glowing background track */}
             <div className="absolute inset-0 rounded-full bg-gradient-to-r from-amber-950/40 via-yellow-950/20 to-amber-950/40 pointer-events-none" />
 
-            {/* Filled progress bar advancing behind the cursor */}
+            {/* Filled progress bar advancing smoothly behind the cursor */}
             <div
               style={{ width: `${clampedProgress}%` }}
-              className="h-full bg-gradient-to-r from-amber-700 via-amber-500 to-yellow-400 rounded-full shadow-[0_0_12px_rgba(250,204,21,0.6)] transition-all duration-150 ease-out"
+              className="h-full bg-gradient-to-r from-amber-700 via-amber-500 to-yellow-400 rounded-full shadow-[0_0_12px_rgba(250,204,21,0.6)]"
             />
 
-            {/* Ammonite Cursor advancing progressively from 0% to 100% */}
+            {/* Ammonite Cursor advancing progressively with continuous active spin on itself */}
             <div
               style={{
                 left: `${clampedProgress}%`,
-                transform: `translate(-50%, -50%) rotate(${clampedProgress * 3.6}deg)`,
+                transform: 'translate(-50%, -50%)',
               }}
               className="absolute top-1/2 z-20 pointer-events-none transition-all duration-150 ease-out"
             >
-              <div className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-b from-slate-900 via-slate-950 to-amber-950 border-2 border-yellow-400 text-yellow-300 flex items-center justify-center shadow-[0_0_20px_rgba(234,179,8,0.85)]">
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{
+                  repeat: Infinity,
+                  duration: 2,
+                  ease: "linear",
+                }}
+                className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-b from-slate-900 via-slate-950 to-amber-950 border-2 border-yellow-400 text-yellow-300 flex items-center justify-center shadow-[0_0_22px_rgba(234,179,8,0.85)]"
+              >
                 <AmmoniteIcon className="w-5 h-5 sm:w-6 sm:h-6 drop-shadow-[0_2px_6px_rgba(234,179,8,0.9)]" />
                 <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-yellow-300 shadow-[0_0_6px_rgba(253,224,71,1)]" />
-              </div>
+              </motion.div>
             </div>
+          </div>
+
+          {/* Percentage display below the progress bar */}
+          <div className="flex items-center justify-center pt-1.5">
+            <span className="font-mono text-xs font-bold text-amber-400 tracking-wider bg-amber-950/50 border border-yellow-500/30 px-3 py-0.5 rounded-full shadow-sm">
+              {Math.round(clampedProgress)}%
+            </span>
           </div>
         </div>
 

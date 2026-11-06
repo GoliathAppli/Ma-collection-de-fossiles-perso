@@ -65,7 +65,8 @@ export function sanitizeConfig(config: any): AppConfig {
   };
 }
 
-export async function loadAppConfig(): Promise<AppConfig> {
+export async function loadAppConfig(onProgress?: (percent: number) => void): Promise<AppConfig> {
+  onProgress?.(15);
   const baseUrl = import.meta.env.BASE_URL || "/";
   const cleanBase = baseUrl.endsWith("/") ? baseUrl : baseUrl + "/";
 
@@ -75,8 +76,9 @@ export async function loadAppConfig(): Promise<AppConfig> {
   let preloadedConfig: AppConfig | null = null;
   let fileConfig: AppConfig | null = null;
   let idbConfig: AppConfig | null = null;
+  let githubConfig: AppConfig | null = null;
 
-  // PRIORITIZED MIGRATION CASE: Move data from localStorage to IndexedDB once to free up the 5MB limit
+  // 1. FAST LOCAL CACHES: Migration and IndexedDB
   try {
     const lsData = safeLocalStorage.getItem(LOCAL_STORAGE_KEY);
     if (lsData) {
@@ -92,80 +94,25 @@ export async function loadAppConfig(): Promise<AppConfig> {
     console.warn("Failed or skipped localStorage migration:", migErr);
   }
 
-  // 0. Fetch from GitHub if configured (supports anonymous visitors and direct raw CDN)
-  let githubConfig: AppConfig | null = null;
-  try {
-    const ghConfig = await getGitHubConfig();
-    const ghRes = await fetchFromGitHub(ghConfig);
-    if (ghRes.success && ghRes.config && ((ghRes.config.fossils?.length || 0) > 0 || (ghRes.config.technicalSheets?.length || 0) > 0)) {
-      console.log("Fetched fresh config directly from GitHub repository with fossils!");
-      githubConfig = sanitizeConfig(ghRes.config);
-    }
-  } catch (err) {
-    console.warn("GitHub fetch on load failed or skipped:", err);
-  }
-
-  // 1. Fetch from Server Backend API (Live Express API) - High priority for multi-device sync
-  if (typeof window !== "undefined" && window.location.protocol.startsWith("http")) {
-    try {
-      const res = await fetch(`/api/config?t=${Date.now()}`, {
-        cache: "no-store",
-        headers: {
-          "Cache-Control": "no-cache, no-store, must-revalidate",
-          "Pragma": "no-cache",
-        },
-      });
-      if (res.ok) {
-        const parsed = await res.json();
-        if (parsed && ((parsed.fossils?.length || 0) > 0 || (parsed.technicalSheets?.length || 0) > 0 || parsed.videoUrl1 || parsed.scaleVideoUrl)) {
-          console.log("Fetched fresh config directly from live server database:", parsed);
-          serverConfig = sanitizeConfig(parsed);
-        }
-      }
-    } catch (err) {
-      console.log("Live Express Backend API not available or failed on load:", err);
-    }
-  }
-
-  // 2. Fetch from static JSON file fallback (check both data/ and public/data/)
-  const staticPathsToTry = [
-    `${cleanBase}data/fossiles.json`,
-    `${cleanBase}public/data/fossiles.json`,
-    `data/fossiles.json`,
-    `public/data/fossiles.json`,
-  ];
-  for (const sp of staticPathsToTry) {
-    if (staticConfig && (staticConfig.fossils?.length || 0) > 0) break;
-    try {
-      const staticRes = await fetch(`${sp}?t=${Date.now()}`, {
-        cache: "no-store",
-        headers: { "Cache-Control": "no-cache" }
-      });
-      if (staticRes.ok) {
-        const parsed = await staticRes.json();
-        if (parsed && (Array.isArray(parsed.fossils) || Array.isArray(parsed.technicalSheets))) {
-          if ((parsed.fossils?.length || 0) > 0 || (parsed.technicalSheets?.length || 0) > 0) {
-            console.log(`Fetched static ${sp} with real fossil data!`);
-            staticConfig = sanitizeConfig(parsed);
-            break;
-          }
-        }
-      }
-    } catch (err) {
-      // Continue to next path
-    }
-  }
-
-  // 3. Embedded standalone preloaded config
+  // Preloaded config check
   if (typeof window !== "undefined" && (window as any).__PRELOADED_CONFIG__) {
     const preloaded = (window as any).__PRELOADED_CONFIG__;
     if (preloaded && (Array.isArray(preloaded.fossils) || Array.isArray(preloaded.technicalSheets))) {
-      console.log("Found embedded preloaded configuration from standalone HTML.");
       preloadedConfig = sanitizeConfig(preloaded);
     }
   }
 
-  // 4. File system handle config
+  // IndexedDB cache
+  try {
+    const parsed = await get(LOCAL_STORAGE_KEY);
+    if (parsed) {
+      idbConfig = sanitizeConfig(parsed);
+    }
+  } catch (err) {
+    console.warn("Failed to load cached config from IndexedDB:", err);
+  }
+
+  // File system handle
   try {
     const handle = await getStoredFileHandle();
     if (handle) {
@@ -175,25 +122,101 @@ export async function loadAppConfig(): Promise<AppConfig> {
         const text = await file.text();
         const parsed = tryRecoverJSON(text);
         if (parsed && (Array.isArray(parsed.fossils) || Array.isArray(parsed.technicalSheets))) {
-          console.log("Fetched config from linked file handle!");
           fileConfig = sanitizeConfig(parsed);
         }
       }
     }
-  } catch (err) {
-    console.warn("Failed to read config from linked file handle on load:", err);
+  } catch (err) {}
+
+  onProgress?.(35);
+
+  // 2. REMOTE FETCHES CONCURRENTLY (GitHub, Live Express API, Static JSON)
+  const networkTasks: Promise<void>[] = [];
+
+  // Task A: Fetch from GitHub
+  networkTasks.push(
+    (async () => {
+      try {
+        const ghConfig = await getGitHubConfig();
+        if (isGitHubConfigured(ghConfig)) {
+          const ghRes = await fetchFromGitHub(ghConfig);
+          if (ghRes.success && ghRes.config && ((ghRes.config.fossils?.length || 0) > 0 || (ghRes.config.technicalSheets?.length || 0) > 0)) {
+            githubConfig = sanitizeConfig(ghRes.config);
+          }
+        }
+      } catch (err) {
+        console.warn("GitHub fetch on load skipped or failed:", err);
+      }
+    })()
+  );
+
+  // Task B: Fetch from Server Express API
+  if (typeof window !== "undefined" && window.location.protocol.startsWith("http")) {
+    networkTasks.push(
+      (async () => {
+        try {
+          const res = await fetch(`/api/config?t=${Date.now()}`, {
+            cache: "no-store",
+            headers: {
+              "Cache-Control": "no-cache, no-store, must-revalidate",
+              "Pragma": "no-cache",
+            },
+          });
+          if (res.ok) {
+            const parsed = await res.json();
+            if (parsed && ((parsed.fossils?.length || 0) > 0 || (parsed.technicalSheets?.length || 0) > 0 || parsed.videoUrl1 || parsed.scaleVideoUrl)) {
+              serverConfig = sanitizeConfig(parsed);
+            }
+          }
+        } catch (err) {
+          console.log("Server API not available on load:", err);
+        }
+      })()
+    );
   }
 
-  // 5. IndexedDB local cache
-  try {
-    const parsed = await get(LOCAL_STORAGE_KEY);
-    if (parsed) {
-      console.log("Fetched cached config from local IndexedDB.");
-      idbConfig = sanitizeConfig(parsed);
-    }
-  } catch (err) {
-    console.warn("Failed to load cached config from IndexedDB:", err);
-  }
+  // Task C: Fetch from static JSON fallback
+  networkTasks.push(
+    (async () => {
+      const staticPathsToTry = [
+        `${cleanBase}data/fossiles.json`,
+        `${cleanBase}public/data/fossiles.json`,
+        `data/fossiles.json`,
+        `public/data/fossiles.json`,
+      ];
+      for (const sp of staticPathsToTry) {
+        try {
+          const staticRes = await fetch(`${sp}?t=${Date.now()}`, {
+            cache: "no-store",
+            headers: { "Cache-Control": "no-cache" },
+          });
+          if (staticRes.ok) {
+            const parsed = await staticRes.json();
+            if (parsed && (Array.isArray(parsed.fossils) || Array.isArray(parsed.technicalSheets))) {
+              if ((parsed.fossils?.length || 0) > 0 || (parsed.technicalSheets?.length || 0) > 0) {
+                staticConfig = sanitizeConfig(parsed);
+                break;
+              }
+            }
+          }
+        } catch (err) {}
+      }
+    })()
+  );
+
+  // Track completion of parallel network queries smoothly
+  let completed = 0;
+  const total = networkTasks.length;
+  networkTasks.forEach(task => {
+    task.then(() => {
+      completed++;
+      const currentPct = Math.round(35 + (completed / total) * 50); // 35% -> 85%
+      onProgress?.(currentPct);
+    });
+  });
+
+  await Promise.allSettled(networkTasks);
+  onProgress?.(92);
 
   // Determine final winner and config
   let finalConfig: AppConfig;
@@ -275,6 +298,7 @@ export async function loadAppConfig(): Promise<AppConfig> {
     console.warn("Failed to update IndexedDB cache:", e);
   }
 
+  onProgress?.(100);
   return finalConfig;
 }
 

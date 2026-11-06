@@ -53,6 +53,7 @@ if (typeof window !== "undefined") {
 
 export default function App() {
   const { isInstalled, install } = usePWAInstall();
+  const [loadingProgress, setLoadingProgress] = useState(15);
   const [isConfigLoaded, setIsConfigLoaded] = useState(false);
   const [showLoadingScreen, setShowLoadingScreen] = useState(true);
   const [isSheetsUnlocked, setIsSheetsUnlocked] = useState(() => {
@@ -124,7 +125,9 @@ export default function App() {
   // Load configuration from local storage on mount
   useEffect(() => {
     let isMounted = true;
-    loadAppConfig()
+    loadAppConfig((pct) => {
+      if (isMounted) setLoadingProgress(pct);
+    })
       .then((loaded) => {
         if (!isMounted) return;
         if (loaded) {
@@ -149,11 +152,17 @@ export default function App() {
             setSecondHomeTitleInput(loaded.secondHomeTitle);
           }
         }
-        setIsConfigLoaded(true);
+        if (isMounted) {
+          setLoadingProgress(100);
+          setIsConfigLoaded(true);
+        }
       })
       .catch((err) => {
         console.warn("Failed to load initial config:", err);
-        setIsConfigLoaded(true);
+        if (isMounted) {
+          setLoadingProgress(100);
+          setIsConfigLoaded(true);
+        }
       });
 
     return () => {
@@ -527,6 +536,7 @@ export default function App() {
       <AnimatePresence>
         {showLoadingScreen && (
           <DinosaurLoadingScreen
+            progress={loadingProgress}
             isReady={isConfigLoaded}
             onFinish={() => setShowLoadingScreen(false)}
           />
