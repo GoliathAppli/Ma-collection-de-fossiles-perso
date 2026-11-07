@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Music, VolumeX, Volume2 } from "lucide-react";
+import openingAudioSrc from "../assets/opening-titles.mp3";
+import galleryAudioSrc from "../assets/gallery-theme.mp3";
 
 interface BackgroundMusicPlayerProps {
   currentView: string;
@@ -125,7 +127,7 @@ export default function BackgroundMusicPlayer({ currentView }: BackgroundMusicPl
       <>
         <audio
           ref={openingAudioRef}
-          src="/assets/opening-titles.mp3"
+          src={openingAudioSrc}
           preload="auto"
           onPlay={() => isSecondHome && setIsPlaying(true)}
           onPause={() => isSecondHome && setIsPlaying(false)}
@@ -133,7 +135,7 @@ export default function BackgroundMusicPlayer({ currentView }: BackgroundMusicPl
         />
         <audio
           ref={galleryAudioRef}
-          src="/assets/gallery-theme.mp3"
+          src={galleryAudioSrc}
           preload="auto"
           loop
           onPlay={() => isGallery && setIsPlaying(true)}
@@ -148,7 +150,7 @@ export default function BackgroundMusicPlayer({ currentView }: BackgroundMusicPl
       {/* Éléments audio natifs fiables */}
       <audio
         ref={openingAudioRef}
-        src="/assets/opening-titles.mp3"
+        src={openingAudioSrc}
         preload="auto"
         onPlay={() => isSecondHome && setIsPlaying(true)}
         onPause={() => isSecondHome && setIsPlaying(false)}
@@ -156,7 +158,7 @@ export default function BackgroundMusicPlayer({ currentView }: BackgroundMusicPl
       />
       <audio
         ref={galleryAudioRef}
-        src="/assets/gallery-theme.mp3"
+        src={galleryAudioSrc}
         preload="auto"
         loop
         onPlay={() => isGallery && setIsPlaying(true)}

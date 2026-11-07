@@ -600,11 +600,13 @@ async function startServer() {
     }
   });
 
-  // Serve custom public/icons, public/screenshots, public/images and public/data statically
+  // Serve custom public assets statically
+  app.use("/assets", express.static(path.join(process.cwd(), "public", "assets")));
   app.use("/icons", express.static(path.join(process.cwd(), "public", "icons")));
   app.use("/screenshots", express.static(path.join(process.cwd(), "public", "screenshots")));
   app.use("/images", express.static(path.join(process.cwd(), "public", "images")));
   app.use("/data", express.static(path.join(process.cwd(), "public", "data")));
+  app.use(express.static(path.join(process.cwd(), "public")));
 
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
@@ -616,6 +618,7 @@ async function startServer() {
   } else {
     const distPath = path.join(process.cwd(), "dist");
     app.use(express.static(distPath));
+    app.use(express.static(path.join(process.cwd(), "public")));
     // Provide a fallback for all other routes
     app.get("*", (req, res) => {
       res.sendFile(path.join(distPath, "index.html"));

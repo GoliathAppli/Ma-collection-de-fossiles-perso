@@ -1,5 +1,5 @@
 // Conservatoire de Fossiles - Service Worker for PWA & Offline Support
-const CACHE_NAME = 'fossiles-pwa-v8';
+const CACHE_NAME = 'fossiles-pwa-v9';
 
 const PRECACHE_ASSETS = [
   './',
@@ -19,6 +19,8 @@ const PRECACHE_ASSETS = [
   './icons/apple-touch-icon.png',
   './icons/favicon.png',
   './favicon.ico',
+  './assets/nedry-1.png',
+  './assets/nedry-2.png',
   './screenshots/screenshot-mobile.png',
   './screenshots/screenshot-desktop.png'
 ];
@@ -154,8 +156,8 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Static images and fonts: Stale-While-Revalidate
-  if (url.pathname.startsWith('/icons/') || url.pathname.startsWith('/images/') || url.pathname.startsWith('/screenshots/') || url.pathname.endsWith('.png') || url.pathname.endsWith('.svg') || url.pathname.endsWith('.ico') || url.pathname.endsWith('.css')) {
+  // Static images, audio and fonts: Stale-While-Revalidate
+  if (url.pathname.startsWith('/icons/') || url.pathname.startsWith('/images/') || url.pathname.startsWith('/screenshots/') || url.pathname.startsWith('/assets/') || url.pathname.endsWith('.png') || url.pathname.endsWith('.svg') || url.pathname.endsWith('.ico') || url.pathname.endsWith('.css') || url.pathname.endsWith('.mp3')) {
     event.respondWith(
       caches.match(request).then((cachedResponse) => {
         const fetchPromise = fetch(request)
