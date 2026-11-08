@@ -1,14 +1,22 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { getSafeEmbedUrl } from '../utils/data/videoEmbed';
 import UniversalVideoPlayer from './UniversalVideoPlayer';
 import { GEOLOGIC_PERIODS } from './geologicPeriods';
 import DetailedHorizontalTimeline from './DetailedHorizontalTimeline';
 import CollectionFossilsTimeline from './CollectionFossilsTimeline';
 import CollectionFossilsWorldMap from './CollectionFossilsWorldMap';
 import FossilDetailSheet from './FossilDetailSheet';
-import FossilSectionDivider from './FossilSectionDivider';
 import { playDinoSound } from '../utils/data/audio';
-import { ArrowLeft, ArrowRight, Eye, Video, Upload } from 'lucide-react';
+import {
+  ArrowLeft,
+  ArrowRight,
+  Eye,
+  Video,
+  Upload,
+  Layers,
+  Clock,
+  Globe,
+  Film,
+} from 'lucide-react';
 import { GeologicPeriodInfo, Fossil } from '../types';
 
 interface GeologicTimelineViewProps {
@@ -25,6 +33,66 @@ interface GeologicTimelineViewProps {
   fossils?: Fossil[];
   onSelectFossil?: (fossil: Fossil) => void;
   isLoadingVideo?: boolean;
+}
+
+interface SectorCardProps {
+  number: string;
+  badge: string;
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  children: React.ReactNode;
+}
+
+function SectorCard({
+  number,
+  badge,
+  title,
+  description,
+  icon,
+  children,
+}: SectorCardProps) {
+  return (
+    <section className="relative rounded-2xl sm:rounded-3xl border border-yellow-500/35 hover:border-yellow-500/55 bg-gradient-to-b from-slate-950 via-slate-900/95 to-slate-950 p-4 sm:p-6 md:p-8 shadow-[0_16px_40px_rgba(0,0,0,0.65)] backdrop-blur-md overflow-hidden transition-all duration-300 group">
+      {/* Top subtle golden perimeter accent line */}
+      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-yellow-500/70 to-transparent pointer-events-none" />
+
+      {/* Ambient background glows */}
+      <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-amber-500/5 blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-20 -left-20 w-64 h-64 rounded-full bg-yellow-500/5 blur-3xl pointer-events-none" />
+
+      {/* Frame Header */}
+      <header className="relative z-10 mb-6 pb-5 border-b border-yellow-500/20 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="flex items-start sm:items-center gap-3.5">
+          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-yellow-950/90 via-slate-900 to-amber-950/80 border border-yellow-500/50 flex items-center justify-center text-yellow-400 shadow-[0_0_15px_rgba(234,179,8,0.25)] shrink-0">
+            {icon}
+          </div>
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-[10px] font-mono tracking-widest uppercase font-bold text-yellow-400 bg-yellow-950/80 border border-yellow-600/40 px-2 py-0.5 rounded shadow-sm">
+                SECTEUR {number}
+              </span>
+              <span className="text-[11px] font-mono text-slate-400 hidden sm:inline">
+                · {badge}
+              </span>
+            </div>
+            <h2 className="text-xl sm:text-2xl font-serif font-black uppercase tracking-wide bg-gradient-to-r from-yellow-100 via-amber-200 to-yellow-400 bg-clip-text text-transparent drop-shadow-sm">
+              {title}
+            </h2>
+          </div>
+        </div>
+
+        <p className="text-xs sm:text-sm text-slate-400 font-sans leading-relaxed md:max-w-md md:text-right">
+          {description}
+        </p>
+      </header>
+
+      {/* Frame Content */}
+      <div className="relative z-10">
+        {children}
+      </div>
+    </section>
+  );
 }
 
 export default function GeologicTimelineView({
@@ -122,36 +190,211 @@ export default function GeologicTimelineView({
     }
   };
 
+  const renderVideoSectionContent = () => (
+    <div className="max-w-3xl mx-auto space-y-4">
+      {isAdmin && onSaveVideo && (
+        <div className="bg-slate-950/80 p-4 rounded-xl border border-yellow-600/30 space-y-3">
+          <div className="text-[11px] font-bold text-yellow-500 uppercase tracking-wider flex items-center gap-2">
+            <Video className="w-4 h-4 text-rose-500" />
+            <span>Gestion Vidéo Thématique (Admin)</span>
+          </div>
+          
+          <div className="flex flex-col sm:flex-row gap-3">
+            {/* URL input */}
+            <form onSubmit={handleVideoSubmit} className="flex-1 space-y-1">
+              <label className="block text-[10px] text-slate-400 font-medium">
+                Option A : Lien Internet (YouTube, Drive, MP4...)
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  className="flex-1 bg-slate-900 border border-slate-700 rounded px-3 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-yellow-600/60"
+                  placeholder="Ex: https://www.youtube.com/watch?v=..."
+                  value={videoInput?.startsWith('data:') ? '' : videoInput}
+                  onChange={(e) => setVideoInput(e.target.value)}
+                />
+                <button
+                  type="submit"
+                  className="bg-yellow-700/80 hover:bg-yellow-600 border border-yellow-500/30 px-4 py-1.5 rounded text-xs font-semibold text-white uppercase tracking-wider cursor-pointer transition-colors"
+                >
+                  Enregistrer
+                </button>
+              </div>
+            </form>
 
+            {/* Local File input button */}
+            <div className="space-y-1 sm:w-64">
+              <label className="block text-[10px] text-slate-400 font-medium">
+                Option B : Charger depuis la Galerie (Hors-ligne)
+              </label>
+              <div className="relative">
+                <input
+                  type="file"
+                  accept="video/*"
+                  id="timeline-video-upload"
+                  className="hidden"
+                  disabled={isUploadingVideo}
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    
+                    // Check size
+                    const sizeInMB = file.size / (1024 * 1024);
+                    if (sizeInMB > 30) {
+                      if (!window.confirm(`⚠️ Cette vidéo est volumineuse (${sizeInMB.toFixed(1)} Mo). \nL'intégrer directement dans la mémoire peut ralentir l'appareil. Nous vous conseillons de choisir une vidéo plus courte ou compressée (< 15 Mo).\n\nVoulez-vous quand même continuer ?`)) {
+                        e.target.value = '';
+                        return;
+                      }
+                    }
+                    
+                    try {
+                      playDinoSound();
+                    } catch(err) {}
 
-  return (
-    <div className="space-y-8 w-full py-4 text-slate-100">
-      {/* 1. DEDICATED TIMELINE PAGE VIEW */}
-      {showDetailedScale ? (
-        <div className="space-y-12 sm:space-y-16">
-          {/* Rubrique 1 : Échelle Stratigraphique Mondiale */}
-          <div className="space-y-4">
-            <FossilSectionDivider type="ammonite" size="lg" label="Échelle Stratigraphique Mondiale" />
-            <DetailedHorizontalTimeline />
+                    setIsUploadingVideo(true);
+                    
+                    const reader = new FileReader();
+                    reader.onload = async (event) => {
+                      const dataUrl = event.target?.result as string;
+                      if (dataUrl) {
+                        try {
+                          const res = await fetch("/api/upload", {
+                            method: "POST",
+                            headers: {
+                              "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify({ dataUrl })
+                          });
+
+                          if (res.ok) {
+                            const data = await res.json();
+                            if (data.success && data.url) {
+                              if (onSaveVideo) onSaveVideo(data.url);
+                              setVideoInput(data.url);
+                              alert("✅ Vidéo de la galerie synchronisée avec succès sur le serveur !");
+                            } else {
+                              if (onSaveVideo) onSaveVideo(dataUrl);
+                              setVideoInput(dataUrl);
+                              alert("✅ Vidéo chargée localement (Base64).");
+                            }
+                          } else {
+                            if (onSaveVideo) onSaveVideo(dataUrl);
+                            setVideoInput(dataUrl);
+                            alert("✅ Vidéo chargée localement (Base64).");
+                          }
+                        } catch (err) {
+                          console.error("Direct video upload failed:", err);
+                          if (onSaveVideo) onSaveVideo(dataUrl);
+                          setVideoInput(dataUrl);
+                          alert("✅ Vidéo chargée localement en secours (Base64).");
+                        } finally {
+                          setIsUploadingVideo(false);
+                        }
+                      } else {
+                        setIsUploadingVideo(false);
+                      }
+                    };
+                    reader.onerror = () => {
+                      setIsUploadingVideo(false);
+                    };
+                    reader.readAsDataURL(file);
+                  }}
+                />
+                <label
+                  htmlFor="timeline-video-upload"
+                  className={`w-full flex items-center justify-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700 rounded px-3 py-2 text-xs font-semibold cursor-pointer transition-all active:scale-95 text-center ${isUploadingVideo ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
+                >
+                  <Upload className={`w-3.5 h-3.5 text-yellow-500 ${isUploadingVideo ? 'animate-bounce' : ''}`} />
+                  {isUploadingVideo ? 'Téléchargement...' : (videoUrl?.startsWith('data:') || videoUrl?.startsWith('/images/') ? 'Remplacer la vidéo' : 'Choisir de la Galerie')}
+                </label>
+              </div>
+            </div>
           </div>
 
-          {/* Rubrique 2 : Frise Chronologique des Fossiles de la Collection */}
-          <div className="space-y-4">
-            <FossilSectionDivider type="trilobite" size="lg" label="Frise Chronologique des Fossiles" />
+          {/* Status of current video */}
+          <div className="flex items-center justify-between text-[10px] bg-slate-900/50 p-2 rounded border border-slate-800">
+            <span className="text-slate-400">Type actuel :</span>
+            {videoUrl?.startsWith('data:') || videoUrl?.startsWith('/images/') ? (
+              <span className="font-bold text-emerald-400 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                {videoUrl?.startsWith('/images/') ? 'Fichier Serveur (Optimisé)' : 'Fichier Local (Lecture Hors-ligne)'}
+              </span>
+            ) : (
+              <span className="font-bold text-sky-400 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-sky-400" />
+                Lien Externe (Nécessite Internet)
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Video display player */}
+      <UniversalVideoPlayer
+        url={videoUrl || ""}
+        isLoading={isLoadingVideo}
+        loadingLabel="Synchronisation du documentaire de la frise chronologique en cours..."
+        emptyLabel="Aucun lecteur vidéo configuré par l'administrateur"
+      />
+    </div>
+  );
+
+  return (
+    <div className="w-full text-slate-100">
+      {/* 1. DEDICATED TIMELINE PAGE VIEW - SECTORS SEPARATED IN DISTINCT FRAMES */}
+      {showDetailedScale ? (
+        <div className="space-y-10 sm:space-y-14">
+          {/* SECTEUR 01 : ÉCHELLE STRATIGRAPHIQUE MONDIALE */}
+          <SectorCard
+            number="01"
+            badge="Panorama Géochronologique Mondial"
+            title="Échelle Stratigraphique Mondiale"
+            description="Frise interactive répertoriant les 4 grandes ères de la Terre, leurs éons, périodes et subdivisions géologiques."
+            icon={<Layers className="w-6 h-6 text-yellow-400" />}
+          >
+            <DetailedHorizontalTimeline />
+          </SectorCard>
+
+          {/* SECTEUR 02 : FRISE CHRONOLOGIQUE DES FOSSILES DE LA COLLECTION */}
+          <SectorCard
+            number="02"
+            badge="Repères Temporels de la Collection"
+            title="Frise Chronologique des Fossiles"
+            description="Positionnement chronologique et période d'apparition de chaque spécimen fossile répertorié dans la collection."
+            icon={<Clock className="w-6 h-6 text-yellow-400" />}
+          >
             <CollectionFossilsTimeline
               fossils={fossils}
               onSelectFossil={handleSelectFossil}
             />
-          </div>
+          </SectorCard>
 
-          {/* Rubrique 3 : Carte Mondiale des Gisements de la Collection */}
-          <div className="space-y-4">
-            <FossilSectionDivider type="gem" size="lg" label="Carte Mondiale des Gisements" />
+          {/* SECTEUR 03 : CARTE MONDIALE DES GISEMENTS */}
+          <SectorCard
+            number="03"
+            badge="Cartographie & Gisements"
+            title="Carte Mondiale des Gisements"
+            description="Exploration géographique planétaire des sites de fouilles, carrières et strates géologiques d'où proviennent les spécimens."
+            icon={<Globe className="w-6 h-6 text-yellow-400" />}
+          >
             <CollectionFossilsWorldMap
               fossils={fossils}
               onSelectFossil={handleSelectFossil}
             />
-          </div>
+          </SectorCard>
+
+          {/* SECTEUR 04 : VIDÉO & DOCUMENTAIRE THÉMATIQUE */}
+          {showVideoSection && (
+            <SectorCard
+              number="04"
+              badge="Immersion Audiovisuelle"
+              title="Vidéo & Documentaire Thématique"
+              description="Immersion vidéo dans l'histoire paléontologique, la dérive des continents et l'apparition de la vie."
+              icon={<Film className="w-6 h-6 text-yellow-400" />}
+            >
+              {renderVideoSectionContent()}
+            </SectorCard>
+          )}
         </div>
       ) : (
         /* 2. COMPACT SELECTOR FOR FOSSIL FORMS / SHEETS (PRESERVED) */
@@ -169,7 +412,7 @@ export default function GeologicTimelineView({
               <button
                 onClick={scrollLeft}
                 type="button"
-                className="p-1.5 rounded-full bg-slate-900 border border-slate-800 hover:border-yellow-600/40 text-slate-300 hover:text-yellow-500 transition-all"
+                className="p-1.5 rounded-full bg-slate-900 border border-slate-800 hover:border-yellow-600/40 text-slate-300 hover:text-yellow-500 transition-all cursor-pointer"
                 title="Naviguer à gauche"
               >
                 <ArrowLeft className="w-4 h-4" />
@@ -177,7 +420,7 @@ export default function GeologicTimelineView({
               <button
                 onClick={scrollRight}
                 type="button"
-                className="p-1.5 rounded-full bg-slate-900 border border-slate-800 hover:border-yellow-600/40 text-slate-300 hover:text-yellow-500 transition-all"
+                className="p-1.5 rounded-full bg-slate-900 border border-slate-800 hover:border-yellow-600/40 text-slate-300 hover:text-yellow-500 transition-all cursor-pointer"
                 title="Naviguer à droite"
               >
                 <ArrowRight className="w-4 h-4" />
@@ -279,7 +522,7 @@ export default function GeologicTimelineView({
                       playDinoSound();
                       setSelectedPeriod(null);
                     }}
-                    className="bg-yellow-700/80 hover:bg-yellow-600 border border-yellow-500/30 text-white text-xs px-5 py-2 rounded-lg font-bold transition-all uppercase tracking-wider"
+                    className="bg-yellow-700/80 hover:bg-yellow-600 border border-yellow-500/30 text-white text-xs px-5 py-2 rounded-lg font-bold transition-all uppercase tracking-wider cursor-pointer"
                   >
                     Fermer
                   </button>
@@ -290,155 +533,18 @@ export default function GeologicTimelineView({
         </div>
       )}
 
-      {/* VIDEO INSERTION FOR ENTIRE SITE TIMELINE PAGE */}
-      {showVideoSection && (
-        <div className="space-y-4 pt-6">
-          <FossilSectionDivider type="leaf" size="lg" label="Vidéo Thématique" />
-          <div className="bg-slate-950/65 border border-slate-800/60 rounded-xl p-5 max-w-3xl mx-auto space-y-4">
-            {isAdmin && onSaveVideo ? (
-            <div className="bg-slate-950/60 p-4 rounded-xl border border-yellow-600/20 space-y-3">
-              <div className="text-[11px] font-bold text-yellow-500 uppercase tracking-wider">
-                Source Vidéo (Échelle des Temps)
-              </div>
-              
-              <div className="flex flex-col sm:flex-row gap-3">
-                {/* URL input */}
-                <form onSubmit={handleVideoSubmit} className="flex-1 space-y-1">
-                  <label className="block text-[10px] text-slate-400 font-medium">
-                    Option A : Lien Internet (YouTube, Drive, MP4...)
-                  </label>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      className="flex-1 bg-slate-900 border border-slate-700 rounded px-3 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-yellow-600/60"
-                      placeholder="Ex: https://www.youtube.com/watch?v=..."
-                      value={videoInput?.startsWith('data:') ? '' : videoInput}
-                      onChange={(e) => setVideoInput(e.target.value)}
-                    />
-                    <button
-                      type="submit"
-                      className="bg-yellow-700/80 hover:bg-yellow-600 border border-yellow-500/30 px-4 py-1.5 rounded text-xs font-semibold text-white uppercase tracking-wider"
-                    >
-                      Enregistrer
-                    </button>
-                  </div>
-                </form>
-
-                {/* Local File input button */}
-                <div className="space-y-1 sm:w-64">
-                  <label className="block text-[10px] text-slate-400 font-medium">
-                    Option B : Charger depuis la Galerie (Hors-ligne)
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="file"
-                      accept="video/*"
-                      id="timeline-video-upload"
-                      className="hidden"
-                      disabled={isUploadingVideo}
-                      onChange={async (e) => {
-                        const file = e.target.files?.[0];
-                        if (!file) return;
-                        
-                        // Check size
-                        const sizeInMB = file.size / (1024 * 1024);
-                        if (sizeInMB > 30) {
-                          if (!window.confirm(`⚠️ Cette vidéo est volumineuse (${sizeInMB.toFixed(1)} Mo). \nL'intégrer directement dans la mémoire peut ralentir l'appareil. Nous vous conseillons de choisir une vidéo plus courte ou compressée (< 15 Mo).\n\nVoulez-vous quand même continuer ?`)) {
-                            e.target.value = '';
-                            return;
-                          }
-                        }
-                        
-                        try {
-                          playDinoSound();
-                        } catch(err) {}
-
-                        setIsUploadingVideo(true);
-                        
-                        const reader = new FileReader();
-                        reader.onload = async (event) => {
-                          const dataUrl = event.target?.result as string;
-                          if (dataUrl) {
-                            try {
-                              const res = await fetch("/api/upload", {
-                                method: "POST",
-                                headers: {
-                                  "Content-Type": "application/json"
-                                },
-                                body: JSON.stringify({ dataUrl })
-                              });
-
-                              if (res.ok) {
-                                const data = await res.json();
-                                if (data.success && data.url) {
-                                  if (onSaveVideo) onSaveVideo(data.url);
-                                  setVideoInput(data.url);
-                                  alert("✅ Vidéo de la galerie synchronisée avec succès sur le serveur !");
-                                } else {
-                                  if (onSaveVideo) onSaveVideo(dataUrl);
-                                  setVideoInput(dataUrl);
-                                  alert("✅ Vidéo chargée localement (Base64).");
-                                }
-                              } else {
-                                if (onSaveVideo) onSaveVideo(dataUrl);
-                                setVideoInput(dataUrl);
-                                alert("✅ Vidéo chargée localement (Base64).");
-                              }
-                            } catch (err) {
-                              console.error("Direct video upload failed:", err);
-                              if (onSaveVideo) onSaveVideo(dataUrl);
-                              setVideoInput(dataUrl);
-                              alert("✅ Vidéo chargée localement en secours (Base64).");
-                            } finally {
-                              setIsUploadingVideo(false);
-                            }
-                          } else {
-                            setIsUploadingVideo(false);
-                          }
-                        };
-                        reader.onerror = () => {
-                          setIsUploadingVideo(false);
-                        };
-                        reader.readAsDataURL(file);
-                      }}
-                    />
-                    <label
-                      htmlFor="timeline-video-upload"
-                      className={`w-full flex items-center justify-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700 rounded px-3 py-2 text-xs font-semibold cursor-pointer transition-all active:scale-95 text-center ${isUploadingVideo ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
-                    >
-                      <Upload className={`w-3.5 h-3.5 text-yellow-500 ${isUploadingVideo ? 'animate-bounce' : ''}`} />
-                      {isUploadingVideo ? 'Téléchargement...' : (videoUrl?.startsWith('data:') || videoUrl?.startsWith('/images/') ? 'Remplacer la vidéo' : 'Choisir de la Galerie')}
-                    </label>
-                  </div>
-                </div>
-              </div>
-
-              {/* Status of current video */}
-              <div className="flex items-center justify-between text-[10px] bg-slate-900/50 p-2 rounded border border-slate-800">
-                <span className="text-slate-400">Type actuel :</span>
-                {videoUrl?.startsWith('data:') || videoUrl?.startsWith('/images/') ? (
-                  <span className="font-bold text-emerald-400 flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                    {videoUrl?.startsWith('/images/') ? 'Fichier Serveur (Optimisé)' : 'Fichier Local (Lecture Hors-ligne)'}
-                  </span>
-                ) : (
-                  <span className="font-bold text-sky-400 flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-sky-400" />
-                    Lien Externe (Nécessite Internet)
-                  </span>
-                )}
-              </div>
-            </div>
-          ) : null}
-
-          {/* Video display player */}
-          <UniversalVideoPlayer
-            url={videoUrl || ""}
-            isLoading={isLoadingVideo}
-            loadingLabel="Synchronisation du documentaire de la frise chronologique en cours..."
-            emptyLabel="Aucun lecteur vidéo configuré par l'administrateur"
-          />
-        </div>
+      {/* Standalone video when showDetailedScale is false but showVideoSection is true */}
+      {!showDetailedScale && showVideoSection && (
+        <div className="pt-6">
+          <SectorCard
+            number="04"
+            badge="Immersion Audiovisuelle"
+            title="Vidéo & Documentaire Thématique"
+            description="Immersion vidéo dans l'histoire paléontologique, la dérive des continents et l'apparition de la vie."
+            icon={<Film className="w-6 h-6 text-yellow-400" />}
+          >
+            {renderVideoSectionContent()}
+          </SectorCard>
         </div>
       )}
 

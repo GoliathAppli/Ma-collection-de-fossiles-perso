@@ -911,12 +911,14 @@ export default function App() {
                       className="absolute inset-6 rounded-full border pointer-events-none transition-colors border-yellow-600/15"
                     />
 
-                    {/* Central Icon */}
+                    {/* Central Icon: Mr ADN */}
                     <div
-                      className="relative z-10 w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center transition-all duration-300 shadow-inner group-hover:scale-110 bg-yellow-950/60 border border-yellow-500/40 text-yellow-400 group-hover:text-yellow-300 group-hover:border-yellow-400"
+                      className="relative z-10 flex items-center justify-center transition-all duration-300 group-hover:scale-110 -mb-1"
                     >
-                      <AmmoniteIcon
-                        className="w-6 h-6 sm:w-7 sm:h-7 drop-shadow-[0_2px_8px_rgba(234,179,8,0.5)]"
+                      <img
+                        src="/assets/mr-dna.png"
+                        alt="Mr ADN"
+                        className="w-14 h-16 sm:w-16 sm:h-20 object-contain select-none pointer-events-none drop-shadow-[0_4px_16px_rgba(234,179,8,0.5)]"
                       />
                     </div>
 
@@ -1122,7 +1124,7 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="bg-slate-900/20 border border-slate-850 rounded-2xl p-6">
+              <div className="w-full">
                 <GeologicTimelineView
                   readOnly={false}
                   showVideoSection={true}
