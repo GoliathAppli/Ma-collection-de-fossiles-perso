@@ -14,14 +14,16 @@ import {
 } from "./utils/githubSync";
 
 export const LOCAL_STORAGE_KEY = "fossils_collection_config_v2";
+export const UI_CACHE_KEY = "fossils_app_ui_cache";
 
 export const DEFAULT_CONFIG: AppConfig = {
   videoUrl1: "",
   secondHomeTitle: "Fossiles de Collection",
-  secondHomeImage: { url: "", scale: 1, posX: 0, posY: 0 },
+  secondHomeImage: { url: "/assets/welcome-presentation.webp", scale: 1, posX: 0, posY: 0 },
   scaleVideoUrl: "",
   fossils: [],
   technicalSheets: [],
+  textTheme: "amber",
 };
 
 export function sanitizeConfig(config: any): AppConfig {
@@ -29,6 +31,7 @@ export function sanitizeConfig(config: any): AppConfig {
   
   return {
     lastUpdated: typeof config.lastUpdated === "number" ? config.lastUpdated : undefined,
+    textTheme: "amber",
     videoUrl1: typeof config.videoUrl1 === "string" ? config.videoUrl1 : "",
     secondHomeTitle: typeof config.secondHomeTitle === "string" ? config.secondHomeTitle : (DEFAULT_CONFIG.secondHomeTitle || "Fossiles de Collection"),
     secondHomeImage: config.secondHomeImage || DEFAULT_CONFIG.secondHomeImage,
@@ -294,6 +297,13 @@ export async function loadAppConfig(onProgress?: (percent: number) => void): Pro
   // so that the local offline cache remains completely up to date.
   try {
     await set(LOCAL_STORAGE_KEY, finalConfig);
+    safeLocalStorage.setItem(
+      UI_CACHE_KEY,
+      JSON.stringify({
+        secondHomeImage: finalConfig.secondHomeImage,
+        textTheme: finalConfig.textTheme,
+      })
+    );
   } catch (e) {
     console.warn("Failed to update IndexedDB cache:", e);
   }
@@ -334,6 +344,13 @@ export async function saveAppConfig(config: AppConfig): Promise<AppConfig> {
   // Double down on ensuring we don't clog localStorage
   try {
     safeLocalStorage.removeItem(LOCAL_STORAGE_KEY);
+    safeLocalStorage.setItem(
+      UI_CACHE_KEY,
+      JSON.stringify({
+        secondHomeImage: configWithTimestamp.secondHomeImage,
+        textTheme: configWithTimestamp.textTheme,
+      })
+    );
   } catch (e) {}
 
   let finalConfig = configWithTimestamp;

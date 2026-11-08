@@ -16,3 +16,21 @@
   background: transparent !important;
   border: none !important;
 }
+
+/* ==========================================================================
+   THEME STYLING: AMBRE DORÉ & WATERMARK PRECISION
+   ========================================================================== */
+
+/* Theme root CSS variables */
+:root {
+  --theme-accent-color: #f59e0b;
+  --theme-accent-rgb: 245, 158, 11;
+}
+
+/* --- Reference Medallion Watermark: Extremely subtle transparency so text is 100% readable --- */
+.fossil-ref-watermark {
+  color: rgba(234, 179, 8, 0.08) !important;
+  opacity: 0.08 !important;
+  stroke: rgba(234, 179, 8, 0.25) !important;
+}
+

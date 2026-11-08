@@ -305,8 +305,8 @@ export default function FossilDetailSheet({
           <div className="h-px w-10 sm:w-16 bg-gradient-to-l from-transparent via-yellow-600/40 to-yellow-500/70" />
         </div>
 
-        {/* Titre principal magnifié avec dégradé doré ambré et ombre subtile */}
-        <h1 className={`${getAdaptiveTitleClasses(fossil.title || '')} font-extrabold tracking-tight font-serif uppercase text-center break-words [overflow-wrap:anywhere] hyphens-auto leading-tight bg-gradient-to-b from-yellow-100 via-amber-200 to-yellow-500 bg-clip-text text-transparent drop-shadow-[0_4px_18px_rgba(234,179,8,0.35)]`}>
+        {/* Titre principal magnifié avec dégradé doré ambré / rouge jurassic et ombre subtile */}
+        <h1 className={`${getAdaptiveTitleClasses(fossil.title || '')} fossil-sheet-title font-extrabold tracking-tight font-serif uppercase text-center break-words [overflow-wrap:anywhere] hyphens-auto leading-tight bg-gradient-to-b from-yellow-100 via-amber-200 to-yellow-500 bg-clip-text text-transparent drop-shadow-[0_4px_18px_rgba(234,179,8,0.35)]`}>
           {fossil.title || 'Spécimen sans nom'}
         </h1>
 
@@ -334,19 +334,19 @@ export default function FossilDetailSheet({
               {/* Corps circulaire principal du médaillon */}
               <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-gradient-to-b from-slate-900 via-amber-950/40 to-slate-950 border-2 border-yellow-600/70 group-hover:border-yellow-400/90 shadow-[inset_0_0_18px_rgba(0,0,0,0.9),inset_0_1px_3px_rgba(250,204,21,0.35)] flex flex-col items-center justify-center p-2 text-center relative overflow-hidden transition-all duration-300">
                 
-                {/* Filigrane d'ammonite / spirale en arrière-plan */}
+                {/* Filigrane d'ammonite / spirale en arrière-plan ultra-discret et transparent */}
                 <svg
                   viewBox="0 0 100 100"
-                  className="absolute inset-0 w-full h-full text-yellow-500/10 pointer-events-none p-3 rotate-12 transition-transform duration-700 group-hover:rotate-45"
+                  className="fossil-ref-watermark absolute inset-0 w-full h-full pointer-events-none p-3.5 rotate-12 transition-transform duration-700 group-hover:rotate-45"
                   fill="none"
                   stroke="currentColor"
-                  strokeWidth="2.5"
+                  strokeWidth="1.2"
                 >
                   <path d="M50 50 m0 -40 a40 40 0 1 1 -35 60 a30 30 0 1 1 30 -50 a20 20 0 1 1 -20 35 a12 12 0 1 1 14 -22 a6 6 0 1 1 -8 11" />
                 </svg>
 
-                {/* En-tête : Référence */}
-                <div className="flex items-center justify-center gap-1 z-10">
+                {/* En-tête : Référence avec fond protecteur */}
+                <div className="flex items-center justify-center gap-1 z-10 px-2 py-0.5 rounded-full bg-slate-950/70 backdrop-blur-[2px]">
                   <span className="w-1 h-1 rounded-full bg-yellow-400/80" />
                   <span className="text-[8.5px] sm:text-[9.5px] font-serif font-bold uppercase tracking-[0.2em] text-yellow-400/90 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
                     RÉFÉRENCE
@@ -357,8 +357,8 @@ export default function FossilDetailSheet({
                 {/* Filet séparateur supérieur */}
                 <div className="w-9 sm:w-11 h-px bg-gradient-to-r from-transparent via-yellow-500/60 to-transparent my-1 z-10" />
 
-                {/* Numéro de référence mis en valeur */}
-                <div className="z-10 px-1 max-w-[100px] sm:max-w-[115px]">
+                {/* Numéro de référence mis en valeur sur fond protecteur */}
+                <div className="z-10 px-2.5 py-0.5 rounded-md bg-slate-950/80 backdrop-blur-[2px] shadow-sm max-w-[100px] sm:max-w-[115px]">
                   <span className="text-xs sm:text-sm font-mono font-bold text-amber-200 group-hover:text-yellow-100 tracking-wider break-all leading-tight block drop-shadow-[0_2px_8px_rgba(234,179,8,0.45)]">
                     {fossil.reference}
                   </span>
@@ -367,8 +367,8 @@ export default function FossilDetailSheet({
                 {/* Filet séparateur inférieur */}
                 <div className="w-9 sm:w-11 h-px bg-gradient-to-r from-transparent via-yellow-500/60 to-transparent my-1 z-10" />
 
-                {/* Bas de médaillon : Collection */}
-                <span className="text-[7.5px] sm:text-[8.5px] font-mono tracking-[0.24em] text-slate-400 group-hover:text-slate-300 uppercase z-10">
+                {/* Bas de médaillon : Collection avec fond protecteur */}
+                <span className="text-[7.5px] sm:text-[8.5px] font-mono tracking-[0.24em] text-slate-400 group-hover:text-slate-300 uppercase z-10 px-1.5 py-0.2 rounded bg-slate-950/60">
                   COLLECTION
                 </span>
               </div>

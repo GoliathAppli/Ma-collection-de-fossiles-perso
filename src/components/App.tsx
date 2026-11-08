@@ -3,7 +3,7 @@ import { getSafeEmbedUrl } from "../utils/data/videoEmbed";
 import UniversalVideoPlayer from "./UniversalVideoPlayer";
 import { AnimatePresence, motion } from "motion/react";
 import { AppConfig, Fossil, TechnicalSheetRow, ImageSettings } from "../types";
-import { loadAppConfig, saveAppConfig, DEFAULT_CONFIG } from "../persistence";
+import { loadAppConfig, saveAppConfig, DEFAULT_CONFIG, sanitizeConfig } from "../persistence";
 import { optimizeAllConfigImages } from "../utils/data/imageOptimizer";
 import { playDinoSound } from "../utils/data/audio";
 import { sortFossilsChronologically } from "../utils/chronology";
@@ -64,7 +64,29 @@ export default function App() {
   const [sheetsPassword, setSheetsPassword] = useState("");
   const [sheetsAuthError, setSheetsAuthError] = useState(false);
 
-  const [config, setConfig] = useState<AppConfig>(DEFAULT_CONFIG);
+  const [config, setConfig] = useState<AppConfig>(() => {
+    try {
+      const stored = safeLocalStorage.getItem("fossils_collection_config_v2");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed && typeof parsed === "object") {
+          return sanitizeConfig(parsed);
+        }
+      }
+      const uiCache = safeLocalStorage.getItem("fossils_app_ui_cache");
+      if (uiCache) {
+        const parsed = JSON.parse(uiCache);
+        if (parsed && typeof parsed === "object") {
+          return sanitizeConfig({
+            ...DEFAULT_CONFIG,
+            secondHomeImage: parsed.secondHomeImage || DEFAULT_CONFIG.secondHomeImage,
+            textTheme: parsed.textTheme || DEFAULT_CONFIG.textTheme,
+          });
+        }
+      }
+    } catch (e) {}
+    return DEFAULT_CONFIG;
+  });
   const [isAdmin, setIsAdmin] = useState(false);
   const [homeVideoInput, setHomeVideoInput] = useState("");
   const [secondHomeTitleInput, setSecondHomeTitleInput] = useState("");
@@ -533,7 +555,9 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans relative overflow-x-hidden selection:bg-yellow-600 selection:text-slate-950">
+    <div
+      className="min-h-screen bg-slate-950 text-slate-100 font-sans relative overflow-x-hidden selection:bg-yellow-600 selection:text-slate-950"
+    >
       {/* THEMED FOSSIL / DINOSAUR INITIAL LOADING SCREEN */}
       <AnimatePresence>
         {showLoadingScreen && (
@@ -541,6 +565,7 @@ export default function App() {
             progress={loadingProgress}
             isReady={isConfigLoaded}
             onFinish={() => setShowLoadingScreen(false)}
+            imageSettings={config.secondHomeImage}
           />
         )}
       </AnimatePresence>
@@ -745,7 +770,7 @@ export default function App() {
               <div className="flex flex-col items-center space-y-4">
                 <motion.button
                   onClick={() => navigateTo("secondHome")}
-                  className="relative p-6 rounded-full bg-slate-900 border border-yellow-500/40 text-yellow-500 hover:text-yellow-400 hover:border-yellow-400 cursor-pointer shadow-[0_0_30px_rgba(234,179,8,0.15)] flex items-center justify-center group overflow-hidden"
+                  className="relative p-6 rounded-full cursor-pointer flex items-center justify-center group overflow-hidden transition-all duration-300 bg-slate-900 border border-yellow-500/40 text-yellow-500 hover:text-yellow-400 hover:border-yellow-400 shadow-[0_0_30px_rgba(234,179,8,0.15)]"
                   whileHover={{ scale: 1.12 }}
                   whileTap={{ scale: 0.95 }}
                   animate={{
@@ -765,10 +790,10 @@ export default function App() {
                   {/* Subtle spinning rays behind */}
                   <div className="absolute inset-0 bg-transparent rounded-full group-hover:rotate-45 transition-transform duration-1000 ease-out pointer-events-none" />
 
-                  <AmmoniteIcon className="w-20 h-20 relative z-10 transition-all duration-300 drop-shadow-[0_4px_12px_rgba(234,179,8,0.3)]" />
+                  <AmmoniteIcon className="w-20 h-20 relative z-10 transition-all duration-300 drop-shadow-[0_4px_12px_rgba(234,179,8,0.3)] text-yellow-500 group-hover:text-yellow-400" />
                 </motion.button>
 
-                <span className="text-center font-mono text-[10px] text-yellow-600/80 tracking-widest uppercase animate-pulse">
+                <span className="text-center font-mono text-[10px] tracking-widest uppercase animate-pulse transition-colors text-yellow-600/80">
                   Cliquez sur l'ammonite pour entrer de plain-pied dans
                   l'exposition
                 </span>
@@ -785,50 +810,6 @@ export default function App() {
               exit={{ opacity: 0, scale: 0.98 }}
               className="space-y-10 py-4 max-w-4xl mx-auto"
             >
-              {/* TITRE DE L'EXPOSITION (MODIFIABLE DIRECTEMENT PAR L'ADMINISTRATEUR) */}
-              <div className="text-center space-y-2 max-w-3xl mx-auto">
-                {config.secondHomeTitle && (
-                  <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight font-serif uppercase text-center break-words leading-tight bg-gradient-to-b from-yellow-100 via-amber-200 to-yellow-500 bg-clip-text text-transparent drop-shadow-[0_4px_16px_rgba(234,179,8,0.35)]">
-                    {config.secondHomeTitle}
-                  </h1>
-                )}
-
-                {isAdmin && (
-                  <div className="bg-slate-900/80 border border-yellow-600/30 rounded-2xl p-4 text-left max-w-xl mx-auto space-y-3 mt-3 shadow-lg">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-yellow-500 uppercase tracking-wider flex items-center gap-1.5 font-mono">
-                        <Edit3 className="w-3.5 h-3.5" /> Titre de l'Exposition (Modifiable en direct)
-                      </span>
-                      <span className="text-[10px] text-slate-400 bg-slate-800 px-2 py-0.5 rounded">
-                        Visible par tous les visiteurs
-                      </span>
-                    </div>
-                    <form
-                      onSubmit={(e) => {
-                        e.preventDefault();
-                        playDinoSound();
-                        updateConfigInstant({ ...config, secondHomeTitle: secondHomeTitleInput.trim() });
-                        alert("✅ Titre de l'exposition enregistré et synchronisé !");
-                      }}
-                      className="flex gap-2"
-                    >
-                      <input
-                        type="text"
-                        value={secondHomeTitleInput}
-                        onChange={(e) => setSecondHomeTitleInput(e.target.value)}
-                        placeholder="Ex: Conservatoire des Spécimens Fossiles..."
-                        className="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-yellow-500 font-serif"
-                      />
-                      <button
-                        type="submit"
-                        className="bg-yellow-600 hover:bg-yellow-500 text-slate-950 font-bold px-3.5 py-1.5 rounded-xl text-xs uppercase tracking-wider transition cursor-pointer"
-                      >
-                        Enregistrer
-                      </button>
-                    </form>
-                  </div>
-                )}
-              </div>
 
               {/* IMAGE ZONE (EDITABLE BY ADMIN) */}
               <div className="space-y-4">
@@ -858,20 +839,22 @@ export default function App() {
                 <div className="relative flex items-center justify-center">
                   {/* Outer animated ambient glows */}
                   <motion.div
+                    id="gallery-outer-glow"
                     animate={{
                       scale: [1, 1.15, 1],
-                      opacity: [0.3, 0.6, 0.3],
+                      opacity: [0.35, 0.65, 0.35],
                     }}
                     transition={{
                       duration: 3.5,
                       repeat: Infinity,
                       ease: "easeInOut",
                     }}
-                    className="absolute -inset-6 sm:-inset-8 rounded-full bg-gradient-to-r from-amber-500/20 via-yellow-500/30 to-amber-600/20 blur-2xl pointer-events-none"
+                    className="absolute -inset-6 sm:-inset-8 rounded-full blur-2xl pointer-events-none transition-all duration-300 bg-gradient-to-r from-amber-500/20 via-yellow-500/30 to-amber-600/20"
                   />
 
                   {/* Pulsing halo ring */}
                   <motion.div
+                    id="gallery-pulsing-halo"
                     animate={{
                       rotate: 360,
                     }}
@@ -880,11 +863,12 @@ export default function App() {
                       repeat: Infinity,
                       ease: "linear",
                     }}
-                    className="absolute -inset-2 sm:-inset-3 rounded-full bg-gradient-to-tr from-yellow-600/40 via-amber-400/60 to-yellow-500/40 blur-[2px] pointer-events-none"
+                    className="absolute -inset-2 sm:-inset-3 rounded-full blur-[2px] pointer-events-none transition-all duration-300 bg-gradient-to-tr from-yellow-600/40 via-amber-400/60 to-yellow-500/40"
                   />
 
                   {/* Secondary dashed counter-rotating cosmic ring */}
                   <motion.div
+                    id="gallery-dashed-ring"
                     animate={{
                       rotate: -360,
                     }}
@@ -893,7 +877,7 @@ export default function App() {
                       repeat: Infinity,
                       ease: "linear",
                     }}
-                    className="absolute -inset-4 sm:-inset-5 rounded-full border border-dashed border-yellow-500/25 pointer-events-none"
+                    className="absolute -inset-4 sm:-inset-5 rounded-full border border-dashed pointer-events-none transition-colors duration-300 border-yellow-500/25"
                   />
 
                   {/* The Main Circular Button */}
@@ -915,32 +899,46 @@ export default function App() {
                         ease: "easeInOut",
                       },
                     }}
-                    className="relative w-52 h-52 sm:w-64 sm:h-64 rounded-full bg-gradient-to-b from-slate-900 via-slate-950 to-amber-950/40 border-2 border-yellow-500/70 hover:border-yellow-400 text-yellow-400 flex flex-col items-center justify-center gap-2 cursor-pointer shadow-2xl group transition-all duration-300 z-10 p-4 select-none"
+                    className="relative w-52 h-52 sm:w-64 sm:h-64 rounded-full flex flex-col items-center justify-center gap-2 cursor-pointer shadow-2xl group transition-all duration-300 z-10 p-4 select-none bg-gradient-to-b from-slate-900 via-slate-950 to-amber-950/40 border-2 border-yellow-500/70 hover:border-yellow-400 text-yellow-400"
                     id="home-circular-gallery-btn"
                     title="Accéder à la Galerie Complète des 4 Périodes"
                   >
                     {/* Inner decorative rings */}
-                    <div className="absolute inset-3 rounded-full border border-yellow-500/30 group-hover:border-yellow-400/50 transition-colors pointer-events-none" />
-                    <div className="absolute inset-6 rounded-full border border-yellow-600/15 pointer-events-none" />
+                    <div
+                      className="absolute inset-3 rounded-full border pointer-events-none transition-colors border-yellow-500/30 group-hover:border-yellow-400/50"
+                    />
+                    <div
+                      className="absolute inset-6 rounded-full border pointer-events-none transition-colors border-yellow-600/15"
+                    />
 
                     {/* Central Icon */}
-                    <div className="relative z-10 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-yellow-950/60 border border-yellow-500/40 flex items-center justify-center text-yellow-400 group-hover:text-yellow-300 group-hover:scale-110 group-hover:border-yellow-400 transition-all duration-300 shadow-inner">
-                      <AmmoniteIcon className="w-6 h-6 sm:w-7 sm:h-7 drop-shadow-[0_2px_8px_rgba(234,179,8,0.5)]" />
+                    <div
+                      className="relative z-10 w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center transition-all duration-300 shadow-inner group-hover:scale-110 bg-yellow-950/60 border border-yellow-500/40 text-yellow-400 group-hover:text-yellow-300 group-hover:border-yellow-400"
+                    >
+                      <AmmoniteIcon
+                        className="w-6 h-6 sm:w-7 sm:h-7 drop-shadow-[0_2px_8px_rgba(234,179,8,0.5)]"
+                      />
                     </div>
 
                     {/* Main Label */}
-                    <span className="relative z-10 font-serif text-2xl sm:text-3xl font-extrabold uppercase tracking-[0.25em] text-yellow-400 group-hover:text-yellow-300 drop-shadow-[0_2px_12px_rgba(234,179,8,0.6)] pl-1">
+                    <span
+                      className="relative z-10 font-serif text-2xl sm:text-3xl font-extrabold uppercase tracking-[0.25em] pl-1 transition-all text-yellow-400 group-hover:text-yellow-300 drop-shadow-[0_2px_12px_rgba(234,179,8,0.6)]"
+                    >
                       GALERIE
                     </span>
 
                     {/* Specimen count pill */}
-                    <span className="relative z-10 text-[10px] font-mono text-yellow-400 bg-yellow-950/80 px-2.5 py-0.5 rounded-full border border-yellow-700/50 group-hover:border-yellow-500/70 transition-all">
+                    <span
+                      className="relative z-10 text-[10px] font-mono px-2.5 py-0.5 rounded-full border transition-all text-yellow-400 bg-yellow-950/80 border-yellow-700/50 group-hover:border-yellow-500/70"
+                    >
                       {config.fossils.length} spécimen{config.fossils.length > 1 ? "s" : ""}
                     </span>
                   </motion.button>
                 </div>
 
-                <p className="text-center font-mono text-[11px] text-yellow-600/90 tracking-widest uppercase mt-4 animate-pulse">
+                <p
+                  className="text-center font-mono text-[11px] tracking-widest uppercase mt-4 animate-pulse transition-colors text-yellow-600/90"
+                >
                   cliquez pour voir les fossiles
                 </p>
               </div>

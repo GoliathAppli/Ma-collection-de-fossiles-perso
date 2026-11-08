@@ -79,6 +79,7 @@ export interface AppConfig {
   scaleVideoUrl: string; // Video under geological timeline
   fossils: Fossil[];
   technicalSheets: TechnicalSheetRow[];
+  textTheme?: 'amber'; // Thème visuel du texte (Ambre Doré)
 }
 
 export interface GitHubSyncConfig {

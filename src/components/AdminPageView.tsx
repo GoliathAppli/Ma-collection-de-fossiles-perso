@@ -28,6 +28,7 @@ import {
   Smartphone,
   Printer,
   Tag,
+  Sparkles,
   X
 } from 'lucide-react';
 import { AppConfig, Fossil, GitHubSyncConfig, GitHubSyncStatus } from '../types';
@@ -599,6 +600,7 @@ export default function AdminPageView({
           </div>
 
           <div className="flex items-center gap-2.5">
+
             <button
               onClick={() => {
                 playDinoSound();

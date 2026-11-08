@@ -1,5 +1,5 @@
 // Conservatoire de Fossiles - Service Worker for PWA & Offline Support
-const CACHE_NAME = 'fossiles-pwa-v9';
+const CACHE_NAME = 'fossiles-pwa-v10';
 
 const PRECACHE_ASSETS = [
   './',
@@ -19,6 +19,7 @@ const PRECACHE_ASSETS = [
   './icons/apple-touch-icon.png',
   './icons/favicon.png',
   './favicon.ico',
+  './assets/welcome-presentation.webp',
   './assets/nedry-1.png',
   './assets/nedry-2.png',
   './screenshots/screenshot-mobile.png',

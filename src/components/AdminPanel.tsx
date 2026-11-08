@@ -16,6 +16,7 @@ export default function AdminPanel({
   isAdmin,
   onToggleAdmin,
   onOpenAdminPage,
+  config,
 }: AdminPanelProps) {
   const [password, setPassword] = useState('');
   const [showInput, setShowInput] = useState(false);

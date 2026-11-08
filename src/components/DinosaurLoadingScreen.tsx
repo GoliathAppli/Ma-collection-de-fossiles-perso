@@ -1,19 +1,46 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'motion/react';
 import { AmmoniteIcon } from '../utils/data/PeriodIcons';
+import CroppedImage from './CroppedImage';
+import { ImageSettings } from '../types';
+import { safeLocalStorage } from '../utils/safeStorage';
 
 interface DinosaurLoadingScreenProps {
   progress?: number;
   isReady?: boolean;
   onFinish?: () => void;
+  imageSettings?: ImageSettings;
 }
 
 export default function DinosaurLoadingScreen({
   progress = 10,
   isReady = false,
   onFinish,
+  imageSettings,
 }: DinosaurLoadingScreenProps) {
   const [displayedProgress, setDisplayedProgress] = useState(progress);
+
+  // Récupération instantanée de l'image de présentation (sans délai)
+  const effectiveImage = useMemo(() => {
+    if (imageSettings?.url) return imageSettings;
+    try {
+      const raw = safeLocalStorage.getItem('fossils_collection_config_v2');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed?.secondHomeImage?.url) {
+          return parsed.secondHomeImage;
+        }
+      }
+      const uiCache = safeLocalStorage.getItem('fossils_app_ui_cache');
+      if (uiCache) {
+        const parsed = JSON.parse(uiCache);
+        if (parsed?.secondHomeImage?.url) {
+          return parsed.secondHomeImage;
+        }
+      }
+    } catch (e) {}
+    return { url: '/assets/welcome-presentation.webp', scale: 1, posX: 0, posY: 0 };
+  }, [imageSettings]);
 
   useEffect(() => {
     const target = isReady ? 100 : Math.min(progress, 95);
@@ -64,54 +91,30 @@ export default function DinosaurLoadingScreen({
       <div className="absolute inset-0 bg-radial from-amber-950/20 via-slate-950/60 to-slate-950 pointer-events-none" />
 
       {/* Main Container */}
-      <div className="relative z-10 flex flex-col items-center text-center max-w-sm w-full space-y-7">
+      <div className="relative z-10 flex flex-col items-center text-center max-w-lg w-full space-y-6">
         
-        {/* Animated Central Prehistoric Ammonite Emblem */}
-        <div className="relative flex items-center justify-center">
-          {/* Pulsing outer halo */}
-          <motion.div
-            animate={{
-              scale: [1, 1.2, 1],
-              opacity: [0.2, 0.45, 0.2],
-            }}
-            transition={{
-              duration: 2.4,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-            className="absolute -inset-6 rounded-full bg-gradient-to-r from-amber-500/20 via-yellow-500/30 to-amber-600/20 blur-2xl pointer-events-none"
+        {/* Photo personnalisable en grand et en entier, transparent PNG sans encadré */}
+        <div className="relative w-72 h-64 sm:w-96 sm:h-80 md:w-[28rem] md:h-96 max-w-[90vw] max-h-[52vh] flex items-center justify-center bg-transparent pointer-events-none">
+          <CroppedImage
+            settings={effectiveImage}
+            alt="Exposition principale"
+            className="w-full h-full bg-transparent filter drop-shadow-[0_12px_28px_rgba(0,0,0,0.85)]"
           />
-
-          {/* Rotating celestial ring with dashes */}
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{
-              duration: 20,
-              repeat: Infinity,
-              ease: "linear",
-            }}
-            className="absolute -inset-4 rounded-full border border-dashed border-yellow-500/30 pointer-events-none"
-          />
-
-          {/* Central Ammonite Orb */}
-          <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-gradient-to-b from-slate-900 via-slate-950 to-amber-950 border-2 border-yellow-500/70 text-yellow-400 flex items-center justify-center shadow-[0_0_35px_rgba(234,179,8,0.25)]">
-            <AmmoniteIcon className="w-16 h-16 sm:w-18 sm:h-18 drop-shadow-[0_4px_12px_rgba(234,179,8,0.5)]" />
-          </div>
         </div>
 
-        {/* The single, pure evocative title */}
+        {/* The single evocative title with Amber / Yellow gradient */}
         <h2 className="text-xl sm:text-2xl font-serif font-black uppercase tracking-wider bg-gradient-to-b from-yellow-100 via-amber-200 to-yellow-500 bg-clip-text text-transparent drop-shadow-[0_2px_12px_rgba(234,179,8,0.35)]">
           Retour vers le passé en cours...
         </h2>
 
-        {/* Progressive Progress Bar with Rolling Ammonite Cursor */}
-        <div className="w-full space-y-2 px-1">
+        {/* Progressive Progress Bar */}
+        <div className="w-full max-w-md space-y-2 px-1">
           <div className="relative w-full h-3.5 bg-slate-900/95 rounded-full border border-yellow-500/40 p-0.5 shadow-[inset_0_2px_5px_rgba(0,0,0,0.8)]">
             
             {/* Interior glowing background track */}
             <div className="absolute inset-0 rounded-full bg-gradient-to-r from-amber-950/40 via-yellow-950/20 to-amber-950/40 pointer-events-none" />
 
-            {/* Filled progress bar advancing smoothly behind the cursor */}
+            {/* Filled progress bar advancing smoothly */}
             <div
               style={{ width: `${clampedProgress}%` }}
               className="h-full bg-gradient-to-r from-amber-700 via-amber-500 to-yellow-400 rounded-full shadow-[0_0_12px_rgba(250,204,21,0.6)]"
@@ -132,9 +135,9 @@ export default function DinosaurLoadingScreen({
                   duration: 2,
                   ease: "linear",
                 }}
-                className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-b from-slate-900 via-slate-950 to-amber-950 border-2 border-yellow-400 text-yellow-300 flex items-center justify-center shadow-[0_0_22px_rgba(234,179,8,0.85)]"
+                className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center border-2 shadow-lg bg-gradient-to-b from-slate-900 via-slate-950 to-amber-950 border-yellow-400 text-yellow-300 shadow-[0_0_20px_rgba(234,179,8,0.85)]"
               >
-                <AmmoniteIcon className="w-5 h-5 sm:w-6 sm:h-6 drop-shadow-[0_2px_6px_rgba(234,179,8,0.9)]" />
+                <AmmoniteIcon className="w-4 h-4 sm:w-5 sm:h-5 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]" />
                 <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-yellow-300 shadow-[0_0_6px_rgba(253,224,71,1)]" />
               </motion.div>
             </div>
