@@ -82,6 +82,11 @@ export default function FossilDetailSheet({
   const [saveSuccessMsg, setSaveSuccessMsg] = useState<string | null>(null);
   const [showCertAdjuster, setShowCertAdjuster] = useState(false);
 
+  // Arrêt automatique de la musique d'ambiance dès qu'une fiche est consultée
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('fossilSheetOpened'));
+  }, []);
+
   useEffect(() => {
     setTraceData({
       provenanceDate: fossil.provenanceDate || '',
@@ -1138,23 +1143,35 @@ export default function FossilDetailSheet({
       {/* 7. RUBRIQUE : LE SAVIEZ-VOUS ? */}
       {fossil.saviezVousText && (
         <div className="space-y-4 pt-4 sm:pt-8">
-          <FossilSectionDivider type="ammonite" />
-          <div className="bg-gradient-to-r from-yellow-950/20 to-slate-900/10 border-2 border-yellow-700/20 p-6 sm:p-8 md:p-9 rounded-2xl relative overflow-hidden shadow-xl">
+          <FossilSectionDivider type="ammonite" size="lg" label="Le saviez-vous ?" />
+          <div className="bg-gradient-to-r from-yellow-950/20 to-slate-900/10 border-2 border-yellow-700/20 p-5 sm:p-7 md:p-8 rounded-2xl relative overflow-hidden shadow-xl">
             <div className="absolute top-0 right-0 p-8 opacity-5 font-serif text-9xl text-yellow-500 pointer-events-none italic select-none">
               ?
             </div>
 
-            <div className="flex items-center justify-center border-b border-yellow-700/20 pb-3 mb-5 text-center">
-              <h3 className="inline-flex items-center justify-center gap-2 text-base sm:text-lg font-bold font-serif uppercase tracking-wider text-yellow-500 text-center">
-                <Lightbulb className="w-5 h-5 text-yellow-500 shrink-0" />
+            {/* En-tête de la rubrique */}
+            <div className="flex items-center justify-center gap-2.5 border-b border-yellow-700/20 pb-3.5 mb-5 text-center">
+              <Lightbulb className="w-5 h-5 text-yellow-500 shrink-0" />
+              <h3 className="text-base sm:text-lg font-bold font-serif uppercase tracking-wider text-yellow-500 text-center">
                 <span>Le Saviez-Vous ?</span>
               </h3>
             </div>
 
-            <div>
-              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-sans italic whitespace-pre-wrap text-center max-w-3xl mx-auto">
-                "{fossil.saviezVousText}"
-              </p>
+            {/* Corps avec l'image 2x plus grande de Monsieur ADN sans cadre en PNG transparent */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-7 max-w-3xl mx-auto">
+              <div className="shrink-0 flex items-center justify-center select-none pointer-events-none">
+                <img
+                  src={fossil.saviezVousImage?.url || "/assets/mr-dna.png"}
+                  alt="Monsieur ADN - Le Saviez-Vous ?"
+                  className="w-28 h-28 sm:w-32 sm:h-32 md:w-36 md:h-36 object-contain bg-transparent filter drop-shadow-[0_8px_20px_rgba(0,0,0,0.7)]"
+                />
+              </div>
+
+              <div className="flex-1 text-center sm:text-left self-center">
+                <p className="text-xs sm:text-sm text-slate-200 leading-relaxed font-sans italic whitespace-pre-wrap">
+                  "{fossil.saviezVousText}"
+                </p>
+              </div>
             </div>
           </div>
         </div>

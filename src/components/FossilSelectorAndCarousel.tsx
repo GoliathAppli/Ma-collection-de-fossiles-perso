@@ -73,7 +73,7 @@ export default function FossilSelectorAndCarousel({
       lifespanYears: '',
       lifespanDescription: '',
       saviezVousText: '',
-      saviezVousImage: { url: '', scale: 1, posX: 0, posY: 0 }
+      saviezVousImage: { url: '/assets/mr-dna.png', scale: 1, posX: 0, posY: 0 }
     };
     onOpenEditForm(newFossil);
   };

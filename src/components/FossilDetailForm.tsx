@@ -612,7 +612,12 @@ export default function FossilDetailForm({ fossil, onSave, onDelete, onCancel }:
 
       {/* RUBRIQUE: LE SAVIEZ-VOUS? */}
       <div className="border border-slate-850 p-4 rounded-xl space-y-4 bg-slate-950/20">
-        <div className="flex items-center justify-center gap-2 border-b border-slate-800 pb-2 text-center">
+        <div className="flex items-center justify-center gap-2.5 border-b border-slate-800 pb-2 text-center">
+          <img
+            src="/assets/mr-dna.png"
+            alt="Monsieur ADN"
+            className="w-7 h-7 object-contain drop-shadow"
+          />
           <HelpCircle className="w-4 h-4 text-yellow-500" />
           <h4 className="text-sm font-semibold tracking-wide uppercase font-serif">Rubrique : Le saviez-vous ?</h4>
         </div>

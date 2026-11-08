@@ -163,7 +163,7 @@ export default function App() {
                 ...f,
                 image: mainImg,
                 thumbnailImage: { ...mainImg },
-                saviezVousImage: { url: "", scale: 1, posX: 0, posY: 0 },
+                saviezVousImage: f.saviezVousImage?.url ? f.saviezVousImage : { url: "/assets/mr-dna.png", scale: 1, posX: 0, posY: 0 },
               };
             }),
           };
@@ -493,7 +493,7 @@ export default function App() {
     const cleanFossil: Fossil = {
       ...fossil,
       thumbnailImage: fossil.image ? { ...fossil.image } : { url: '', scale: 1, posX: 0, posY: 0 },
-      saviezVousImage: { url: '', scale: 1, posX: 0, posY: 0 }
+      saviezVousImage: fossil.saviezVousImage?.url ? fossil.saviezVousImage : { url: '/assets/mr-dna.png', scale: 1, posX: 0, posY: 0 }
     };
     const exists = config.fossils.some((f) => f.id === cleanFossil.id);
     let updatedList: Fossil[];

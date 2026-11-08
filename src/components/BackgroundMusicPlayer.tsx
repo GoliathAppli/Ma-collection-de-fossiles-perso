@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Music, VolumeX, Volume2 } from "lucide-react";
+import { VolumeX, Volume2 } from "lucide-react";
 import openingAudioSrc from "../assets/opening-titles.mp3";
 import galleryAudioSrc from "../assets/gallery-theme.mp3";
 
@@ -15,6 +15,12 @@ export default function BackgroundMusicPlayer({ currentView }: BackgroundMusicPl
   // Référence pour savoir si l'utilisateur a explicitement coupé le son
   const isUserMutedRef = useRef<boolean>(false);
 
+  // Référence pour savoir si la musique a été coupée par l'ouverture d'une fiche
+  const hasStoppedForFicheRef = useRef<boolean>(false);
+
+  // Référence pour mémoriser la dernière vue afin de détecter l'entrée depuis l'accueil
+  const prevViewRef = useRef<string>(currentView);
+
   // État réel de lecture (mis à jour directement par les événements natifs de l'élément audio)
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
 
@@ -28,10 +34,31 @@ export default function BackgroundMusicPlayer({ currentView }: BackgroundMusicPl
     return null;
   }, [isSecondHome, isGallery]);
 
+  // Arrêt immédiat et définitif de la musique de fond dès qu'un visiteur clique / ouvre une fiche
+  useEffect(() => {
+    const handleSheetOpened = () => {
+      hasStoppedForFicheRef.current = true;
+      if (galleryAudioRef.current) {
+        galleryAudioRef.current.pause();
+      }
+      if (openingAudioRef.current) {
+        openingAudioRef.current.pause();
+      }
+      setIsPlaying(false);
+    };
+
+    window.addEventListener("fossilSheetOpened", handleSheetOpened);
+    return () => {
+      window.removeEventListener("fossilSheetOpened", handleSheetOpened);
+    };
+  }, []);
+
   // Synchronisation lors des changements de page
   useEffect(() => {
     const openingAudio = openingAudioRef.current;
     const galleryAudio = galleryAudioRef.current;
+    const isNewView = prevViewRef.current !== currentView;
+    prevViewRef.current = currentView;
 
     if (!openingAudio || !galleryAudio) return;
 
@@ -39,9 +66,10 @@ export default function BackgroundMusicPlayer({ currentView }: BackgroundMusicPl
       // Arrête la musique de la galerie si elle tournait
       galleryAudio.pause();
       galleryAudio.currentTime = 0;
+      hasStoppedForFicheRef.current = false;
 
       // Lance Opening Titles une seule fois si l'utilisateur n'a pas coupé le son
-      if (!isUserMutedRef.current) {
+      if (!isUserMutedRef.current && isNewView) {
         openingAudio.currentTime = 0;
         openingAudio.play().catch(() => {
           // Si le navigateur bloque l'autoplay, le premier clic/tap le déclenchera
@@ -52,11 +80,15 @@ export default function BackgroundMusicPlayer({ currentView }: BackgroundMusicPl
       openingAudio.pause();
       openingAudio.currentTime = 0;
 
-      // Lance le thème de la galerie en boucle
-      if (!isUserMutedRef.current) {
-        galleryAudio.play().catch(() => {
-          // Autoplay bloqué, attendra l'interaction
-        });
+      // La musique doit venir une seule fois quand on va dans la galerie depuis l'accueil
+      if (isNewView) {
+        hasStoppedForFicheRef.current = false;
+        galleryAudio.currentTime = 0;
+        if (!isUserMutedRef.current) {
+          galleryAudio.play().catch(() => {
+            // Autoplay bloqué, attendra l'interaction
+          });
+        }
       }
     } else {
       // N'importe quelle autre page : couper les deux musiques
@@ -72,8 +104,13 @@ export default function BackgroundMusicPlayer({ currentView }: BackgroundMusicPl
     if (!hasActiveMusic) return;
 
     const handleFirstUserGesture = () => {
+      // Si une fiche a été ouverte, on ne relance jamais la musique en arrière-plan
+      if (hasStoppedForFicheRef.current) return;
+
       const activeAudio = getActiveAudio();
       if (activeAudio && activeAudio.paused && !isUserMutedRef.current) {
+        // En galerie, ne pas relancer si la musique a déjà terminé sa lecture unique
+        if (isGallery && activeAudio.currentTime > 0 && activeAudio.ended) return;
         activeAudio.play().catch(() => {});
       }
     };
@@ -89,9 +126,9 @@ export default function BackgroundMusicPlayer({ currentView }: BackgroundMusicPl
       window.removeEventListener("click", handleFirstUserGesture);
       window.removeEventListener("keydown", handleFirstUserGesture);
     };
-  }, [hasActiveMusic, getActiveAudio]);
+  }, [hasActiveMusic, getActiveAudio, isGallery]);
 
-  // Clic direct sur le bouton : action garantie sans conflit
+  // Clic direct sur le bouton de contrôle du son : action manuelle explicite
   const toggleMusic = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -107,6 +144,7 @@ export default function BackgroundMusicPlayer({ currentView }: BackgroundMusicPl
     } else {
       // L'audio est en pause : on le relance (le clic utilisateur autorise la lecture à 100%)
       isUserMutedRef.current = false;
+      hasStoppedForFicheRef.current = false;
       if (activeAudio.ended) {
         activeAudio.currentTime = 0;
       }
@@ -137,9 +175,9 @@ export default function BackgroundMusicPlayer({ currentView }: BackgroundMusicPl
           ref={galleryAudioRef}
           src={galleryAudioSrc}
           preload="auto"
-          loop
           onPlay={() => isGallery && setIsPlaying(true)}
           onPause={() => isGallery && setIsPlaying(false)}
+          onEnded={() => isGallery && setIsPlaying(false)}
         />
       </>
     );
@@ -147,7 +185,7 @@ export default function BackgroundMusicPlayer({ currentView }: BackgroundMusicPl
 
   return (
     <>
-      {/* Éléments audio natifs fiables */}
+      {/* Éléments audio natifs sans boucle sur la galerie (jouée 1 seule fois) */}
       <audio
         ref={openingAudioRef}
         src={openingAudioSrc}
@@ -160,9 +198,9 @@ export default function BackgroundMusicPlayer({ currentView }: BackgroundMusicPl
         ref={galleryAudioRef}
         src={galleryAudioSrc}
         preload="auto"
-        loop
         onPlay={() => isGallery && setIsPlaying(true)}
         onPause={() => isGallery && setIsPlaying(false)}
+        onEnded={() => isGallery && setIsPlaying(false)}
       />
 
       {/* Bouton de contrôle du son TOUT EN HAUT DE L'ÉCRAN À GAUCHE */}

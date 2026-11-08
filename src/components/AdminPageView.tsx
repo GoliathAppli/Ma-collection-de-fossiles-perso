@@ -174,7 +174,7 @@ export default function AdminPageView({
       leFossileText: '',
       leFossileImage: { url: '', scale: 1, posX: 0, posY: 0 },
       saviezVousText: '',
-      saviezVousImage: { url: '', scale: 1, posX: 0, posY: 0 },
+      saviezVousImage: { url: '/assets/mr-dna.png', scale: 1, posX: 0, posY: 0 },
       image: { url: '', scale: 1, posX: 0, posY: 0 },
       thumbnailImage: { url: '', scale: 1, posX: 0, posY: 0 },
       certificatImage: { url: '', scale: 1, posX: 0, posY: 0 },
@@ -196,7 +196,7 @@ export default function AdminPageView({
     const cleanFossil: Fossil = {
       ...saved,
       thumbnailImage: saved.image ? { ...saved.image } : { url: '', scale: 1, posX: 0, posY: 0 },
-      saviezVousImage: { url: '', scale: 1, posX: 0, posY: 0 }
+      saviezVousImage: saved.saviezVousImage?.url ? saved.saviezVousImage : { url: '/assets/mr-dna.png', scale: 1, posX: 0, posY: 0 }
     };
     const exists = config.fossils.some(f => f.id === cleanFossil.id);
     let updatedList = exists 
@@ -255,7 +255,7 @@ export default function AdminPageView({
       title: `${f.title} (Copie)`,
       image: mainImg,
       thumbnailImage: { ...mainImg },
-      saviezVousImage: { url: '', scale: 1, posX: 0, posY: 0 }
+      saviezVousImage: f.saviezVousImage?.url ? f.saviezVousImage : { url: '/assets/mr-dna.png', scale: 1, posX: 0, posY: 0 }
     };
     const updatedFossils = sortFossilsChronologically([...config.fossils, duplicated]);
     const techSheetData = {

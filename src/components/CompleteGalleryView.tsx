@@ -332,6 +332,7 @@ export default function CompleteGalleryView({
   // Helper to open a fossil sheet and instantly scroll all the way to the top
   const handleSelectFossil = (id: string | null) => {
     if (id) {
+      window.dispatchEvent(new CustomEvent('fossilSheetOpened'));
       window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     }
     setActiveFossilId(id);
@@ -461,7 +462,7 @@ export default function CompleteGalleryView({
       lifespanYears: '',
       lifespanDescription: '',
       saviezVousText: '',
-      saviezVousImage: { url: '', scale: 1, posX: 0, posY: 0 }
+      saviezVousImage: { url: '/assets/mr-dna.png', scale: 1, posX: 0, posY: 0 }
     };
     onOpenEditForm(newFossil);
   };

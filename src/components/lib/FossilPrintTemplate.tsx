@@ -476,10 +476,16 @@ function SingleFossilPrintPage({
 
           {/* Card E: Faits Remarquables / Le Saviez-Vous ? */}
           <div className="border border-slate-800 flex flex-col justify-between bg-white flex-1 min-h-0 relative shadow-xs">
-            <div className="bg-slate-900 text-white px-2 py-0.5 font-sans text-[8px] font-black uppercase tracking-wider border-b border-slate-800 shrink-0">
-              💡 Faits Remarquables & Histoire
+            <div className="bg-slate-900 text-white px-2 py-0.5 font-sans text-[8px] font-black uppercase tracking-wider border-b border-slate-800 shrink-0 flex items-center justify-between">
+              <span>💡 Faits Remarquables & Histoire</span>
+              <span className="text-[7px] text-amber-300 font-mono">Le Saviez-Vous ?</span>
             </div>
-            <div className={`${cardPadding} flex-1 flex flex-col justify-between gap-1.5 min-h-0`}>
+            <div className={`${cardPadding} flex-1 flex flex-row items-start gap-2 min-h-0`}>
+              <img
+                src="/assets/mr-dna.png"
+                alt="Monsieur ADN"
+                className="w-7 h-7 sm:w-8 sm:h-8 object-contain shrink-0 mt-0.5"
+              />
               <p className={`${textSize} text-slate-900 text-justify whitespace-pre-wrap italic flex-1 overflow-hidden`}>
                 {fossil.saviezVousText || 'Spécimen remarquable témoignant de l’histoire biologique et géologique de notre planète.'}
               </p>

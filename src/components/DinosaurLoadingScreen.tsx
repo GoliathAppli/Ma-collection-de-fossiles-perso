@@ -104,7 +104,7 @@ export default function DinosaurLoadingScreen({
 
         {/* The single evocative title with Amber / Yellow gradient */}
         <h2 className="text-xl sm:text-2xl font-serif font-black uppercase tracking-wider bg-gradient-to-b from-yellow-100 via-amber-200 to-yellow-500 bg-clip-text text-transparent drop-shadow-[0_2px_12px_rgba(234,179,8,0.35)]">
-          Retour vers le passé en cours...
+          Voyage dans le temps en cours...
         </h2>
 
         {/* Progressive Progress Bar */}
