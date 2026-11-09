@@ -13,6 +13,7 @@ import AdminPageView from "./AdminPageView";
 import CroppedImage from "./CroppedImage";
 import ImageAdjuster from "../utils/data/ImageAdjuster";
 import GeologicTimelineView from "./GeologicTimelineView";
+import { MR_DNA_SRC } from "../utils/mrDnaAsset";
 import TechnicalSheetsView from "../utils/TechnicalSheetsView";
 import FossilDetailForm from "./FossilDetailForm";
 import FossilSelectorAndCarousel from "./FossilSelectorAndCarousel";
@@ -916,7 +917,10 @@ export default function App() {
                       className="relative z-10 flex items-center justify-center transition-all duration-300 group-hover:scale-110 -mb-1"
                     >
                       <img
-                        src="/assets/mr-dna.png"
+                        src={MR_DNA_SRC}
+                        onError={(e) => {
+                          e.currentTarget.src = MR_DNA_SRC;
+                        }}
                         alt="Mr ADN"
                         className="w-14 h-16 sm:w-16 sm:h-20 object-contain select-none pointer-events-none drop-shadow-[0_4px_16px_rgba(234,179,8,0.5)]"
                       />
@@ -1101,18 +1105,8 @@ export default function App() {
               exit={{ opacity: 0, y: -15 }}
               className="space-y-8"
             >
-              {/* GRAND TITRE MAJESTUEUX : ÉCHELLE DES TEMPS GÉOLOGIQUES */}
-              <div className="text-center pt-1 pb-1 space-y-2.5 max-w-3xl mx-auto select-none">
-                <div className="flex items-center justify-center gap-2.5 opacity-90">
-                  <div className="h-px w-10 sm:w-16 bg-gradient-to-r from-transparent via-yellow-600/40 to-yellow-500/70" />
-                  <span className="text-[10px] sm:text-xs font-serif font-bold uppercase tracking-[0.25em] text-yellow-500/90 flex items-center gap-1.5">
-                    <Sparkles className="w-3 h-3 text-yellow-400 shrink-0" />
-                    Chronologie de la Terre
-                    <Sparkles className="w-3 h-3 text-yellow-400 shrink-0" />
-                  </span>
-                  <div className="h-px w-10 sm:w-16 bg-gradient-to-l from-transparent via-yellow-600/40 to-yellow-500/70" />
-                </div>
-
+              {/* GRAND TITRE DE L'ÉCHELLE DES TEMPS GÉOLOGIQUES */}
+              <div className="text-center pt-2 pb-2 space-y-3 max-w-3xl mx-auto select-none">
                 <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight font-serif uppercase text-center break-words leading-tight bg-gradient-to-b from-yellow-100 via-amber-200 to-yellow-500 bg-clip-text text-transparent drop-shadow-[0_4px_16px_rgba(234,179,8,0.35)]">
                   Échelle des Temps Géologiques
                 </h1>
@@ -1166,18 +1160,8 @@ export default function App() {
               exit={{ opacity: 0, y: -15 }}
               className="space-y-8"
             >
-              {/* GRAND TITRE MAJESTUEUX : FICHES TECHNIQUES & AUTHENTICITÉ */}
-              <div className="text-center pt-1 pb-1 space-y-2.5 max-w-3xl mx-auto select-none">
-                <div className="flex items-center justify-center gap-2.5 opacity-90">
-                  <div className="h-px w-10 sm:w-16 bg-gradient-to-r from-transparent via-yellow-600/40 to-yellow-500/70" />
-                  <span className="text-[10px] sm:text-xs font-serif font-bold uppercase tracking-[0.25em] text-yellow-500/90 flex items-center gap-1.5">
-                    <Sparkles className="w-3 h-3 text-yellow-400 shrink-0" />
-                    Suivi Technique & Inventaire
-                    <Sparkles className="w-3 h-3 text-yellow-400 shrink-0" />
-                  </span>
-                  <div className="h-px w-10 sm:w-16 bg-gradient-to-l from-transparent via-yellow-600/40 to-yellow-500/70" />
-                </div>
-
+              {/* GRAND TITRE DES FICHES TECHNIQUES */}
+              <div className="text-center pt-2 pb-2 space-y-3 max-w-3xl mx-auto select-none">
                 <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight font-serif uppercase text-center break-words leading-tight bg-gradient-to-b from-yellow-100 via-amber-200 to-yellow-500 bg-clip-text text-transparent drop-shadow-[0_4px_16px_rgba(234,179,8,0.35)]">
                   Fiches Techniques & Authenticité
                 </h1>

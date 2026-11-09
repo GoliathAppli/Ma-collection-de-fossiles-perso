@@ -101,14 +101,11 @@ export default function FossilSelectorAndCarousel({
   return (
     <div className="space-y-8 w-full">
       {/* Title Subheader */}
-      <div className="text-center">
-        <span className="text-[10px] font-mono tracking-widest text-slate-500 uppercase block mb-1">
-          SÉLECTION / CATALOGUE DE LA PÉRIODE
-        </span>
-        <h2 className="text-3xl font-bold tracking-tight text-yellow-500/90 font-serif uppercase">
+      <div className="text-center space-y-2">
+        <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-yellow-500/90 font-serif uppercase text-center">
           {getEraLabel()}
         </h2>
-        <p className="text-sm text-slate-400 mt-2 font-mono italic">
+        <p className="text-sm text-slate-400 font-mono italic text-center">
           {getEraDates()}
         </p>
       </div>

@@ -511,18 +511,8 @@ export default function CompleteGalleryView({
         </button>
       </div>
 
-      {/* GRAND TITRE MAJESTUEUX DE LA GALERIE */}
-      <div className="text-center pt-1 pb-1 space-y-2.5 max-w-2xl mx-auto select-none">
-        <div className="flex items-center justify-center gap-2.5 opacity-90">
-          <div className="h-px w-10 sm:w-16 bg-gradient-to-r from-transparent via-yellow-600/40 to-yellow-500/70" />
-          <span className="text-[10px] sm:text-xs font-serif font-bold uppercase tracking-[0.25em] text-yellow-500/90 flex items-center gap-1.5">
-            <Sparkles className="w-3 h-3 text-yellow-400 shrink-0" />
-            Conservatoire Paléontologique
-            <Sparkles className="w-3 h-3 text-yellow-400 shrink-0" />
-          </span>
-          <div className="h-px w-10 sm:w-16 bg-gradient-to-l from-transparent via-yellow-600/40 to-yellow-500/70" />
-        </div>
-
+      {/* GRAND TITRE DE LA GALERIE */}
+      <div className="text-center pt-2 pb-2 space-y-3 max-w-2xl mx-auto select-none">
         <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight font-serif uppercase text-center break-words leading-tight bg-gradient-to-b from-yellow-100 via-amber-200 to-yellow-500 bg-clip-text text-transparent drop-shadow-[0_4px_16px_rgba(234,179,8,0.35)]">
           Galerie des Spécimens
         </h1>
@@ -588,16 +578,9 @@ export default function CompleteGalleryView({
         )}
       </div>
 
-      {/* VIEW CONTROLS (CARROUSELS VS LISTE VS GRILLE 3 COLONNES) */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-1 gap-2.5">
-        <div className="flex items-center gap-1.5 text-xs font-mono text-slate-400">
-          <Clock className="w-3.5 h-3.5 text-yellow-500 shrink-0" />
-          <span className="text-slate-400 text-[11px]">Ordre chronologique :</span>
-          <span className="text-yellow-400/90 font-bold text-[11px]">Cénozoïque → Précambrien</span>
-        </div>
-
-        {/* BOUTONS DE CHOIX D'AFFICHAGE (DISCRETS & ÉPURÉS) */}
-        <div className="flex flex-wrap items-center gap-1.5 self-end sm:self-auto">
+      {/* VIEW CONTROLS (BOUTONS D'AFFICHAGE SEULS) */}
+      <div className="flex items-center justify-end px-1 gap-2.5">
+        <div className="flex flex-wrap items-center gap-1.5">
           {isAdmin && fossils.length > 0 && (
             <button
               onClick={() => {
@@ -617,56 +600,56 @@ export default function CompleteGalleryView({
           )}
 
           <div className="flex items-center gap-1 bg-slate-950/80 p-1 border border-slate-800/80 rounded-xl shadow-inner">
-          <button
-            onClick={() => {
-              playDinoSound();
-              setViewMode('carousels');
-            }}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-mono transition-all cursor-pointer ${
-              viewMode === 'carousels'
-                ? 'bg-slate-800/90 text-yellow-400 border border-yellow-600/30 font-semibold shadow-xs'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
-            }`}
-            title="Affichage en carrousels horizontaux"
-          >
-            <Layers className="w-3.5 h-3.5 text-yellow-500/80" />
-            <span className="hidden xs:inline">Carrousels</span>
-          </button>
+            <button
+              onClick={() => {
+                playDinoSound();
+                setViewMode('carousels');
+              }}
+              className={`p-2 rounded-lg transition-all cursor-pointer ${
+                viewMode === 'carousels'
+                  ? 'bg-slate-800/90 text-yellow-400 border border-yellow-600/30 shadow-xs'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
+              }`}
+              title="Affichage en carrousels"
+              aria-label="Affichage en carrousels"
+            >
+              <Layers className="w-4 h-4 text-yellow-500/80" />
+            </button>
 
-          <button
-            onClick={() => {
-              playDinoSound();
-              setViewMode('list');
-            }}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-mono transition-all cursor-pointer ${
-              viewMode === 'list'
-                ? 'bg-slate-800/90 text-yellow-400 border border-yellow-600/30 font-semibold shadow-xs'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
-            }`}
-            title="Affichage en liste verticale"
-          >
-            <List className="w-3.5 h-3.5 text-yellow-500/80" />
-            <span>Liste</span>
-          </button>
+            <button
+              onClick={() => {
+                playDinoSound();
+                setViewMode('list');
+              }}
+              className={`p-2 rounded-lg transition-all cursor-pointer ${
+                viewMode === 'list'
+                  ? 'bg-slate-800/90 text-yellow-400 border border-yellow-600/30 shadow-xs'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
+              }`}
+              title="Affichage en liste"
+              aria-label="Affichage en liste"
+            >
+              <List className="w-4 h-4 text-yellow-500/80" />
+            </button>
 
-          <button
-            onClick={() => {
-              playDinoSound();
-              setViewMode('grid3');
-            }}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-mono transition-all cursor-pointer ${
-              viewMode === 'grid3'
-                ? 'bg-slate-800/90 text-yellow-400 border border-yellow-600/30 font-semibold shadow-xs'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
-            }`}
-            title="Affichage en quadrillage de 3 colonnes"
-          >
-            <Grid3X3 className="w-3.5 h-3.5 text-yellow-500/80" />
-            <span>3 Colonnes</span>
-          </button>
+            <button
+              onClick={() => {
+                playDinoSound();
+                setViewMode('grid3');
+              }}
+              className={`p-2 rounded-lg transition-all cursor-pointer ${
+                viewMode === 'grid3'
+                  ? 'bg-slate-800/90 text-yellow-400 border border-yellow-600/30 shadow-xs'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
+              }`}
+              title="Affichage en 3 colonnes"
+              aria-label="Affichage en 3 colonnes"
+            >
+              <Grid3X3 className="w-4 h-4 text-yellow-500/80" />
+            </button>
+          </div>
         </div>
       </div>
-    </div>
 
       {/* RENDER ACTIVE VIEW */}
       {viewMode === 'carousels' && (

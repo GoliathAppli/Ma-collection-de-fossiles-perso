@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { Fossil, ImageSettings, TechnicalSheetRow } from '../../types';
 import { resolveImageUrl } from '../../utils/imageUrl';
+import { MR_DNA_SRC } from '../../utils/mrDnaAsset';
 import { formatPeriodYears, formatPeriodDescription } from '../geologicPeriods';
 
 export interface FossilPrintTemplateProps {
@@ -482,7 +483,7 @@ function SingleFossilPrintPage({
             </div>
             <div className={`${cardPadding} flex-1 flex flex-row items-start gap-2 min-h-0`}>
               <img
-                src="/assets/mr-dna.png"
+                src={MR_DNA_SRC}
                 alt="Monsieur ADN"
                 className="w-7 h-7 sm:w-8 sm:h-8 object-contain shrink-0 mt-0.5"
               />

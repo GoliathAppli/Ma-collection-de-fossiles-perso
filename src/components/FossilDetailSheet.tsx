@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Fossil, ImageSettings } from '../types';
 import { playDinoSound } from '../utils/data/audio';
 import { resolveImageUrl } from '../utils/imageUrl';
+import { MR_DNA_SRC } from '../utils/mrDnaAsset';
 import CroppedImage from './CroppedImage';
 import InteractiveMap from './InteractiveMap';
 import GeologicTimelineView from './GeologicTimelineView';
@@ -297,20 +298,9 @@ export default function FossilDetailSheet({
         </button>
       </div>
 
-      {/* 1. ZONE TITRE PRINCIPAL EN VALEUR (CARTOUCHE FAÇON MUSÉUM) */}
-      <div className="text-center pt-8 sm:pt-4 pb-2 px-3 max-w-3xl mx-auto space-y-2.5">
-        {/* Ornement supérieur subtil */}
-        <div className="flex items-center justify-center gap-2.5 opacity-90 select-none">
-          <div className="h-px w-10 sm:w-16 bg-gradient-to-r from-transparent via-yellow-600/40 to-yellow-500/70" />
-          <span className="text-[10px] sm:text-xs font-serif font-bold uppercase tracking-[0.25em] text-yellow-500/90 flex items-center gap-1.5">
-            <Sparkles className="w-3 h-3 text-yellow-400 shrink-0" />
-            Spécimen de Collection
-            <Sparkles className="w-3 h-3 text-yellow-400 shrink-0" />
-          </span>
-          <div className="h-px w-10 sm:w-16 bg-gradient-to-l from-transparent via-yellow-600/40 to-yellow-500/70" />
-        </div>
-
-        {/* Titre principal magnifié avec dégradé doré ambré / rouge jurassic et ombre subtile */}
+      {/* 1. ZONE TITRE PRINCIPAL EN VALEUR */}
+      <div className="text-center pt-8 sm:pt-4 pb-2 px-3 max-w-3xl mx-auto space-y-3">
+        {/* Titre principal magnifié avec dégradé doré ambré et ombre subtile */}
         <h1 className={`${getAdaptiveTitleClasses(fossil.title || '')} fossil-sheet-title font-extrabold tracking-tight font-serif uppercase text-center break-words [overflow-wrap:anywhere] hyphens-auto leading-tight bg-gradient-to-b from-yellow-100 via-amber-200 to-yellow-500 bg-clip-text text-transparent drop-shadow-[0_4px_18px_rgba(234,179,8,0.35)]`}>
           {fossil.title || 'Spécimen sans nom'}
         </h1>
@@ -1161,9 +1151,14 @@ export default function FossilDetailSheet({
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-7 max-w-3xl mx-auto">
               <div className="shrink-0 flex items-center justify-center select-none pointer-events-none">
                 <img
-                  src={fossil.saviezVousImage?.url || "/assets/mr-dna.png"}
+                  src={resolveImageUrl(fossil.saviezVousImage?.url) || MR_DNA_SRC}
+                  onError={(e) => {
+                    if (e.currentTarget.src !== MR_DNA_SRC) {
+                      e.currentTarget.src = MR_DNA_SRC;
+                    }
+                  }}
                   alt="Monsieur ADN - Le Saviez-Vous ?"
-                  className="w-28 h-28 sm:w-32 sm:h-32 md:w-36 md:h-36 object-contain bg-transparent filter drop-shadow-[0_8px_20px_rgba(0,0,0,0.7)]"
+                  className="w-28 h-28 sm:w-32 sm:h-32 md:w-36 md:h-36 object-contain bg-transparent filter drop-shadow-[0_8px_20px_rgba(0,0,0,0.7)] select-none pointer-events-none"
                 />
               </div>
 

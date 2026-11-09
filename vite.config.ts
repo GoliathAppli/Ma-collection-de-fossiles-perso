@@ -27,7 +27,8 @@ export default defineConfig(({ command }) => {
       include: ['react', 'react-dom', 'react-dom/client'],
     },
     build: {
-      target: 'es2020'
+      target: 'es2020',
+      assetsInlineLimit: 250000,
     },
     server: {
       // HMR is disabled in AI Studio via DISABLE_HMR env var.
