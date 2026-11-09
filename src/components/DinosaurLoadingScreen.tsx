@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'motion/react';
 import { AmmoniteIcon } from '../utils/data/PeriodIcons';
 import CroppedImage from './CroppedImage';
+import JurassicJeepCursor from './JurassicJeepCursor';
 import { ImageSettings } from '../types';
 import { safeLocalStorage } from '../utils/safeStorage';
 
@@ -107,8 +108,8 @@ export default function DinosaurLoadingScreen({
           Voyage dans le temps en cours...
         </h2>
 
-        {/* Progressive Progress Bar */}
-        <div className="w-full max-w-md space-y-2 px-1">
+        {/* Progressive Progress Bar with ample clearance for the Jeep Tour Vehicle */}
+        <div className="w-full max-w-md space-y-2 px-1 pt-6">
           <div className="relative w-full h-3.5 bg-slate-900/95 rounded-full border border-yellow-500/40 p-0.5 shadow-[inset_0_2px_5px_rgba(0,0,0,0.8)]">
             
             {/* Interior glowing background track */}
@@ -120,27 +121,8 @@ export default function DinosaurLoadingScreen({
               className="h-full bg-gradient-to-r from-amber-700 via-amber-500 to-yellow-400 rounded-full shadow-[0_0_12px_rgba(250,204,21,0.6)]"
             />
 
-            {/* Ammonite Cursor advancing progressively with continuous active spin on itself */}
-            <div
-              style={{
-                left: `${clampedProgress}%`,
-                transform: 'translate(-50%, -50%)',
-              }}
-              className="absolute top-1/2 z-20 pointer-events-none transition-all duration-150 ease-out"
-            >
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{
-                  repeat: Infinity,
-                  duration: 2,
-                  ease: "linear",
-                }}
-                className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center border-2 shadow-lg bg-gradient-to-b from-slate-900 via-slate-950 to-amber-950 border-yellow-400 text-yellow-300 shadow-[0_0_20px_rgba(234,179,8,0.85)]"
-              >
-                <AmmoniteIcon className="w-4 h-4 sm:w-5 sm:h-5 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]" />
-                <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-yellow-300 shadow-[0_0_6px_rgba(253,224,71,1)]" />
-              </motion.div>
-            </div>
+            {/* Jeep Jurassic Park YJ #18 avec roues tournantes et suspension active avançant avec la progression */}
+            <JurassicJeepCursor progress={clampedProgress} />
           </div>
 
           {/* Percentage display below the progress bar */}

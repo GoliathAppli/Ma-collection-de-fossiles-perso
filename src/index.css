@@ -18,13 +18,73 @@
 }
 
 /* ==========================================================================
-   THEME STYLING: AMBRE DORÉ & WATERMARK PRECISION
+   THEME STYLING: TEINTE JAUNE-ORANGÉ POUR L'INTÉGRALITÉ DU TEXTE DU SITE
+   (Harmonisée avec la barre de chargement : from-amber-700 via-amber-500 to-yellow-400)
    ========================================================================== */
 
-/* Theme root CSS variables */
 :root {
   --theme-accent-color: #f59e0b;
   --theme-accent-rgb: 245, 158, 11;
+  --theme-jaune-orange-100: #fef3c7; /* or pâle très lumineux */
+  --theme-jaune-orange-200: #fde68a; /* ambre clair rayonnant */
+  --theme-jaune-orange-300: #fcd34d; /* jaune doré chaud */
+  --theme-jaune-orange-400: #fbbf24; /* jaune orangé vif de la barre */
+  --theme-jaune-orange-500: #f59e0b; /* ambre orangé profond */
+}
+
+/* Couleur générale par défaut du corps du site */
+body {
+  color: #fde68a;
+  background-color: #020617;
+}
+
+/* Application harmonieuse de la teinte jaune-orangé sur tous les niveaux de texte du site */
+body:not(.print-mode) {
+  color: #fde68a;
+}
+
+/* Textes principaux blancs et clairs -> Or jaune-orangé lumineux */
+body:not(.print-mode) .text-slate-100:not(.text-transparent):not([class*="bg-clip-text"]),
+body:not(.print-mode) .text-white:not(.text-transparent):not([class*="bg-clip-text"]):not(.text-slate-950):not(.text-slate-900):not(.text-black) {
+  color: #fef3c7 !important;
+}
+
+/* Textes de corps et descriptions -> Ambre clair doré */
+body:not(.print-mode) .text-slate-200:not(.text-transparent):not([class*="bg-clip-text"]) {
+  color: #fde68a !important;
+}
+
+/* Textes secondaires, détails et citations -> Jaune orangé doré */
+body:not(.print-mode) .text-slate-300:not(.text-transparent):not([class*="bg-clip-text"]) {
+  color: #fcd34d !important;
+}
+
+/* Métadonnées, badges discrets, dates -> Jaune orangé ambré pur de la barre */
+body:not(.print-mode) .text-slate-400:not(.text-transparent):not([class*="bg-clip-text"]) {
+  color: #fbbf24 !important;
+}
+
+body:not(.print-mode) .text-slate-500:not(.text-transparent):not([class*="bg-clip-text"]) {
+  color: #f59e0b !important;
+}
+
+/* Préservation du contraste sur les boutons et badges à fond jaune clair ou étiquettes physiques */
+.text-slate-950,
+button .text-slate-950,
+.fossil-label-item .text-slate-950 {
+  color: #020617 !important;
+}
+
+.text-slate-900,
+button .text-slate-900,
+.fossil-label-item .text-slate-900 {
+  color: #0f172a !important;
+}
+
+.text-black,
+button .text-black,
+.fossil-label-item .text-black {
+  color: #000000 !important;
 }
 
 /* --- Reference Medallion Watermark: Extremely subtle transparency so text is 100% readable --- */
@@ -34,3 +94,9 @@
   stroke: rgba(234, 179, 8, 0.25) !important;
 }
 
+/* Mode impression : préserver le texte sombre sur fond papier blanc */
+@media print {
+  body, .print-page, .print-page * {
+    color: #0f172a !important;
+  }
+}
