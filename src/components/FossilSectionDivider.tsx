@@ -1,6 +1,7 @@
 import React from 'react';
+import { Lightbulb, Compass } from 'lucide-react';
 
-export type FossilDividerType = 'ammonite' | 'trilobite' | 'leaf' | 'gem';
+export type FossilDividerType = 'ammonite' | 'trilobite' | 'leaf' | 'gem' | 'lightbulb' | 'compass';
 
 interface FossilSectionDividerProps {
   type?: FossilDividerType;
@@ -22,6 +23,20 @@ export default function FossilSectionDivider({
     const iconSizeClass = isLarge ? 'w-6 h-6 sm:w-7 sm:h-7' : isSmall ? 'w-4 h-4' : 'w-5 h-5';
 
     switch (type) {
+      case 'compass':
+        return (
+          <Compass
+            className={`${iconSizeClass} text-yellow-400 transition-transform duration-300 group-hover:scale-110 shrink-0`}
+          />
+        );
+
+      case 'lightbulb':
+        return (
+          <Lightbulb
+            className={`${iconSizeClass} text-yellow-400 transition-transform duration-300 group-hover:scale-110 shrink-0`}
+          />
+        );
+
       case 'trilobite':
         return (
           <svg
@@ -138,14 +153,20 @@ export default function FossilSectionDivider({
 
   return (
     <div
-      className={`w-full flex items-center justify-center gap-2.5 sm:gap-3.5 ${marginClass} select-none group pointer-events-none ${className}`}
+      className={`w-full flex items-center justify-center gap-2 sm:gap-3 ${marginClass} select-none group pointer-events-none ${className}`}
       aria-hidden="true"
     >
       {/* Filet gauche effilé dégradé doré */}
-      <div className="flex-1 flex items-center justify-end">
-        <div className={`w-full max-w-md ${lineThickness} ${isLarge ? 'bg-gradient-to-r from-transparent via-yellow-600/50 to-yellow-400' : 'bg-gradient-to-r from-transparent via-yellow-600/30 to-yellow-500/70'}`} />
-        <div className={`${dotSize} rounded-full bg-yellow-400 shrink-0 ml-1.5 shadow-[0_0_8px_rgba(234,179,8,0.7)]`} />
-      </div>
+      <div
+        className={`flex-1 max-w-md ${lineThickness} ${
+          isLarge
+            ? 'bg-gradient-to-r from-transparent via-yellow-600/50 to-yellow-400'
+            : 'bg-gradient-to-r from-transparent via-yellow-600/30 to-yellow-500/70'
+        }`}
+      />
+
+      {/* Point doré lumineux */}
+      <div className={`${dotSize} rounded-full bg-yellow-400 shrink-0 shadow-[0_0_8px_rgba(234,179,8,0.7)]`} />
 
       {/* Médaillon central orné du dessin paléontologique */}
       <div
@@ -169,11 +190,17 @@ export default function FossilSectionDivider({
         )}
       </div>
 
+      {/* Point doré lumineux */}
+      <div className={`${dotSize} rounded-full bg-yellow-400 shrink-0 shadow-[0_0_8px_rgba(234,179,8,0.7)]`} />
+
       {/* Filet droit effilé dégradé doré */}
-      <div className="flex-1 flex items-center justify-start">
-        <div className={`${dotSize} rounded-full bg-yellow-400 shrink-0 mr-1.5 shadow-[0_0_8px_rgba(234,179,8,0.7)]`} />
-        <div className={`w-full max-w-md ${lineThickness} ${isLarge ? 'bg-gradient-to-l from-transparent via-yellow-600/50 to-yellow-400' : 'bg-gradient-to-l from-transparent via-yellow-600/30 to-yellow-500/70'}`} />
-      </div>
+      <div
+        className={`flex-1 max-w-md ${lineThickness} ${
+          isLarge
+            ? 'bg-gradient-to-l from-transparent via-yellow-600/50 to-yellow-400'
+            : 'bg-gradient-to-l from-transparent via-yellow-600/30 to-yellow-500/70'
+        }`}
+      />
     </div>
   );
 }

@@ -321,13 +321,13 @@ export default function FossilDetailSheet({
 
       {/* 3. CADRE CIRCULAIRE : SCEAU & RÉFÉRENCE DE COLLECTION */}
       {fossil.reference ? (
-        <div className="flex justify-center my-3 select-none">
+        <div className="flex justify-center mt-4 sm:mt-6 mb-12 sm:mb-16 select-none">
           {/* Halo d'ambiance et bague extérieure du médaillon */}
           <div className="relative group p-1.5 rounded-full bg-gradient-to-b from-yellow-600/35 via-yellow-700/15 to-transparent shadow-[0_4px_24px_rgba(0,0,0,0.7),0_0_22px_rgba(202,138,4,0.18)] hover:shadow-[0_6px_28px_rgba(0,0,0,0.85),0_0_30px_rgba(250,204,21,0.3)] transition-all duration-300">
             {/* Filet intérieur en pointillés dorés ciselés */}
             <div className="p-1 rounded-full border border-dashed border-yellow-500/50 group-hover:border-yellow-400/80 transition-colors">
-              {/* Corps circulaire principal du médaillon */}
-              <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-gradient-to-b from-slate-900 via-amber-950/40 to-slate-950 border-2 border-yellow-600/70 group-hover:border-yellow-400/90 shadow-[inset_0_0_18px_rgba(0,0,0,0.9),inset_0_1px_3px_rgba(250,204,21,0.35)] flex flex-col items-center justify-center p-2 text-center relative overflow-hidden transition-all duration-300">
+              {/* Corps circulaire principal du médaillon avec numéro agrandi */}
+              <div className="w-32 h-32 sm:w-36 sm:h-36 rounded-full bg-gradient-to-b from-slate-900 via-amber-950/40 to-slate-950 border-2 border-yellow-600/70 group-hover:border-yellow-400/90 shadow-[inset_0_0_18px_rgba(0,0,0,0.9),inset_0_1px_3px_rgba(250,204,21,0.35)] flex flex-col items-center justify-center p-2.5 text-center relative overflow-hidden transition-all duration-300">
                 
                 {/* Filigrane d'ammonite / spirale en arrière-plan ultra-discret et transparent */}
                 <svg
@@ -341,37 +341,29 @@ export default function FossilDetailSheet({
                 </svg>
 
                 {/* En-tête : Référence avec fond protecteur */}
-                <div className="flex items-center justify-center gap-1 z-10 px-2 py-0.5 rounded-full bg-slate-950/70 backdrop-blur-[2px]">
+                <div className="flex items-center justify-center gap-1 z-10 px-2.5 py-0.5 rounded-full bg-slate-950/70 backdrop-blur-[2px]">
                   <span className="w-1 h-1 rounded-full bg-yellow-400/80" />
-                  <span className="text-[8.5px] sm:text-[9.5px] font-serif font-bold uppercase tracking-[0.2em] text-yellow-400/90 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
+                  <span className="text-[9px] sm:text-[10px] font-serif font-bold uppercase tracking-[0.2em] text-yellow-400/90 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
                     RÉFÉRENCE
                   </span>
                   <span className="w-1 h-1 rounded-full bg-yellow-400/80" />
                 </div>
 
-                {/* Filet séparateur supérieur */}
-                <div className="w-9 sm:w-11 h-px bg-gradient-to-r from-transparent via-yellow-500/60 to-transparent my-1 z-10" />
+                {/* Filet séparateur décoratif */}
+                <div className="w-12 sm:w-16 h-px bg-gradient-to-r from-transparent via-yellow-500/70 to-transparent my-1.5 z-10" />
 
-                {/* Numéro de référence mis en valeur sur fond protecteur */}
-                <div className="z-10 px-2.5 py-0.5 rounded-md bg-slate-950/80 backdrop-blur-[2px] shadow-sm max-w-[100px] sm:max-w-[115px]">
-                  <span className="text-xs sm:text-sm font-mono font-bold text-amber-200 group-hover:text-yellow-100 tracking-wider break-all leading-tight block drop-shadow-[0_2px_8px_rgba(234,179,8,0.45)]">
+                {/* Numéro de référence agrandi et mis en valeur */}
+                <div className="z-10 px-3 py-1 rounded-lg bg-slate-950/85 backdrop-blur-[2px] shadow-md max-w-[110px] sm:max-w-[130px]">
+                  <span className="text-sm sm:text-base md:text-lg font-mono font-black text-amber-200 group-hover:text-yellow-100 tracking-wider break-all leading-tight block drop-shadow-[0_2px_10px_rgba(234,179,8,0.55)]">
                     {fossil.reference}
                   </span>
                 </div>
-
-                {/* Filet séparateur inférieur */}
-                <div className="w-9 sm:w-11 h-px bg-gradient-to-r from-transparent via-yellow-500/60 to-transparent my-1 z-10" />
-
-                {/* Bas de médaillon : Collection avec fond protecteur */}
-                <span className="text-[7.5px] sm:text-[8.5px] font-mono tracking-[0.24em] text-slate-400 group-hover:text-slate-300 uppercase z-10 px-1.5 py-0.2 rounded bg-slate-950/60">
-                  COLLECTION
-                </span>
               </div>
             </div>
           </div>
         </div>
       ) : (isAdmin && onEdit) ? (
-        <div className="flex justify-center my-3 select-none">
+        <div className="flex justify-center mt-4 sm:mt-6 mb-12 sm:mb-16 select-none">
           <button
             type="button"
             onClick={() => {
@@ -379,18 +371,17 @@ export default function FossilDetailSheet({
               onEdit(fossil);
             }}
             className="group p-1 rounded-full border border-dashed border-slate-700 hover:border-yellow-500/60 transition-all cursor-pointer"
-            title="Ajouter une référence de collection"
+            title="Ajouter une référence"
           >
             <div className="w-24 h-24 rounded-full bg-slate-950/60 hover:bg-slate-900 border border-slate-800 hover:border-yellow-600/40 flex flex-col items-center justify-center p-2 text-center text-slate-500 hover:text-yellow-400 transition-colors">
-              <span className="text-[9px] font-mono tracking-wider uppercase">+ Réf.</span>
-              <span className="text-[7.5px] font-serif uppercase tracking-widest text-slate-600 group-hover:text-slate-400">Collection</span>
+              <span className="text-xs font-mono font-bold tracking-wider uppercase">+ Réf.</span>
             </div>
           </button>
         </div>
       ) : null}
 
-      {/* GUIDE AUDIO VOCAL (WEB SPEECH API NATIVE, 100% HORS-LIGNE) */}
-      <div className="pb-3 sm:pb-6">
+      {/* GUIDE AUDIO VOCAL (WEB SPEECH API NATIVE, 100% HORS-LIGNE) AVEC ESPACE ÉLÉGANT */}
+      <div className="pt-2 sm:pt-4 pb-6 sm:pb-8">
         <FossilAudioGuide fossil={fossil} />
       </div>
 
@@ -399,8 +390,8 @@ export default function FossilDetailSheet({
       {/* ============================================================== */}
       {(fossil.description || validDescImages.length > 0 || fossil.tailleEspece || fossil.poidsEspece || (isAdmin && onEdit)) && (
         <div className="space-y-10 sm:space-y-14 pt-4 sm:pt-8">
-          {/* GRAND TITRE SÉPARATION MAJEUR CÔTÉ ESPÈCE */}
-          <FossilSectionDivider type="ammonite" size="lg" label="Description de l'espèce" />
+          {/* TITRE SÉPARATION CÔTÉ ESPÈCE */}
+          <FossilSectionDivider type="ammonite" size="md" label="Description de l'espèce" />
 
           {/* 1. TEXTE DE LA DESCRIPTION DANS SON PROPRE ENCADRÉ */}
           {fossil.description && (
@@ -656,8 +647,8 @@ export default function FossilDetailSheet({
       {/* PARTIE 2 : CÔTÉ FOSSILE (LE SPÉCIMEN AUTHENTIQUE DE COLLECTION) */}
       {/* ============================================================== */}
       <div className="space-y-8 sm:space-y-10 pt-10 sm:pt-16">
-        {/* GRAND TITRE SÉPARATION MAJEUR CÔTÉ FOSSILE */}
-        <FossilSectionDivider type="trilobite" size="lg" label="Le Spécimen" />
+        {/* TITRE SÉPARATION CÔTÉ FOSSILE */}
+        <FossilSectionDivider type="trilobite" size="md" label="Le Spécimen" />
 
         {/* 1. ENCADRÉ : TEXTE ET PHOTO DU FOSSILE (DIRECTEMENT SOUS "LE SPÉCIMEN") */}
         {(fossil.leFossileText || fossil.leFossileImage?.url || (isAdmin && onEdit)) && (
@@ -1133,18 +1124,10 @@ export default function FossilDetailSheet({
       {/* 7. RUBRIQUE : LE SAVIEZ-VOUS ? */}
       {fossil.saviezVousText && (
         <div className="space-y-4 pt-4 sm:pt-8">
-          <FossilSectionDivider type="ammonite" size="lg" label="Le saviez-vous ?" />
+          <FossilSectionDivider type="lightbulb" size="md" label="Le saviez-vous ?" />
           <div className="bg-gradient-to-r from-yellow-950/20 to-slate-900/10 border-2 border-yellow-700/20 p-5 sm:p-7 md:p-8 rounded-2xl relative overflow-hidden shadow-xl">
             <div className="absolute top-0 right-0 p-8 opacity-5 font-serif text-9xl text-yellow-500 pointer-events-none italic select-none">
               ?
-            </div>
-
-            {/* En-tête de la rubrique */}
-            <div className="flex items-center justify-center gap-2.5 border-b border-yellow-700/20 pb-3.5 mb-5 text-center">
-              <Lightbulb className="w-5 h-5 text-yellow-500 shrink-0" />
-              <h3 className="text-base sm:text-lg font-bold font-serif uppercase tracking-wider text-yellow-500 text-center">
-                <span>Le Saviez-Vous ?</span>
-              </h3>
             </div>
 
             {/* Corps avec l'image 2x plus grande de Monsieur ADN sans cadre en PNG transparent */}

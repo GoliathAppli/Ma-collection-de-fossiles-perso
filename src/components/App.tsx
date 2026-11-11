@@ -18,6 +18,7 @@ import TechnicalSheetsView from "../utils/TechnicalSheetsView";
 import FossilDetailForm from "./FossilDetailForm";
 import FossilSelectorAndCarousel from "./FossilSelectorAndCarousel";
 import RealisticFossilAmmonite from "./RealisticFossilAmmonite";
+import FossilSectionDivider from "./FossilSectionDivider";
 import {
   TrilobiteIcon,
   AmmoniteIcon,

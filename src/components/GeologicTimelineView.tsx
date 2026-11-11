@@ -5,6 +5,7 @@ import DetailedHorizontalTimeline from './DetailedHorizontalTimeline';
 import CollectionFossilsTimeline from './CollectionFossilsTimeline';
 import CollectionFossilsWorldMap from './CollectionFossilsWorldMap';
 import FossilDetailSheet from './FossilDetailSheet';
+import FossilSectionDivider, { FossilDividerType } from './FossilSectionDivider';
 import { playDinoSound } from '../utils/data/audio';
 import {
   ArrowLeft,
@@ -36,62 +37,48 @@ interface GeologicTimelineViewProps {
 }
 
 interface SectorCardProps {
-  number: string;
-  badge: string;
+  dividerType?: FossilDividerType;
   title: string;
-  description: string;
-  icon: React.ReactNode;
+  description?: string;
   children: React.ReactNode;
 }
 
 function SectorCard({
-  number,
-  badge,
+  dividerType = 'gem',
   title,
   description,
-  icon,
   children,
 }: SectorCardProps) {
   return (
-    <section className="relative rounded-2xl sm:rounded-3xl border border-yellow-500/35 hover:border-yellow-500/55 bg-gradient-to-b from-slate-950 via-slate-900/95 to-slate-950 p-4 sm:p-6 md:p-8 shadow-[0_16px_40px_rgba(0,0,0,0.65)] backdrop-blur-md overflow-hidden transition-all duration-300 group">
-      {/* Top subtle golden perimeter accent line */}
-      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-yellow-500/70 to-transparent pointer-events-none" />
+    <div className="space-y-4">
+      {/* Titre harmonisé avec FossilSectionDivider */}
+      <FossilSectionDivider
+        type={dividerType}
+        size="md"
+        label={title}
+      />
 
-      {/* Ambient background glows */}
-      <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-amber-500/5 blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-20 -left-20 w-64 h-64 rounded-full bg-yellow-500/5 blur-3xl pointer-events-none" />
+      <section className="relative rounded-2xl sm:rounded-3xl border border-yellow-500/35 hover:border-yellow-500/55 bg-gradient-to-b from-slate-950 via-slate-900/95 to-slate-950 p-4 sm:p-6 md:p-8 shadow-[0_16px_40px_rgba(0,0,0,0.65)] backdrop-blur-md overflow-hidden transition-all duration-300 group">
+        {/* Top subtle golden perimeter accent line */}
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-yellow-500/70 to-transparent pointer-events-none" />
 
-      {/* Frame Header */}
-      <header className="relative z-10 mb-6 pb-5 border-b border-yellow-500/20 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div className="flex items-start sm:items-center gap-3.5">
-          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-yellow-950/90 via-slate-900 to-amber-950/80 border border-yellow-500/50 flex items-center justify-center text-yellow-400 shadow-[0_0_15px_rgba(234,179,8,0.25)] shrink-0">
-            {icon}
-          </div>
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-[10px] font-mono tracking-widest uppercase font-bold text-yellow-400 bg-yellow-950/80 border border-yellow-600/40 px-2 py-0.5 rounded shadow-sm">
-                SECTEUR {number}
-              </span>
-              <span className="text-[11px] font-mono text-slate-400 hidden sm:inline">
-                · {badge}
-              </span>
-            </div>
-            <h2 className="text-xl sm:text-2xl font-serif font-black uppercase tracking-wide bg-gradient-to-r from-yellow-100 via-amber-200 to-yellow-400 bg-clip-text text-transparent drop-shadow-sm">
-              {title}
-            </h2>
-          </div>
+        {/* Ambient background glows */}
+        <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-amber-500/5 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-20 -left-20 w-64 h-64 rounded-full bg-yellow-500/5 blur-3xl pointer-events-none" />
+
+        {/* Description introductive concise */}
+        {description && (
+          <p className="text-xs sm:text-sm text-slate-400 font-sans leading-relaxed text-center max-w-2xl mx-auto mb-6">
+            {description}
+          </p>
+        )}
+
+        {/* Frame Content */}
+        <div className="relative z-10">
+          {children}
         </div>
-
-        <p className="text-xs sm:text-sm text-slate-400 font-sans leading-relaxed md:max-w-md md:text-right">
-          {description}
-        </p>
-      </header>
-
-      {/* Frame Content */}
-      <div className="relative z-10">
-        {children}
-      </div>
-    </section>
+      </section>
+    </div>
   );
 }
 
@@ -344,24 +331,20 @@ export default function GeologicTimelineView({
       {/* 1. DEDICATED TIMELINE PAGE VIEW - SECTORS SEPARATED IN DISTINCT FRAMES */}
       {showDetailedScale ? (
         <div className="space-y-10 sm:space-y-14">
-          {/* SECTEUR 01 : ÉCHELLE STRATIGRAPHIQUE MONDIALE */}
+          {/* ÉCHELLE STRATIGRAPHIQUE MONDIALE */}
           <SectorCard
-            number="01"
-            badge="Panorama Géochronologique Mondial"
+            dividerType="gem"
             title="Échelle Stratigraphique Mondiale"
             description="Frise interactive répertoriant les 4 grandes ères de la Terre, leurs éons, périodes et subdivisions géologiques."
-            icon={<Layers className="w-6 h-6 text-yellow-400" />}
           >
             <DetailedHorizontalTimeline />
           </SectorCard>
 
-          {/* SECTEUR 02 : FRISE CHRONOLOGIQUE DES FOSSILES DE LA COLLECTION */}
+          {/* FRISE CHRONOLOGIQUE DES FOSSILES DE LA COLLECTION */}
           <SectorCard
-            number="02"
-            badge="Repères Temporels de la Collection"
+            dividerType="ammonite"
             title="Frise Chronologique des Fossiles"
             description="Positionnement chronologique et période d'apparition de chaque spécimen fossile répertorié dans la collection."
-            icon={<Clock className="w-6 h-6 text-yellow-400" />}
           >
             <CollectionFossilsTimeline
               fossils={fossils}
@@ -369,13 +352,11 @@ export default function GeologicTimelineView({
             />
           </SectorCard>
 
-          {/* SECTEUR 03 : CARTE MONDIALE DES GISEMENTS */}
+          {/* CARTE MONDIALE DES GISEMENTS */}
           <SectorCard
-            number="03"
-            badge="Cartographie & Gisements"
+            dividerType="compass"
             title="Carte Mondiale des Gisements"
             description="Exploration géographique planétaire des sites de fouilles, carrières et strates géologiques d'où proviennent les spécimens."
-            icon={<Globe className="w-6 h-6 text-yellow-400" />}
           >
             <CollectionFossilsWorldMap
               fossils={fossils}
@@ -383,14 +364,12 @@ export default function GeologicTimelineView({
             />
           </SectorCard>
 
-          {/* SECTEUR 04 : VIDÉO & DOCUMENTAIRE THÉMATIQUE */}
+          {/* VIDÉO & DOCUMENTAIRE THÉMATIQUE */}
           {showVideoSection && (
             <SectorCard
-              number="04"
-              badge="Immersion Audiovisuelle"
+              dividerType="trilobite"
               title="Vidéo & Documentaire Thématique"
               description="Immersion vidéo dans l'histoire paléontologique, la dérive des continents et l'apparition de la vie."
-              icon={<Film className="w-6 h-6 text-yellow-400" />}
             >
               {renderVideoSectionContent()}
             </SectorCard>
@@ -537,11 +516,9 @@ export default function GeologicTimelineView({
       {!showDetailedScale && showVideoSection && (
         <div className="pt-6">
           <SectorCard
-            number="04"
-            badge="Immersion Audiovisuelle"
+            dividerType="trilobite"
             title="Vidéo & Documentaire Thématique"
             description="Immersion vidéo dans l'histoire paléontologique, la dérive des continents et l'apparition de la vie."
-            icon={<Film className="w-6 h-6 text-yellow-400" />}
           >
             {renderVideoSectionContent()}
           </SectorCard>
