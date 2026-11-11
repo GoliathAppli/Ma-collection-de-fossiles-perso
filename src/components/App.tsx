@@ -17,6 +17,7 @@ import { MR_DNA_SRC } from "../utils/mrDnaAsset";
 import TechnicalSheetsView from "../utils/TechnicalSheetsView";
 import FossilDetailForm from "./FossilDetailForm";
 import FossilSelectorAndCarousel from "./FossilSelectorAndCarousel";
+import RealisticFossilAmmonite from "./RealisticFossilAmmonite";
 import {
   TrilobiteIcon,
   AmmoniteIcon,
@@ -767,37 +768,31 @@ export default function App() {
                 />
               </div>
 
-              {/* AMMONITE ANIMATED BUTTON */}
-              <div className="flex flex-col items-center space-y-4">
+              {/* BOUTON AMMONITE FOSSILE RÉALISTE */}
+              <div className="flex flex-col items-center pt-2">
                 <motion.button
                   onClick={() => navigateTo("secondHome")}
-                  className="relative p-6 rounded-full cursor-pointer flex items-center justify-center group overflow-hidden transition-all duration-300 bg-slate-900 border border-yellow-500/40 text-yellow-500 hover:text-yellow-400 hover:border-yellow-400 shadow-[0_0_30px_rgba(234,179,8,0.15)]"
+                  className="relative p-2 rounded-full cursor-pointer flex items-center justify-center group transition-all duration-300 focus:outline-none"
                   whileHover={{ scale: 1.12 }}
-                  whileTap={{ scale: 0.95 }}
+                  whileTap={{ scale: 0.94 }}
                   animate={{
-                    boxShadow: [
-                      "0 0 15px rgba(234,179,8,0.1)",
-                      "0 0 40px rgba(234,179,8,0.3)",
-                      "0 0 15px rgba(234,179,8,0.1)",
-                    ],
+                    y: [0, -4, 0],
                   }}
                   transition={{
                     repeat: Infinity,
-                    duration: 3,
+                    duration: 3.5,
                     ease: "easeInOut",
                   }}
                   id="welcome-ammonite-button"
+                  title="Entrer dans l'exposition"
+                  aria-label="Cliquer sur l'ammonite fossile pour entrer dans l'exposition"
                 >
-                  {/* Subtle spinning rays behind */}
-                  <div className="absolute inset-0 bg-transparent rounded-full group-hover:rotate-45 transition-transform duration-1000 ease-out pointer-events-none" />
+                  {/* Douce lueur dorée ambrée sous le fossile */}
+                  <div className="absolute inset-2 rounded-full bg-yellow-500/20 blur-xl group-hover:bg-yellow-400/35 transition-all duration-500 pointer-events-none" />
 
-                  <AmmoniteIcon className="w-20 h-20 relative z-10 transition-all duration-300 drop-shadow-[0_4px_12px_rgba(234,179,8,0.3)] text-yellow-500 group-hover:text-yellow-400" />
+                  {/* Véritable Ammonite Fossilisée Dorée (Photographie haute résolution d'un spécimen réel) */}
+                  <RealisticFossilAmmonite className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 relative z-10" />
                 </motion.button>
-
-                <span className="text-center font-mono text-[10px] tracking-widest uppercase animate-pulse transition-colors text-yellow-600/80">
-                  Cliquez sur l'ammonite pour entrer de plain-pied dans
-                  l'exposition
-                </span>
               </div>
             </motion.div>
           )}
